@@ -1,0 +1,207 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>wslay_event_queue_fragmented_msg, wslay_event_queue_fragmented_msg_ex &mdash; wslay 1.0.1-DEV documentation</title>
+    
+    <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/default2.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0.1-DEV',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="wslay 1.0.1-DEV documentation" href="../index.html" />
+    <link rel="up" title="API Reference" href="../api_reference.html" />
+    <link rel="next" title="wslay_event_queue_msg, wslay_event_queue_msg_ex" href="wslay_event_queue_msg.html" />
+    <link rel="prev" title="wslay_event_queue_close" href="wslay_event_queue_close.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="wslay_event_queue_msg.html" title="wslay_event_queue_msg, wslay_event_queue_msg_ex"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="wslay_event_queue_close.html" title="wslay_event_queue_close"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">wslay 1.0.1-DEV documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../api_reference.html" accesskey="U">API Reference</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="wslay-event-queue-fragmented-msg-wslay-event-queue-fragmented-msg-ex">
+<h1>wslay_event_queue_fragmented_msg, wslay_event_queue_fragmented_msg_ex<a class="headerlink" href="#wslay-event-queue-fragmented-msg-wslay-event-queue-fragmented-msg-ex" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="synopsis">
+<h2>SYNOPSIS<a class="headerlink" href="#synopsis" title="Permalink to this headline">¶</a></h2>
+<p>#include &lt;wslay/wslay.h&gt;</p>
+<dl class="function">
+<dt id="c.wslay_event_queue_fragmented_msg">
+int <code class="descname">wslay_event_queue_fragmented_msg</code><span class="sig-paren">(</span>wslay_event_context_ptr<em>&nbsp;ctx</em>, const struct wslay_event_fragmented_msg<em>&nbsp;*arg</em><span class="sig-paren">)</span><a class="headerlink" href="#c.wslay_event_queue_fragmented_msg" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="c.wslay_event_queue_fragmented_msg_ex">
+int <code class="descname">wslay_event_queue_fragmented_msg_ex</code><span class="sig-paren">(</span>wslay_event_context_ptr<em>&nbsp;ctx</em>, const struct wslay_event_fragmented_msg<em>&nbsp;*arg</em>, uint8_t<em>&nbsp;rsv</em><span class="sig-paren">)</span><a class="headerlink" href="#c.wslay_event_queue_fragmented_msg_ex" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="description">
+<h2>DESCRIPTION<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference internal" href="#c.wslay_event_queue_fragmented_msg" title="wslay_event_queue_fragmented_msg"><code class="xref c c-func docutils literal"><span class="pre">wslay_event_queue_fragmented_msg()</span></code></a> and
+<a class="reference internal" href="#c.wslay_event_queue_fragmented_msg_ex" title="wslay_event_queue_fragmented_msg_ex"><code class="xref c c-func docutils literal"><span class="pre">wslay_event_queue_fragmented_msg_ex()</span></code></a> queue a fragmented
+message specified in <em>arg</em>.  The <em>struct wslay_event_fragmented_msg</em>
+is defined as:</p>
+<div class="highlight-c"><div class="highlight"><pre><span></span><span class="k">union</span> <span class="n">wslay_event_msg_source</span> <span class="p">{</span>
+    <span class="kt">int</span>   <span class="n">fd</span><span class="p">;</span>
+    <span class="kt">void</span> <span class="o">*</span><span class="n">data</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="k">struct</span> <span class="n">wslay_event_fragmented_msg</span> <span class="p">{</span>
+    <span class="kt">uint8_t</span>                             <span class="n">opcode</span><span class="p">;</span>
+    <span class="k">union</span> <span class="n">wslay_event_msg_source</span>        <span class="n">source</span><span class="p">;</span>
+    <span class="n">wslay_event_fragmented_msg_callback</span> <span class="n">read_callback</span><span class="p">;</span>
+<span class="p">};</span>
+</pre></div>
+</div>
+<dl class="type">
+<dt id="c.wslay_event_fragmented_msg_callback">
+typedef ssize_t <code class="descname">(*wslay_event_fragmented_msg_callback)</code><span class="sig-paren">(</span>wslay_event_context_ptr<em>&nbsp;ctx</em>, uint8_t<em>&nbsp;*buf</em>, size_t<em>&nbsp;len</em>, const union wslay_event_msg_source<em>&nbsp;*source</em>, int<em>&nbsp;*eof</em>, void<em>&nbsp;*user_data</em><span class="sig-paren">)</span><a class="headerlink" href="#c.wslay_event_fragmented_msg_callback" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>The <em>opcode</em> member is the opcode of the message.
+The <em>source</em> member is an union and normally it contains a &#8220;source&#8221; to
+generate message data.
+The <em>read_callback</em> is a callback function called by
+<a class="reference internal" href="wslay_event_send.html#c.wslay_event_send" title="wslay_event_send"><code class="xref c c-func docutils literal"><span class="pre">wslay_event_send()</span></code></a> to read message data from <em>source</em>.
+The implementation of <a class="reference internal" href="#c.wslay_event_fragmented_msg_callback" title="wslay_event_fragmented_msg_callback"><code class="xref c c-type docutils literal"><span class="pre">wslay_event_fragmented_msg_callback</span></code></a> must
+store at most <em>len</em> bytes of data to <em>buf</em> and return the number of stored
+bytes. If all data is read (i.e., EOF), set <em>*eof</em> to 1.
+If no data can be generated at the moment, return 0.
+If there is an error, return -1 and
+set error code <code class="docutils literal"><span class="pre">WSLAY_ERR_CALLBACK_FAILURE</span></code>
+using <a class="reference internal" href="wslay_event_set_error.html#c.wslay_event_set_error" title="wslay_event_set_error"><code class="xref c c-func docutils literal"><span class="pre">wslay_event_set_error()</span></code></a>.</p>
+<p>This function supports non-control messages only. For control frames,
+use <a class="reference internal" href="wslay_event_queue_msg.html#c.wslay_event_queue_msg" title="wslay_event_queue_msg"><code class="xref c c-func docutils literal"><span class="pre">wslay_event_queue_msg()</span></code></a> or <a class="reference internal" href="wslay_event_queue_close.html#c.wslay_event_queue_close" title="wslay_event_queue_close"><code class="xref c c-func docutils literal"><span class="pre">wslay_event_queue_close()</span></code></a>.</p>
+<p>This function just queues a message and does not send it.
+<a class="reference internal" href="wslay_event_send.html#c.wslay_event_send" title="wslay_event_send"><code class="xref c c-func docutils literal"><span class="pre">wslay_event_send()</span></code></a> function call sends these queued messages.</p>
+<p><a class="reference internal" href="#c.wslay_event_queue_fragmented_msg_ex" title="wslay_event_queue_fragmented_msg_ex"><code class="xref c c-func docutils literal"><span class="pre">wslay_event_queue_fragmented_msg_ex()</span></code></a> additionally accepts
+<em>rsv</em> parameter, which is a reserved bits to send. To set reserved
+bits, use macro <code class="docutils literal"><span class="pre">WSLAY_RSV1_BIT</span></code>, <code class="docutils literal"><span class="pre">WSLAY_RSV2_BIT</span></code>, and
+<code class="docutils literal"><span class="pre">WSLAY_RSV3_BIT</span></code>.  See
+<a class="reference internal" href="wslay_event_config_set_allowed_rsv_bits.html#c.wslay_event_config_set_allowed_rsv_bits" title="wslay_event_config_set_allowed_rsv_bits"><code class="xref c c-func docutils literal"><span class="pre">wslay_event_config_set_allowed_rsv_bits()</span></code></a> to see the allowed
+reserved bits to set.</p>
+</div>
+<div class="section" id="return-value">
+<h2>RETURN VALUE<a class="headerlink" href="#return-value" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference internal" href="#c.wslay_event_queue_fragmented_msg" title="wslay_event_queue_fragmented_msg"><code class="xref c c-func docutils literal"><span class="pre">wslay_event_queue_fragmented_msg()</span></code></a> and
+<a class="reference internal" href="#c.wslay_event_queue_fragmented_msg_ex" title="wslay_event_queue_fragmented_msg_ex"><code class="xref c c-func docutils literal"><span class="pre">wslay_event_queue_fragmented_msg_ex()</span></code></a> return 0 if it succeeds,
+or returns the following negative error codes:</p>
+<dl class="docutils">
+<dt><strong>WSLAY_ERR_NO_MORE_MSG</strong></dt>
+<dd>Could not queue given message. The one of
+possible reason is that close control frame has been
+queued/sent and no further queueing message is not allowed.</dd>
+<dt><strong>WSLAY_ERR_INVALID_ARGUMENT</strong></dt>
+<dd>The given message is invalid; or bit is set in <em>rsv</em> which is not
+allowed (see <a class="reference internal" href="wslay_event_config_set_allowed_rsv_bits.html#c.wslay_event_config_set_allowed_rsv_bits" title="wslay_event_config_set_allowed_rsv_bits"><code class="xref c c-func docutils literal"><span class="pre">wslay_event_config_set_allowed_rsv_bits()</span></code></a>).</dd>
+<dt><strong>WSLAY_ERR_NOMEM</strong></dt>
+<dd>Out of memory.</dd>
+</dl>
+</div>
+<div class="section" id="see-also">
+<h2>SEE ALSO<a class="headerlink" href="#see-also" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference internal" href="wslay_event_queue_msg.html#c.wslay_event_queue_msg" title="wslay_event_queue_msg"><code class="xref c c-func docutils literal"><span class="pre">wslay_event_queue_msg()</span></code></a>,
+<a class="reference internal" href="wslay_event_queue_msg.html#c.wslay_event_queue_msg_ex" title="wslay_event_queue_msg_ex"><code class="xref c c-func docutils literal"><span class="pre">wslay_event_queue_msg_ex()</span></code></a>,
+<a class="reference internal" href="wslay_event_queue_close.html#c.wslay_event_queue_close" title="wslay_event_queue_close"><code class="xref c c-func docutils literal"><span class="pre">wslay_event_queue_close()</span></code></a></p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">wslay_event_queue_fragmented_msg, wslay_event_queue_fragmented_msg_ex</a><ul>
+<li><a class="reference internal" href="#synopsis">SYNOPSIS</a></li>
+<li><a class="reference internal" href="#description">DESCRIPTION</a></li>
+<li><a class="reference internal" href="#return-value">RETURN VALUE</a></li>
+<li><a class="reference internal" href="#see-also">SEE ALSO</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="wslay_event_queue_close.html"
+                        title="previous chapter">wslay_event_queue_close</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="wslay_event_queue_msg.html"
+                        title="next chapter">wslay_event_queue_msg, wslay_event_queue_msg_ex</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/man/wslay_event_queue_fragmented_msg.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="wslay_event_queue_msg.html" title="wslay_event_queue_msg, wslay_event_queue_msg_ex"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="wslay_event_queue_close.html" title="wslay_event_queue_close"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">wslay 1.0.1-DEV documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../api_reference.html" >API Reference</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2012, 2015, Tatsuhiro Tsujikawa.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.4.
+    </div>
+  </body>
+</html>

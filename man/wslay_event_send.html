@@ -1,0 +1,181 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>wslay_event_send &mdash; wslay 1.0.1-DEV documentation</title>
+    
+    <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/default2.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0.1-DEV',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="wslay 1.0.1-DEV documentation" href="../index.html" />
+    <link rel="up" title="API Reference" href="../api_reference.html" />
+    <link rel="next" title="wslay_event_set_error" href="wslay_event_set_error.html" />
+    <link rel="prev" title="wslay_event_recv" href="wslay_event_recv.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="wslay_event_set_error.html" title="wslay_event_set_error"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="wslay_event_recv.html" title="wslay_event_recv"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">wslay 1.0.1-DEV documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../api_reference.html" accesskey="U">API Reference</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="wslay-event-send">
+<h1>wslay_event_send<a class="headerlink" href="#wslay-event-send" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="synopsis">
+<h2>SYNOPSIS<a class="headerlink" href="#synopsis" title="Permalink to this headline">¶</a></h2>
+<p>#include &lt;wslay/wslay.h&gt;</p>
+<dl class="function">
+<dt id="c.wslay_event_send">
+int <code class="descname">wslay_event_send</code><span class="sig-paren">(</span>wslay_event_context_ptr<em>&nbsp;ctx</em><span class="sig-paren">)</span><a class="headerlink" href="#c.wslay_event_send" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="description">
+<h2>DESCRIPTION<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference internal" href="#c.wslay_event_send" title="wslay_event_send"><code class="xref c c-func docutils literal"><span class="pre">wslay_event_send()</span></code></a> sends queued messages to peer.
+When sending a message, it uses
+<a class="reference internal" href="wslay_event_context_server_init.html#c.wslay_event_send_callback" title="wslay_event_send_callback"><code class="xref c c-type docutils literal"><span class="pre">wslay_event_send_callback</span></code></a> function.
+Single call of <a class="reference internal" href="#c.wslay_event_send" title="wslay_event_send"><code class="xref c c-func docutils literal"><span class="pre">wslay_event_send()</span></code></a> sends multiple messages
+until <a class="reference internal" href="wslay_event_context_server_init.html#c.wslay_event_send_callback" title="wslay_event_send_callback"><code class="xref c c-type docutils literal"><span class="pre">wslay_event_send_callback</span></code></a> sets error code
+<code class="docutils literal"><span class="pre">WSLAY_ERR_WOULDBLOCK</span></code>.</p>
+<p>If <em>ctx</em> is initialized for WebSocket client use,
+<a class="reference internal" href="#c.wslay_event_send" title="wslay_event_send"><code class="xref c c-func docutils literal"><span class="pre">wslay_event_send()</span></code></a> uses <a class="reference internal" href="wslay_event_context_server_init.html#c.wslay_event_genmask_callback" title="wslay_event_genmask_callback"><code class="xref c c-type docutils literal"><span class="pre">wslay_event_genmask_callback</span></code></a>
+to get new mask key.</p>
+<p>When a message queued using <a class="reference internal" href="wslay_event_queue_fragmented_msg.html#c.wslay_event_queue_fragmented_msg" title="wslay_event_queue_fragmented_msg"><code class="xref c c-func docutils literal"><span class="pre">wslay_event_queue_fragmented_msg()</span></code></a> is sent,
+<a class="reference internal" href="#c.wslay_event_send" title="wslay_event_send"><code class="xref c c-func docutils literal"><span class="pre">wslay_event_send()</span></code></a> invokes
+<a class="reference internal" href="wslay_event_queue_fragmented_msg.html#c.wslay_event_fragmented_msg_callback" title="wslay_event_fragmented_msg_callback"><code class="xref c c-type docutils literal"><span class="pre">wslay_event_fragmented_msg_callback</span></code></a> for that message.</p>
+<p>After close control frame is sent, this function
+calls <code class="xref c c-func docutils literal"><span class="pre">wslay_event_set_write_enabled()</span></code> with second argument
+0 to disable further transmission to peer.</p>
+<p>If there are any pending messages, <a class="reference internal" href="wslay_event_want_write.html#c.wslay_event_want_write" title="wslay_event_want_write"><code class="xref c c-func docutils literal"><span class="pre">wslay_event_want_write()</span></code></a>
+returns 1, otherwise returns 0.</p>
+<p>In case of a fatal error which leads to negative return code,
+this function calls <code class="xref c c-func docutils literal"><span class="pre">wslay_event_set_write_enabled()</span></code> with second argument
+0 to disable further transmission to peer.</p>
+</div>
+<div class="section" id="return-value">
+<h2>RETURN VALUE<a class="headerlink" href="#return-value" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference internal" href="#c.wslay_event_send" title="wslay_event_send"><code class="xref c c-func docutils literal"><span class="pre">wslay_event_send()</span></code></a> returns 0 if it succeeds, or one of the following
+negative error codes:</p>
+<dl class="describe">
+<dt>
+<code class="descname">WSLAY_ERR_CALLBACK_FAILURE</code></dt>
+<dd><p>User defined callback function is failed.</p>
+</dd></dl>
+
+<dl class="describe">
+<dt>
+<code class="descname">WSLAY_ERR_NOMEM</code></dt>
+<dd><p>Out of memory.</p>
+</dd></dl>
+
+<p>When negative error code is returned, application must not make any further
+call of <a class="reference internal" href="#c.wslay_event_send" title="wslay_event_send"><code class="xref c c-func docutils literal"><span class="pre">wslay_event_send()</span></code></a> and must close WebSocket connection.</p>
+</div>
+<div class="section" id="see-also">
+<h2>SEE ALSO<a class="headerlink" href="#see-also" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference internal" href="wslay_event_queue_fragmented_msg.html#c.wslay_event_queue_fragmented_msg" title="wslay_event_queue_fragmented_msg"><code class="xref c c-func docutils literal"><span class="pre">wslay_event_queue_fragmented_msg()</span></code></a>,
+<code class="xref c c-func docutils literal"><span class="pre">wslay_event_set_write_enabled()</span></code>,
+<a class="reference internal" href="wslay_event_want_write.html#c.wslay_event_want_write" title="wslay_event_want_write"><code class="xref c c-func docutils literal"><span class="pre">wslay_event_want_write()</span></code></a></p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">wslay_event_send</a><ul>
+<li><a class="reference internal" href="#synopsis">SYNOPSIS</a></li>
+<li><a class="reference internal" href="#description">DESCRIPTION</a></li>
+<li><a class="reference internal" href="#return-value">RETURN VALUE</a></li>
+<li><a class="reference internal" href="#see-also">SEE ALSO</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="wslay_event_recv.html"
+                        title="previous chapter">wslay_event_recv</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="wslay_event_set_error.html"
+                        title="next chapter">wslay_event_set_error</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/man/wslay_event_send.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="wslay_event_set_error.html" title="wslay_event_set_error"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="wslay_event_recv.html" title="wslay_event_recv"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">wslay 1.0.1-DEV documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../api_reference.html" >API Reference</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2012, 2015, Tatsuhiro Tsujikawa.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.4.
+    </div>
+  </body>
+</html>
