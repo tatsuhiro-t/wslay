@@ -196,32 +196,6 @@ void test_wslay_frame_recv_interleaved_ctrl_frame()
   CU_ASSERT(memcmp("lo", iocb.data, iocb.data_length) == 0);
 }
 
-void test_wslay_frame_recv_interleaved_non_ctrl_frame()
-{
-  struct wslay_session session;
-  struct wslay_callbacks callbacks = { NULL, scripted_recv_callback, NULL };
-  struct scripted_data_feed df;
-  struct wslay_iocb iocb;
-  /* Unmasked message */
-  uint8_t msg[] = { 0x01, 0x03, 0x48, 0x65, 0x6c, /* "Hel" */
-                    0x82, 0x02, 0x6c, 0x6f }; /* binary frame, "lo" */
-  scripted_data_feed_init(&df, msg, sizeof(msg));
-  df.feedseq[0] = 5;
-  df.feedseq[1] = 4;
-  wslay_session_init(&session, &callbacks, &df);
-
-  CU_ASSERT(3 == wslay_frame_recv(&session, &iocb));
-  CU_ASSERT_EQUAL(0, iocb.fin);
-  CU_ASSERT_EQUAL(0, iocb.rsv);
-  CU_ASSERT_EQUAL(WSLAY_TEXT_FRAME, iocb.opcode);
-  CU_ASSERT_EQUAL(3, iocb.payload_length);
-  CU_ASSERT_EQUAL(0, iocb.mask);
-  CU_ASSERT_EQUAL(3, iocb.data_length);
-  CU_ASSERT(memcmp("Hel", iocb.data, iocb.data_length) == 0);
-
-  CU_ASSERT(WSLAY_ERR_PROTO == wslay_frame_recv(&session, &iocb));
-}
-
 void test_wslay_frame_recv_zero_payloadlen()
 {
   struct wslay_session session;

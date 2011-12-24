@@ -29,7 +29,6 @@ void test_wslay_frame_recv();
 void test_wslay_frame_recv_1byte();
 void test_wslay_frame_recv_fragmented();
 void test_wslay_frame_recv_interleaved_ctrl_frame();
-void test_wslay_frame_recv_interleaved_non_ctrl_frame();
 void test_wslay_frame_recv_zero_payloadlen();
 void test_wslay_frame_send();
 void test_wslay_frame_send_fragmented();

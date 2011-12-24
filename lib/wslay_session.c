@@ -26,31 +26,17 @@
 
 #include <string.h>
 
-static void wslay_opcode_memo_init(struct wslay_opcode_memo *om)
-{
-  om->opcode = WSLAY_BAD_FLAG;
-}
-
 int wslay_session_init(struct wslay_session *session,
                        const struct wslay_callbacks *callbacks,
                        void *user_data)
 {
   int i;
   memset(session, 0, sizeof(struct wslay_session));
-  for(i = 0; i < 2; ++i) {
-    wslay_opcode_memo_init(&session->iom[i]);
-  }
-  session->iomptr = &session->iom[0];
   session->istate = RECV_HEADER1;
   session->ireqread = 2;
-  for(i = 0; i < 2; ++i) {
-    wslay_opcode_memo_init(&session->oom[i]);
-  }
-  session->oomptr = &session->oom[0];
   session->ostate = PREP_HEADER;
   session->user_data = user_data;
   session->ibufmark = session->ibuflimit = session->ibuf;
-
   session->callbacks = *callbacks;
   return 0;
 }

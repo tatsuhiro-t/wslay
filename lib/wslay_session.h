@@ -27,8 +27,6 @@
 
 #include <wslay/wslay.h>
 
-#define WSLAY_BAD_FLAG 255u
-
 enum wslay_state {
   PREP_HEADER,
   SEND_HEADER,
@@ -50,8 +48,7 @@ struct wslay_session {
   uint8_t ibuf[4096];
   uint8_t *ibufmark;
   uint8_t *ibuflimit;
-  struct wslay_opcode_memo iom[2];
-  struct wslay_opcode_memo *iomptr;
+  struct wslay_opcode_memo iom;
   uint64_t ipayloadlen;
   uint64_t ipayloadoff;
   uint8_t imask;
@@ -62,8 +59,7 @@ struct wslay_session {
   uint8_t oheader[14];
   uint8_t *oheadermark;
   uint8_t *oheaderlimit;
-  struct wslay_opcode_memo oom[2];
-  struct wslay_opcode_memo *oomptr;
+  struct wslay_opcode_memo oom;
   uint64_t opayloadlen;
   uint64_t opayloadoff;
   uint8_t omask;

@@ -64,8 +64,6 @@ int main()
                    test_wslay_frame_recv_fragmented) ||
       !CU_add_test(pSuite, "wslay_frame_recv_interleaved_ctrl_frame",
                    test_wslay_frame_recv_interleaved_ctrl_frame) ||
-      !CU_add_test(pSuite, "wslay_frame_recv_interleaved_non_ctrl_frame",
-                   test_wslay_frame_recv_interleaved_non_ctrl_frame) ||
       !CU_add_test(pSuite, "wslay_frame_recv_zero_payloadlen",
                    test_wslay_frame_recv_zero_payloadlen) ||
       !CU_add_test(pSuite, "wslay_frame_send", test_wslay_frame_send) ||

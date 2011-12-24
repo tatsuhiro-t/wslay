@@ -54,23 +54,6 @@ ssize_t wslay_frame_send(struct wslay_session *session,
   }
   if(session->ostate == PREP_HEADER) {
     uint8_t *hdptr = session->oheader;
-    if(session->oomptr->opcode == WSLAY_BAD_FLAG) {
-      if(iocb->opcode == WSLAY_CONTINUATION_FRAME) {
-        return WSLAY_ERR_INVALID_ARGUMENT;
-      }
-    } else if(iocb->opcode == WSLAY_CONTINUATION_FRAME) {
-      /* continuation frame is OK */
-      /* The original opcode will be overwritten later. Is this OK? */
-    } else if(iocb->opcode & (1 << 3)) {
-      /* control frame can be interleaved. */
-      if(iocb->fin == 0) {
-        return WSLAY_ERR_INVALID_ARGUMENT;
-      }
-      assert(session->oomptr == &session->oom[0]);
-      session->oomptr = &session->oom[1];
-    } else {
-      return WSLAY_ERR_INVALID_ARGUMENT;
-    }
     memset(session->oheader, 0, sizeof(session->oheader));
     *hdptr |= (iocb->fin & 1u) << 7;
     *hdptr |= (iocb->rsv & 7u) << 4;
@@ -106,9 +89,9 @@ ssize_t wslay_frame_send(struct wslay_session *session,
         hdptr += 4;
       }
     }
-    session->oomptr->fin = iocb->fin;
-    session->oomptr->opcode = iocb->opcode;
-    session->oomptr->rsv = iocb->rsv;
+    session->oom.fin = iocb->fin;
+    session->oom.opcode = iocb->opcode;
+    session->oom.rsv = iocb->rsv;
 
     session->ostate = SEND_HEADER;
     session->oheadermark = session->oheader;
@@ -186,12 +169,6 @@ ssize_t wslay_frame_send(struct wslay_session *session,
     }
     if(session->opayloadoff == session->opayloadlen) {
       session->ostate = PREP_HEADER;
-      if(session->oomptr->fin) {
-        session->oomptr->opcode = WSLAY_BAD_FLAG;
-        if(session->oomptr == &session->oom[1]) {
-          session->oomptr = &session->oom[0];
-        }
-      }
     }
     return totallen;
   }
@@ -243,28 +220,9 @@ ssize_t wslay_frame_recv(struct wslay_session *session,
     fin = (session->ibufmark[0] & (1 << 7)) > 0;
     rsv = (session->ibufmark[0] >> 4) & 0x7u;
     opcode = session->ibufmark[0] & 0xfu;
-    if(session->iomptr->opcode == WSLAY_BAD_FLAG) {
-      if(opcode == WSLAY_CONTINUATION_FRAME) {
-        return WSLAY_ERR_PROTO;
-      } else {
-        session->iomptr->opcode = opcode;
-      }
-    } else if(opcode == WSLAY_CONTINUATION_FRAME) {
-      /* The original opcode is overwritten. Is this OK? */
-      session->iomptr->opcode = opcode;
-    } else if(opcode & (1 << 3)) {
-      /* control frame can be interleaved. */
-      if(fin == 0) {
-        return WSLAY_ERR_PROTO;
-      }
-      assert(session->iomptr == &session->iom[0]);
-      session->iomptr = &session->iom[1];
-      session->iomptr->opcode = opcode;
-    } else {
-      return WSLAY_ERR_PROTO;
-    }
-    session->iomptr->fin = fin;
-    session->iomptr->rsv = rsv;
+    session->iom.opcode = opcode;
+    session->iom.fin = fin;
+    session->iom.rsv = rsv;
     ++session->ibufmark;
     session->imask = (session->ibufmark[0] & (1 << 7)) > 0;
     payloadlen = session->ibufmark[0] & 0x7fu;
@@ -344,9 +302,9 @@ ssize_t wslay_frame_recv(struct wslay_session *session,
       session->ibufmark = readlimit;
       session->ipayloadoff += readlimit-readmark;
     }
-    iocb->fin = session->iomptr->fin;
-    iocb->rsv = session->iomptr->rsv;
-    iocb->opcode = session->iomptr->opcode;
+    iocb->fin = session->iom.fin;
+    iocb->rsv = session->iom.rsv;
+    iocb->opcode = session->iom.opcode;
     iocb->payload_length = session->ipayloadlen;
     iocb->mask = session->imask;
     iocb->data = readmark;
@@ -354,12 +312,6 @@ ssize_t wslay_frame_recv(struct wslay_session *session,
     if(session->ipayloadlen == session->ipayloadoff) {
       session->istate = RECV_HEADER1;
       session->ireqread = 2;
-      if(session->iomptr->fin) {
-        session->iomptr->opcode = WSLAY_BAD_FLAG;
-        if(session->iomptr == &session->iom[1]) {
-          session->iomptr = &session->iom[0];
-        }
-      }
     }
     return iocb->data_length;
   }
