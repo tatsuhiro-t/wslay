@@ -49,19 +49,33 @@ static void scripted_data_feed_init(struct scripted_data_feed *df,
 }
 
 static ssize_t scripted_recv_callback(uint8_t* data, size_t len,
-                                      void* user_data)
+                                      void *user_data)
 {
-  struct scripted_data_feed* df = (struct scripted_data_feed*)user_data;
-  if(df->feedseq[df->seqidx] <= len) {
-    memcpy(data, df->datamark, df->feedseq[df->seqidx]);
-    df->datamark += df->feedseq[df->seqidx];
-    return df->feedseq[df->seqidx++];
+  struct scripted_data_feed *df = (struct scripted_data_feed*)user_data;
+  size_t wlen = df->feedseq[df->seqidx] > len ? len : df->feedseq[df->seqidx];
+  memcpy(data, df->datamark, wlen);
+  df->datamark += wlen;
+  if(wlen <= len) {
+    ++df->seqidx;
   } else {
-    memcpy(data, df->data, len);
-    df->datamark += len;
-    df->feedseq[df->seqidx] -= len;
-    return len;
+    df->feedseq[df->seqidx] -= wlen;
   }
+  return wlen;
+}
+
+static ssize_t scripted_send_callback(uint8_t* data, size_t len,
+                                      void *user_data)
+{
+  struct scripted_data_feed *df = (struct scripted_data_feed*)user_data;
+  size_t wlen = df->feedseq[df->seqidx] > len ? len : df->feedseq[df->seqidx];
+  memcpy(df->datamark, data, wlen);
+  df->datamark += wlen;
+  if(wlen <= len) {
+    ++df->seqidx;
+  } else {
+    df->feedseq[df->seqidx] -= wlen;
+  }
+  return wlen;
 }
 
 void test_wslay_frame_recv()
@@ -347,6 +361,38 @@ void test_wslay_frame_send_interleaved_ctrl_frame()
   CU_ASSERT(2 == wslay_frame_send(&session, &iocb));
   CU_ASSERT_EQUAL(sizeof(msg3), acc.length);
   CU_ASSERT(memcmp(msg3, acc.buf, sizeof(msg3)) == 0);
+}
+
+void test_wslay_frame_send_1byte_masked()
+{
+  struct wslay_session session;
+  struct wslay_callbacks callbacks = { scripted_send_callback,
+                                       NULL,
+                                       static_gen_mask_callback };
+  struct accumulator acc;
+  struct wslay_iocb iocb;
+  /* Masked text frame containing "Hello" */
+  uint8_t msg[] = { 0x81u, 0x85u, 0x37u, 0xfau, 0x21u, 0x3du, 0x7fu, 0x9fu,
+                    0x4du, 0x51u, 0x58u };
+  uint8_t hello[] = "Hello";
+  struct scripted_data_feed df;
+  int i;
+  scripted_data_feed_init(&df, NULL, 0);
+  for(i = 0; i < sizeof(msg); ++i) {
+    df.feedseq[i] = 1;
+  }
+  wslay_session_init(&session, &callbacks, &df);
+  memset(&iocb, 0, sizeof(iocb));
+  iocb.fin = 1;
+  iocb.opcode = WSLAY_TEXT_FRAME;
+  iocb.mask = 1;
+  iocb.payload_length = 5;
+  iocb.data = hello;
+  iocb.data_length = sizeof(hello)-1;
+  for(i = 0; i < 5; ++i) {
+    CU_ASSERT_EQUAL(WSLAY_ERR_WANT_WRITE, wslay_frame_send(&session, &iocb));
+  }
+  CU_ASSERT_EQUAL(5, wslay_frame_send(&session, &iocb));
 }
 
 void test_wslay_frame_send_zero_payloadlen()

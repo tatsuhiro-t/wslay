@@ -111,6 +111,8 @@ ssize_t wslay_frame_send(struct wslay_session *session,
         session->oheadermark += r;
         if(session->oheadermark == session->oheaderlimit) {
           session->ostate = SEND_PAYLOAD;
+        } else {
+          return WSLAY_ERR_WANT_WRITE;
         }
       }
     } else {

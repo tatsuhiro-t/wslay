@@ -33,5 +33,6 @@ void test_wslay_frame_recv_zero_payloadlen();
 void test_wslay_frame_send();
 void test_wslay_frame_send_fragmented();
 void test_wslay_frame_send_interleaved_ctrl_frame();
+void test_wslay_frame_send_1byte_masked();
 void test_wslay_frame_send_zero_payloadlen();
 #endif // WSLAY_FRAME_TEST_H

@@ -71,6 +71,8 @@ int main()
                    test_wslay_frame_send_fragmented) ||
       !CU_add_test(pSuite, "wslay_frame_send_interleaved_ctrl_frame",
                    test_wslay_frame_send_interleaved_ctrl_frame) ||
+      !CU_add_test(pSuite, "wslay_frame_send_1byte_masked",
+                   test_wslay_frame_send_1byte_masked) ||
       !CU_add_test(pSuite, "wslay_frame_send_zero_payloadlen",
                    test_wslay_frame_send_zero_payloadlen)) {
      CU_cleanup_registry();
