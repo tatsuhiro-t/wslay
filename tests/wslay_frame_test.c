@@ -222,8 +222,8 @@ struct accumulator {
   size_t length;
 };
 
-ssize_t accumulator_send_callback(const uint8_t *buf, size_t len,
-                                  void* user_data)
+static ssize_t accumulator_send_callback(const uint8_t *buf, size_t len,
+                                         void* user_data)
 {
   struct accumulator *acc = (struct accumulator*)user_data;
   assert(acc->length+len < sizeof(acc->buf));
@@ -232,7 +232,8 @@ ssize_t accumulator_send_callback(const uint8_t *buf, size_t len,
   return len;
 }
 
-ssize_t static_gen_mask_callback(uint8_t *buf, size_t len, void* user_data)
+static ssize_t static_gen_mask_callback(uint8_t *buf, size_t len,
+                                        void* user_data)
 {
   const static uint8_t makskey[] = { 0x37u, 0xfau, 0x21u, 0x3du };
   memcpy(buf, makskey, 4);
