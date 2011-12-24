@@ -20,6 +20,14 @@
 # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-SUBDIRS = lib tests
+prefix=/usr/local
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
 
-ACLOCAL_AMFLAGS = -I m4
+Name: Wslay
+Description: Low-level WebSocket data frame library
+URL: http://wslay.sourceforge.net/
+Version: 0.0.1
+Libs: -L${libdir} -lwslay
+Cflags: -I${includedir}

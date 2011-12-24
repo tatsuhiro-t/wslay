@@ -22,62 +22,9 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-#ifndef WSLAY_SESSION_H
-#define WSLAY_SESSION_H
+#ifndef WSLAY_ERROR_H
+#define WSLAY_ERROR_H
 
 #include <wslay/wslay.h>
 
-#define WSLAY_BAD_FLAG 255u
-
-struct wslay_callbacks {
-  wslay_send_callback send_callback;
-  wslay_recv_callback recv_callback;
-  wslay_gen_mask_callback gen_mask_callback;
-};
-
-enum wslay_state {
-  PREP_HEADER,
-  SEND_HEADER,
-  SEND_PAYLOAD,
-  RECV_HEADER1,
-  RECV_PAYLOADLEN,
-  RECV_EXT_PAYLOADLEN,
-  RECV_MASKKEY,
-  RECV_PAYLOAD
-};
-
-struct wslay_opcode_memo {
-  uint8_t fin;
-  uint8_t opcode;
-  uint8_t rsv;
-};
-
-struct wslay_session {
-  uint8_t ibuf[4096];
-  uint8_t *ibufmark;
-  uint8_t *ibuflimit;
-  struct wslay_opcode_memo iom[2];
-  struct wslay_opcode_memo *iomptr;
-  uint64_t ipayloadlen;
-  uint64_t ipayloadoff;
-  uint8_t imask;
-  uint8_t imaskkey[4];
-  enum wslay_state istate;
-  size_t ireqread;
-
-  uint8_t oheader[14];
-  uint8_t *oheadermark;
-  uint8_t *oheaderlimit;
-  struct wslay_opcode_memo oom[2];
-  struct wslay_opcode_memo *oomptr;
-  uint64_t opayloadlen;
-  uint64_t opayloadoff;
-  uint8_t omask;
-  uint8_t omaskkey[4];
-  enum wslay_state ostate;
-
-  struct wslay_callbacks callbacks;
-  void *user_data;
-};
-
-#endif // WSLAY_SESSION_H
+#endif // WSLAY_ERROR_H

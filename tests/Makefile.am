@@ -20,3 +20,16 @@
 # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+check_PROGRAMS = main
+
+OBJECTS = main.c wslay_session_test.c wslay_frame_test.c
+
+HFILES = wslay_session_test.h wslay_frame_test.h
+
+main_SOURCES = $(HFILES) $(OBJECTS)
+
+main_LDADD = ${top_builddir}/lib/libwslay.la -lcunit
+main_LDFLAGS = -static
+AM_CFLAGS = -Wall -g -O2 -I${top_srcdir}/lib -I${top_srcdir}/lib/includes
+# DEFS += -D_ISOC99_SOURCE -D_GNU_SOURCE
+TESTS = main

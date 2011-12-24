@@ -22,6 +22,7 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 SUBDIRS = includes
 
+AM_CFLAGS = -Wall -g -O2
 AM_CPPFLAGS = -I$(srcdir)/includes -I$(builddir)/includes
 
 pkgconfigdir = $(libdir)/pkgconfig
