@@ -31,6 +31,7 @@
 void test_wslay_session_init()
 {
   struct wslay_session session;
+  struct wslay_callbacks callbacks;
   int user_data;
-  CU_ASSERT_FALSE(wslay_session_init(&session, &user_data));
+  CU_ASSERT_FALSE(wslay_session_init(&session, &callbacks, &user_data));
 }

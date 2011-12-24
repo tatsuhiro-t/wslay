@@ -67,14 +67,14 @@ static ssize_t scripted_recv_callback(uint8_t* data, size_t len,
 void test_wslay_frame_recv()
 {
   struct wslay_session session;
+  struct wslay_callbacks callbacks = { NULL, scripted_recv_callback, NULL };
   struct scripted_data_feed df;
   struct wslay_iocb iocb;
   /* Masked text frame containing "Hello" */
   uint8_t msg[] = { 0x81u, 0x85u, 0x37u, 0xfau, 0x21u, 0x3du, 0x7fu, 0x9fu,
                     0x4du, 0x51u, 0x58u };
   scripted_data_feed_init(&df, msg, sizeof(msg));
-  wslay_session_init(&session, &df);
-  wslay_session_set_recv_callback(&session, scripted_recv_callback);
+  wslay_session_init(&session, &callbacks, &df);
 
   CU_ASSERT(5 == wslay_frame_recv(&session, &iocb));
   CU_ASSERT_EQUAL(1, iocb.fin);
@@ -89,6 +89,7 @@ void test_wslay_frame_recv()
 void test_wslay_frame_recv_1byte()
 {
   struct wslay_session session;
+  struct wslay_callbacks callbacks = { NULL, scripted_recv_callback, NULL };
   struct scripted_data_feed df;
   struct wslay_iocb iocb;
   int i;
@@ -99,8 +100,7 @@ void test_wslay_frame_recv_1byte()
   for(i = 0; i < sizeof(msg); ++i) {
     df.feedseq[i] = 1;
   }
-  wslay_session_init(&session, &df);
-  wslay_session_set_recv_callback(&session, scripted_recv_callback);
+  wslay_session_init(&session, &callbacks, &df);
 
   for(i = 0; i < 4; ++i) {
     CU_ASSERT(WSLAY_ERR_WANT_READ == wslay_frame_recv(&session, &iocb));
@@ -121,6 +121,7 @@ void test_wslay_frame_recv_1byte()
 void test_wslay_frame_recv_fragmented()
 {
   struct wslay_session session;
+  struct wslay_callbacks callbacks = { NULL, scripted_recv_callback, NULL };
   struct scripted_data_feed df;
   struct wslay_iocb iocb;
   /* Unmasked message */
@@ -129,8 +130,7 @@ void test_wslay_frame_recv_fragmented()
   scripted_data_feed_init(&df, msg, sizeof(msg));
   df.feedseq[0] = 5;
   df.feedseq[1] = 4;
-  wslay_session_init(&session, &df);
-  wslay_session_set_recv_callback(&session, scripted_recv_callback);
+  wslay_session_init(&session, &callbacks, &df);
 
   CU_ASSERT(3 == wslay_frame_recv(&session, &iocb));
   CU_ASSERT_EQUAL(0, iocb.fin);
@@ -154,6 +154,7 @@ void test_wslay_frame_recv_fragmented()
 void test_wslay_frame_recv_interleaved_ctrl_frame()
 {
   struct wslay_session session;
+  struct wslay_callbacks callbacks = { NULL, scripted_recv_callback, NULL };
   struct scripted_data_feed df;
   struct wslay_iocb iocb;
   /* Unmasked message */
@@ -165,8 +166,7 @@ void test_wslay_frame_recv_interleaved_ctrl_frame()
   df.feedseq[0] = 5;
   df.feedseq[1] = 7,
   df.feedseq[2] = 4;
-  wslay_session_init(&session, &df);
-  wslay_session_set_recv_callback(&session, scripted_recv_callback);
+  wslay_session_init(&session, &callbacks, &df);
 
   CU_ASSERT(3 == wslay_frame_recv(&session, &iocb));
   CU_ASSERT_EQUAL(0, iocb.fin);
@@ -199,6 +199,7 @@ void test_wslay_frame_recv_interleaved_ctrl_frame()
 void test_wslay_frame_recv_interleaved_non_ctrl_frame()
 {
   struct wslay_session session;
+  struct wslay_callbacks callbacks = { NULL, scripted_recv_callback, NULL };
   struct scripted_data_feed df;
   struct wslay_iocb iocb;
   /* Unmasked message */
@@ -206,9 +207,8 @@ void test_wslay_frame_recv_interleaved_non_ctrl_frame()
                     0x82, 0x02, 0x6c, 0x6f }; /* binary frame, "lo" */
   scripted_data_feed_init(&df, msg, sizeof(msg));
   df.feedseq[0] = 5;
-  df.feedseq[1] = 4,
-  wslay_session_init(&session, &df);
-  wslay_session_set_recv_callback(&session, scripted_recv_callback);
+  df.feedseq[1] = 4;
+  wslay_session_init(&session, &callbacks, &df);
 
   CU_ASSERT(3 == wslay_frame_recv(&session, &iocb));
   CU_ASSERT_EQUAL(0, iocb.fin);
@@ -225,14 +225,14 @@ void test_wslay_frame_recv_interleaved_non_ctrl_frame()
 void test_wslay_frame_recv_zero_payloadlen()
 {
   struct wslay_session session;
+  struct wslay_callbacks callbacks = { NULL, scripted_recv_callback, NULL };
   struct scripted_data_feed df;
   struct wslay_iocb iocb;
   /* Unmasked message */
   uint8_t msg[] = { 0x81, 0x00 }; /* "" */
   scripted_data_feed_init(&df, msg, sizeof(msg));
   df.feedseq[0] = 2;
-  wslay_session_init(&session, &df);
-  wslay_session_set_recv_callback(&session, scripted_recv_callback);
+  wslay_session_init(&session, &callbacks, &df);
 
   CU_ASSERT(0 == wslay_frame_recv(&session, &iocb));
   CU_ASSERT_EQUAL(1, iocb.fin);
@@ -268,14 +268,15 @@ ssize_t static_gen_mask_callback(uint8_t *buf, size_t len, void* user_data)
 void test_wslay_frame_send()
 {
   struct wslay_session session;
+  struct wslay_callbacks callbacks = { accumulator_send_callback,
+                                       NULL,
+                                       static_gen_mask_callback };
   struct accumulator acc;
   struct wslay_iocb iocb;
   /* Masked text frame containing "Hello" */
   uint8_t msg[] = { 0x81u, 0x85u, 0x37u, 0xfau, 0x21u, 0x3du, 0x7fu, 0x9fu,
                     0x4du, 0x51u, 0x58u };
-  wslay_session_init(&session, &acc);
-  wslay_session_set_send_callback(&session, accumulator_send_callback);
-  wslay_session_set_gen_mask_callback(&session, static_gen_mask_callback);
+  wslay_session_init(&session, &callbacks, &acc);
   memset(&iocb, 0, sizeof(iocb));
   acc.length = 0;
   iocb.fin = 1;
@@ -292,13 +293,15 @@ void test_wslay_frame_send()
 void test_wslay_frame_send_fragmented()
 {
   struct wslay_session session;
+  struct wslay_callbacks callbacks = { accumulator_send_callback,
+                                       NULL,
+                                       static_gen_mask_callback };
   struct accumulator acc;
   struct wslay_iocb iocb;
   /* Unmasked message */
   uint8_t msg1[] = { 0x01, 0x03, 0x48, 0x65, 0x6c }; /* "Hel" */
   uint8_t msg2[] = { 0x80, 0x02, 0x6c, 0x6f }; /* "lo" */
-  wslay_session_init(&session, &acc);
-  wslay_session_set_send_callback(&session, accumulator_send_callback);
+  wslay_session_init(&session, &callbacks, &acc);
   memset(&iocb, 0, sizeof(iocb));
   acc.length = 0;
   iocb.fin = 0;
@@ -325,6 +328,9 @@ void test_wslay_frame_send_fragmented()
 void test_wslay_frame_send_interleaved_ctrl_frame()
 {
   struct wslay_session session;
+  struct wslay_callbacks callbacks = { accumulator_send_callback,
+                                       NULL,
+                                       static_gen_mask_callback };
   struct accumulator acc;
   struct wslay_iocb iocb;
   /* Unmasked message */
@@ -334,8 +340,7 @@ void test_wslay_frame_send_interleaved_ctrl_frame()
   uint8_t msg2[] = { 0x89, 0x05, 0x48, 0x65, 0x6c, 0x6c, 0x6f };
   /* text with "lo", continuation frame for msg1, with fin = 1 */
   uint8_t msg3[] = { 0x80, 0x02, 0x6c, 0x6f };
-  wslay_session_init(&session, &acc);
-  wslay_session_set_send_callback(&session, accumulator_send_callback);
+  wslay_session_init(&session, &callbacks, &acc);
   memset(&iocb, 0, sizeof(iocb));
   acc.length = 0;
   iocb.fin = 0;
@@ -372,13 +377,15 @@ void test_wslay_frame_send_interleaved_ctrl_frame()
 void test_wslay_frame_send_zero_payloadlen()
 {
   struct wslay_session session;
+  struct wslay_callbacks callbacks = { accumulator_send_callback,
+                                       NULL,
+                                       static_gen_mask_callback };
   struct accumulator acc;
   struct wslay_iocb iocb;
   /* Unmasked message */
   uint8_t msg[] = { 0x81, 0x00 }; /* "" */
   acc.length = 0;
-  wslay_session_init(&session, &acc);
-  wslay_session_set_send_callback(&session, accumulator_send_callback);
+  wslay_session_init(&session, &callbacks, &acc);
   memset(&iocb, 0, sizeof(iocb));
   iocb.fin = 1;
   iocb.opcode = WSLAY_TEXT_FRAME;

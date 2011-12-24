@@ -31,7 +31,9 @@ static void wslay_opcode_memo_init(struct wslay_opcode_memo *om)
   om->opcode = WSLAY_BAD_FLAG;
 }
 
-int wslay_session_init(struct wslay_session *session, void *user_data)
+int wslay_session_init(struct wslay_session *session,
+                       const struct wslay_callbacks *callbacks,
+                       void *user_data)
 {
   int i;
   memset(session, 0, sizeof(struct wslay_session));
@@ -48,23 +50,7 @@ int wslay_session_init(struct wslay_session *session, void *user_data)
   session->ostate = PREP_HEADER;
   session->user_data = user_data;
   session->ibufmark = session->ibuflimit = session->ibuf;
+
+  session->callbacks = *callbacks;
   return 0;
-}
-
-void wslay_session_set_send_callback(struct wslay_session *session,
-                                     wslay_send_callback send_callback)
-{
-  session->callbacks.send_callback = send_callback;
-}
-
-void wslay_session_set_recv_callback(struct wslay_session *session,
-                                     wslay_recv_callback recv_callback)
-{
-  session->callbacks.recv_callback = recv_callback;
-}
-
-void wslay_session_set_gen_mask_callback
-(struct wslay_session *session, wslay_gen_mask_callback gen_mask_callback)
-{
-  session->callbacks.gen_mask_callback = gen_mask_callback;
 }

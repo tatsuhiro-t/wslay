@@ -45,6 +45,19 @@ enum wslay_error {
   WSLAY_ERR_INVALID_CALLBACK = -301
 };
 
+typedef ssize_t (*wslay_send_callback)(const uint8_t *buf, size_t len,
+                                       void *user_data);
+typedef ssize_t (*wslay_recv_callback)(uint8_t *buf, size_t len,
+                                       void *user_data);
+typedef ssize_t (*wslay_gen_mask_callback)(uint8_t *buf, size_t len,
+                                           void *user_data);
+
+struct wslay_callbacks {
+  wslay_send_callback send_callback;
+  wslay_recv_callback recv_callback;
+  wslay_gen_mask_callback gen_mask_callback;
+};
+
 struct wslay_iocb {
   uint8_t fin; /* 1 */
   uint8_t rsv; /* 3 */
@@ -55,23 +68,9 @@ struct wslay_iocb {
   size_t data_length;
 };
 
-typedef ssize_t (*wslay_send_callback)(const uint8_t *buf, size_t len,
-                                       void *user_data);
-typedef ssize_t (*wslay_recv_callback)(uint8_t *buf, size_t len,
-                                       void *user_data);
-typedef ssize_t (*wslay_gen_mask_callback)(uint8_t *buf, size_t len,
-                                           void *user_data);
-
-int wslay_session_init(struct wslay_session *session, void *user_data);
-
-void wslay_session_set_send_callback(struct wslay_session *session,
-                                     wslay_send_callback send_callback);
-
-void wslay_session_set_recv_callback(struct wslay_session *session,
-                                     wslay_recv_callback recv_callback);
-
-void wslay_session_set_gen_mask_callback
-(struct wslay_session *session, wslay_gen_mask_callback gen_mask_callback);
+int wslay_session_init(struct wslay_session *session,
+                       const struct wslay_callbacks *callbacks,
+                       void *user_data);
 
 ssize_t wslay_frame_send(struct wslay_session *session,
                          struct wslay_iocb *iocb);

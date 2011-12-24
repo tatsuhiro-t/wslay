@@ -29,12 +29,6 @@
 
 #define WSLAY_BAD_FLAG 255u
 
-struct wslay_callbacks {
-  wslay_send_callback send_callback;
-  wslay_recv_callback recv_callback;
-  wslay_gen_mask_callback gen_mask_callback;
-};
-
 enum wslay_state {
   PREP_HEADER,
   SEND_HEADER,
