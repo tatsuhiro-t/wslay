@@ -1,0 +1,20 @@
+Wslay - Low-level WebSocket framing library
+===========================================
+
+Wslay is a WebSocket framing library. The protocol is based on
+RFC6455. This library only does data framing: send frame and receive
+frame.  It does several protocol violation checks, such as fragmented
+control frame. If you are looking for near complete WebSocket library,
+this is not for you. This libaray serves you well if you intend to
+create complete WebSocket libarary and use this libaray as a data
+framing layer. Actually Wslay is created for this purpose.
+
+Wslay does not:
+
+ * Checks UTF8 sequence.
+ * Checks interleaved text/binary frames.
+ * Checks proper use of fin bit.
+ * Replay ping automatically.
+
+Wslay provides callbacks for actual data read/write, so that the user
+code can use this library for any kind of data source and output sink.
