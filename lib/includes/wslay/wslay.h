@@ -34,6 +34,16 @@ extern "C" {
 
 typedef ssize_t (*wslay_send_callback)(const uint8_t *buf, size_t len,
                                        void *user_data);
+/*
+ * Callback function used by wslay_frame_recv function when it needs
+ * more data. The implementation of this function must fill at most
+ * len bytes of data into buf. The memory area of buf is allocated by
+ * library and not be freed by the application code.  user_data is one
+ * given in wslay_session_init function. The implementation of this
+ * function must returns the number of bytes filled into buf.  If
+ * there is an error, return -1. The return value 0 is also treated an
+ * error by the library.
+ */
 typedef ssize_t (*wslay_recv_callback)(uint8_t *buf, size_t len,
                                        void *user_data);
 typedef ssize_t (*wslay_gen_mask_callback)(uint8_t *buf, size_t len,
@@ -43,49 +53,6 @@ struct wslay_callbacks {
   wslay_send_callback send_callback;
   wslay_recv_callback recv_callback;
   wslay_gen_mask_callback gen_mask_callback;
-};
-
-enum wslay_state {
-  PREP_HEADER,
-  SEND_HEADER,
-  SEND_PAYLOAD,
-  RECV_HEADER1,
-  RECV_PAYLOADLEN,
-  RECV_EXT_PAYLOADLEN,
-  RECV_MASKKEY,
-  RECV_PAYLOAD
-};
-
-struct wslay_opcode_memo {
-  uint8_t fin;
-  uint8_t opcode;
-  uint8_t rsv;
-};
-
-struct wslay_session {
-  uint8_t ibuf[4096];
-  uint8_t *ibufmark;
-  uint8_t *ibuflimit;
-  struct wslay_opcode_memo iom;
-  uint64_t ipayloadlen;
-  uint64_t ipayloadoff;
-  uint8_t imask;
-  uint8_t imaskkey[4];
-  enum wslay_state istate;
-  size_t ireqread;
-
-  uint8_t oheader[14];
-  uint8_t *oheadermark;
-  uint8_t *oheaderlimit;
-  struct wslay_opcode_memo oom;
-  uint64_t opayloadlen;
-  uint64_t opayloadoff;
-  uint8_t omask;
-  uint8_t omaskkey[4];
-  enum wslay_state ostate;
-
-  struct wslay_callbacks callbacks;
-  void *user_data;
 };
 
 #define WSLAY_CONTINUATION_FRAME 0x0u
@@ -104,22 +71,28 @@ enum wslay_error {
 };
 
 struct wslay_iocb {
-  uint8_t fin; /* 1 */
-  uint8_t rsv; /* 3 */
-  uint8_t opcode; /* 4 */
-  uint64_t payload_length; /* 7/16/64 */
-  uint8_t mask; /* 1 */
-  const uint8_t *data;
-  size_t data_length;
+  uint8_t fin; /* 1 for fragmented final frame, 0 for otherwise */
+  uint8_t rsv; /* reserved 3 bits. RFC6455 requires 0 unless extensions are
+                  negotiated */
+  uint8_t opcode; /* 4 bit opcode */
+  uint64_t payload_length; /* payload length 0-2**63-1 */
+  uint8_t mask; /* 1 for masked frame, 0 for unmasked */
+  const uint8_t *data; /* part of payload data */
+  size_t data_length; /* bytes of data defined above */
 };
 
-int wslay_session_init(struct wslay_session *session,
+struct wslay_session;
+typedef struct wslay_session *wslay_session_ptr;
+
+int wslay_session_init(wslay_session_ptr *session,
                        const struct wslay_callbacks *callbacks,
                        void *user_data);
 
-ssize_t wslay_frame_send(struct wslay_session *session,
+void wslay_session_free(wslay_session_ptr session);
+
+ssize_t wslay_frame_send(wslay_session_ptr session,
                          struct wslay_iocb *iocb);
-ssize_t wslay_frame_recv(struct wslay_session *session,
+ssize_t wslay_frame_recv(wslay_session_ptr session,
                          struct wslay_iocb *iocb);
 
 #ifdef __cplusplus

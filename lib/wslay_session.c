@@ -26,17 +26,25 @@
 
 #include <string.h>
 
-int wslay_session_init(struct wslay_session *session,
+int wslay_session_init(wslay_session_ptr *session,
                        const struct wslay_callbacks *callbacks,
                        void *user_data)
 {
-  int i;
-  memset(session, 0, sizeof(struct wslay_session));
-  session->istate = RECV_HEADER1;
-  session->ireqread = 2;
-  session->ostate = PREP_HEADER;
-  session->user_data = user_data;
-  session->ibufmark = session->ibuflimit = session->ibuf;
-  session->callbacks = *callbacks;
+  *session = (wslay_session_ptr)malloc(sizeof(struct wslay_session));
+  if(session == NULL) {
+    return -1;
+  }
+  memset(*session, 0, sizeof(struct wslay_session));
+  (*session)->istate = RECV_HEADER1;
+  (*session)->ireqread = 2;
+  (*session)->ostate = PREP_HEADER;
+  (*session)->user_data = user_data;
+  (*session)->ibufmark = (*session)->ibuflimit = (*session)->ibuf;
+  (*session)->callbacks = *callbacks;
   return 0;
+}
+
+void wslay_session_free(wslay_session_ptr session)
+{
+  free(session);
 }

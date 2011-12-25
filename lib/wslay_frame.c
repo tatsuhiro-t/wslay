@@ -46,7 +46,7 @@ uint64_t hton64(uint64_t x) { return byteswap64(x); }
 
 #define wslay_min(A, B) (((A) < (B)) ? (A) : (B))
 
-ssize_t wslay_frame_send(struct wslay_session *session,
+ssize_t wslay_frame_send(wslay_session_ptr session,
                          struct wslay_iocb *iocb)
 {
   if(iocb->data_length > iocb->payload_length) {
@@ -180,7 +180,7 @@ ssize_t wslay_frame_send(struct wslay_session *session,
   return WSLAY_ERR_INVALID_ARGUMENT;
 }
 
-static void wslay_shift_ibuf(struct wslay_session *session)
+static void wslay_shift_ibuf(wslay_session_ptr session)
 {
   ptrdiff_t len = session->ibuflimit-session->ibufmark;
   memmove(session->ibuf, session->ibufmark, len);
@@ -188,7 +188,7 @@ static void wslay_shift_ibuf(struct wslay_session *session)
   session->ibufmark = session->ibuf;
 }
 
-static ssize_t wslay_recv(struct wslay_session *session)
+static ssize_t wslay_recv(wslay_session_ptr session)
 {
   ssize_t r;
   if(session->ibufmark != session->ibuf) {
@@ -208,7 +208,7 @@ static ssize_t wslay_recv(struct wslay_session *session)
 
 #define WSLAY_AVAIL_IBUF(session) (session->ibuflimit-session->ibufmark)
 
-ssize_t wslay_frame_recv(struct wslay_session *session,
+ssize_t wslay_frame_recv(wslay_session_ptr session,
                          struct wslay_iocb *iocb)
 {
   ssize_t r;
