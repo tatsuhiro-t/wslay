@@ -59,7 +59,6 @@ struct wslay_session {
   uint8_t oheader[14];
   uint8_t *oheadermark;
   uint8_t *oheaderlimit;
-  struct wslay_opcode_memo oom;
   uint64_t opayloadlen;
   uint64_t opayloadoff;
   uint8_t omask;

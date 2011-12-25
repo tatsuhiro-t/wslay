@@ -92,10 +92,6 @@ ssize_t wslay_frame_send(wslay_session_ptr session,
         hdptr += 4;
       }
     }
-    session->oom.fin = iocb->fin;
-    session->oom.opcode = iocb->opcode;
-    session->oom.rsv = iocb->rsv;
-
     session->ostate = SEND_HEADER;
     session->oheadermark = session->oheader;
     session->oheaderlimit = hdptr;
