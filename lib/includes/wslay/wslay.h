@@ -32,6 +32,14 @@ extern "C" {
 #include <stdint.h>
 #include <stdlib.h>
 
+/*
+ * Callback function used by wslay_frame_send function when it needs
+ * to send data. The implementation of this function must send at most
+ * len bytes of data in buf. user_data is one given in
+ * wslay_session_init function. The implementation of this functino
+ * must return the number of bytes sent. If there is an error, return
+ * -1. The return value 0 is also treated an error by the library.
+ */
 typedef ssize_t (*wslay_send_callback)(const uint8_t *buf, size_t len,
                                        void *user_data);
 /*
@@ -40,12 +48,20 @@ typedef ssize_t (*wslay_send_callback)(const uint8_t *buf, size_t len,
  * len bytes of data into buf. The memory area of buf is allocated by
  * library and not be freed by the application code.  user_data is one
  * given in wslay_session_init function. The implementation of this
- * function must returns the number of bytes filled into buf.  If
+ * function must return the number of bytes filled into buf.  If
  * there is an error, return -1. The return value 0 is also treated an
  * error by the library.
  */
 typedef ssize_t (*wslay_recv_callback)(uint8_t *buf, size_t len,
                                        void *user_data);
+/*
+ * Callback function used by wslay_frame_send function when it needs
+ * new mask key. The implementation of this function must write len
+ * bytes of mask key to buf. user_data is one given in
+ * wslay_session_init function. The implementation of this functino
+ * return the number of bytes written. If the return value is not len,
+ * then the library treats it as an error.
+ */
 typedef ssize_t (*wslay_gen_mask_callback)(uint8_t *buf, size_t len,
                                            void *user_data);
 
@@ -55,6 +71,10 @@ struct wslay_callbacks {
   wslay_gen_mask_callback gen_mask_callback;
 };
 
+/*
+ * The opcode defined in RFC6455. These can be used to specify opcode
+ * in wslay_iocb.
+ */
 #define WSLAY_CONTINUATION_FRAME 0x0u
 #define WSLAY_TEXT_FRAME 0x1u
 #define WSLAY_BINARY_FRAME 0x2u
@@ -84,14 +104,68 @@ struct wslay_iocb {
 struct wslay_session;
 typedef struct wslay_session *wslay_session_ptr;
 
+/*
+ * Initializes session using given callbacks and user_data.  This
+ * function allocates memory for struct wslay_session and stores the
+ * result to *session. The callback functions specified in callbacks
+ * are copied to session. user_data is stored in session and it will
+ * be passed to callback functions. When the user code finished using
+ * session, it must call wslay_session_free to deallocate memory.
+ */
 int wslay_session_init(wslay_session_ptr *session,
                        const struct wslay_callbacks *callbacks,
                        void *user_data);
 
+/*
+ * Deallocates memory pointed by session.
+ */
 void wslay_session_free(wslay_session_ptr session);
 
+/*
+ * Send WebSocket frame specified in iocb. session must be initialized
+ * using wslay_session_init function.  iocb->fin must be 1 if this is
+ * a fin frame, otherwise 0.  iocb->rsv is reserved bits.
+ * iocb->opcode must be the opcode of this frame.  iocb->mask must be
+ * 1 if this is masked frame, otherwise 0.  iocb->payload_length is
+ * the payload_length of this frame.  iocb->data must point to the
+ * payload data to be sent. iocb->data_length must be the length of
+ * the data.  This function calls recv_callback function if it needs
+ * to send bytes.  This function calls gen_mask_callback function if
+ * it needs new mask key.  This function returns the number of payload
+ * bytes sent. Please note that it does not include any number of
+ * header bytes. If it cannot send any single bytes of payload, it
+ * returns WSLAY_ERR_WANT_WRITE. If the library detects error in iocb,
+ * this function returns WSLAY_ERR_INVALID_ARGUMENT.  If callback
+ * functions report a failure, this function returns
+ * WSLAY_ERR_INVALID_CALLBACK. This function does not always send all
+ * given data in iocb. If there are remaining data to be sent, adjust
+ * data and data_length in iocb accordingly and call this function
+ * again.
+ */
 ssize_t wslay_frame_send(wslay_session_ptr session,
                          struct wslay_iocb *iocb);
+
+/*
+ * Receives WebSocket frame and stores it in iocb.  This function
+ * returns the number of payload bytes received.  This does not
+ * include header bytes. In this case, iocb will be populated as
+ * follows: iocb->fin is 1 if received frame is fin frame, otherwise
+ * 0. iocb->rsv is reserved bits of received frame.  iocb->opcode is
+ * opcode of received frame.  iocb->mask is 1 if received frame is
+ * masked, otherwise 0.  iocb->payload_length is the payload length of
+ * received frame.  iocb->data is pointed to the buffer containing
+ * received payload data.  This buffer is allocated by the library and
+ * must be read-only.  iocb->data_length is the number of payload
+ * bytes recieved.  This function calls recv_callback if it needs to
+ * receive additional bytes. If it cannot receive any single bytes of
+ * payload, it returns WSLAY_ERR_WANT_READ.  If the library detects
+ * protocol violation in a received frame, this function returns
+ * WSLAY_ERR_PROTO. If callback functions report a failure, this
+ * function returns WSLAY_ERR_INVALID_CALLBACK.  This function does
+ * not always receive whole frame in a single call. If there are
+ * remaining data to be received, call this function again.  This
+ * function ensures frame alignment.
+ */
 ssize_t wslay_frame_recv(wslay_session_ptr session,
                          struct wslay_iocb *iocb);
 
