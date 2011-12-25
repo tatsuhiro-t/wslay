@@ -32,16 +32,16 @@
 #include "wslay_session.h"
 
 #ifdef WORDS_BIGENDIAN
-uint64_t ntoh64(uint64_t x) { return x; }
-uint64_t hton64(uint64_t x) { return x; }
+static uint64_t ntoh64(uint64_t x) { return x; }
+static uint64_t hton64(uint64_t x) { return x; }
 #else // !WORDS_BIGENDIAN
-uint64_t byteswap64(uint64_t x) {
+static uint64_t byteswap64(uint64_t x) {
   uint64_t v1 = ntohl(x & 0x00000000ffffffffllu);
   uint64_t v2 = ntohl(x >> 32);
   return (v1 << 32)|v2;
 }
-uint64_t ntoh64(uint64_t x) { return byteswap64(x); }
-uint64_t hton64(uint64_t x) { return byteswap64(x); }
+static uint64_t ntoh64(uint64_t x) { return byteswap64(x); }
+static uint64_t hton64(uint64_t x) { return byteswap64(x); }
 #endif // !WORDS_BIGENDIAN
 
 #define wslay_min(A, B) (((A) < (B)) ? (A) : (B))
