@@ -66,6 +66,14 @@ int main()
                    test_wslay_frame_recv_interleaved_ctrl_frame) ||
       !CU_add_test(pSuite, "wslay_frame_recv_zero_payloadlen",
                    test_wslay_frame_recv_zero_payloadlen) ||
+      !CU_add_test(pSuite, "wslay_frame_recv_too_large_payload",
+                   test_wslay_frame_recv_too_large_payload) ||
+      !CU_add_test(pSuite, "wslay_frame_recv_ctrl_too_large_payload",
+                   test_wslay_frame_recv_ctrl_frame_too_large_payload) ||
+      !CU_add_test(pSuite, "wslay_frame_recv_minimum_ext_payload16",
+                   test_wslay_frame_recv_minimum_ext_payload16) ||
+      !CU_add_test(pSuite, "wslay_frame_recv_minimum_ext_payload64",
+                   test_wslay_frame_recv_minimum_ext_payload64) ||
       !CU_add_test(pSuite, "wslay_frame_send", test_wslay_frame_send) ||
       !CU_add_test(pSuite, "wslay_frame_send_fragmented",
                    test_wslay_frame_send_fragmented) ||
@@ -74,7 +82,11 @@ int main()
       !CU_add_test(pSuite, "wslay_frame_send_1byte_masked",
                    test_wslay_frame_send_1byte_masked) ||
       !CU_add_test(pSuite, "wslay_frame_send_zero_payloadlen",
-                   test_wslay_frame_send_zero_payloadlen)) {
+                   test_wslay_frame_send_zero_payloadlen) ||
+      !CU_add_test(pSuite, "wslay_frame_send_too_large_payload",
+                   test_wslay_frame_send_too_large_payload) ||
+      !CU_add_test(pSuite, "wslay_frame_send_ctrl_frame_too_large_payload",
+                   test_wslay_frame_send_ctrl_frame_too_large_payload)) {
      CU_cleanup_registry();
      return CU_get_error();
    }

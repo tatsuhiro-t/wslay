@@ -60,16 +60,19 @@ ssize_t wslay_frame_send(struct wslay_session *session,
     *hdptr |= iocb->opcode & 0xfu;
     ++hdptr;
     *hdptr |= (iocb->mask & 1u) << 7;
+    if((iocb->opcode & (1 << 3)) && iocb->payload_length >= 126) {
+      return WSLAY_ERR_INVALID_ARGUMENT;
+    }
     if(iocb->payload_length < 126) {
       *hdptr |= iocb->payload_length & 0x7fu;
       ++hdptr;
-    } else if(iocb->payload_length < 32768) {
+    } else if(iocb->payload_length <= UINT16_MAX) {
       uint16_t len = htons(iocb->payload_length);
       *hdptr |= 126;
       ++hdptr;
       memcpy(hdptr, &len, 2);
       hdptr += 2;
-    } else if(iocb->payload_length < 9223372036854775808llu) {
+    } else if(iocb->payload_length <= (uint64_t)INT64_MAX) {
       uint64_t len = hton64(iocb->payload_length);
       *hdptr |= 127;
       ++hdptr;
@@ -229,6 +232,9 @@ ssize_t wslay_frame_recv(struct wslay_session *session,
     session->imask = (session->ibufmark[0] & (1 << 7)) > 0;
     payloadlen = session->ibufmark[0] & 0x7fu;
     ++session->ibufmark;
+    if((opcode & (1 << 3)) && (payloadlen >= 126 || !fin)) {
+      return WSLAY_ERR_PROTO;
+    }
     if(payloadlen == 126) {
       session->istate = RECV_EXT_PAYLOADLEN;
       session->ireqread = 2;
@@ -261,8 +267,15 @@ ssize_t wslay_frame_recv(struct wslay_session *session,
            session->ibufmark, session->ireqread);
     session->ipayloadlen = ntoh64(session->ipayloadlen);
     session->ibufmark += session->ireqread;
-    if(session->ipayloadlen & (1LL << (session->ireqread*8-1))) {
-      return WSLAY_ERR_PROTO;
+    if(session->ireqread == 8) {
+      if(session->ipayloadlen <= UINT16_MAX ||
+         session->ipayloadlen & (1LL << 63)) {
+        return WSLAY_ERR_PROTO;
+      }
+    } else {
+      if(session->ipayloadlen <= 125) {
+        return WSLAY_ERR_PROTO;
+      }
     }
     if(session->imask) {
       session->istate = RECV_MASKKEY;

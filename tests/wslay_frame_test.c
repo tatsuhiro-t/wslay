@@ -63,7 +63,7 @@ static ssize_t scripted_recv_callback(uint8_t* data, size_t len,
   return wlen;
 }
 
-static ssize_t scripted_send_callback(uint8_t* data, size_t len,
+static ssize_t scripted_send_callback(const uint8_t* data, size_t len,
                                       void *user_data)
 {
   struct scripted_data_feed *df = (struct scripted_data_feed*)user_data;
@@ -231,6 +231,58 @@ void test_wslay_frame_recv_zero_payloadlen()
   CU_ASSERT_EQUAL(0, iocb.data_length);
 }
 
+void test_wslay_frame_recv_too_large_payload()
+{
+  struct wslay_session session;
+  struct wslay_callbacks callbacks = { NULL, scripted_recv_callback, NULL };
+  struct scripted_data_feed df;
+  struct wslay_iocb iocb;
+  uint8_t msg[] = { 0x81, 0x7f, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
+  scripted_data_feed_init(&df, msg, sizeof(msg));
+  df.feedseq[0] = sizeof(msg);
+  wslay_session_init(&session, &callbacks, &df);
+  CU_ASSERT_EQUAL(WSLAY_ERR_PROTO, wslay_frame_recv(&session, &iocb));
+}
+
+void test_wslay_frame_recv_ctrl_frame_too_large_payload()
+{
+  struct wslay_session session;
+  struct wslay_callbacks callbacks = { NULL, scripted_recv_callback, NULL };
+  struct scripted_data_feed df;
+  struct wslay_iocb iocb;
+  uint8_t msg[] = { 0x88, 0x7e };
+  scripted_data_feed_init(&df, msg, sizeof(msg));
+  df.feedseq[0] = sizeof(msg);
+  wslay_session_init(&session, &callbacks, &df);
+  CU_ASSERT_EQUAL(WSLAY_ERR_PROTO, wslay_frame_recv(&session, &iocb));
+}
+
+void test_wslay_frame_recv_minimum_ext_payload16()
+{
+  struct wslay_session session;
+  struct wslay_callbacks callbacks = { NULL, scripted_recv_callback, NULL };
+  struct scripted_data_feed df;
+  struct wslay_iocb iocb;
+  uint8_t msg[] = { 0x81, 0x7e, 0x00, 0x7d };
+  scripted_data_feed_init(&df, msg, sizeof(msg));
+  df.feedseq[0] = sizeof(msg);
+  wslay_session_init(&session, &callbacks, &df);
+  CU_ASSERT_EQUAL(WSLAY_ERR_PROTO, wslay_frame_recv(&session, &iocb));
+}
+
+void test_wslay_frame_recv_minimum_ext_payload64()
+{
+  struct wslay_session session;
+  struct wslay_callbacks callbacks = { NULL, scripted_recv_callback, NULL };
+  struct scripted_data_feed df;
+  struct wslay_iocb iocb;
+  uint8_t msg[] = { 0x81, 0x7f, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff, 0xff};
+  scripted_data_feed_init(&df, msg, sizeof(msg));
+  df.feedseq[0] = sizeof(msg);
+  wslay_session_init(&session, &callbacks, &df);
+  CU_ASSERT_EQUAL(WSLAY_ERR_PROTO, wslay_frame_recv(&session, &iocb));
+}
+
 struct accumulator {
   uint8_t buf[4096];
   size_t length;
@@ -369,7 +421,6 @@ void test_wslay_frame_send_1byte_masked()
   struct wslay_callbacks callbacks = { scripted_send_callback,
                                        NULL,
                                        static_gen_mask_callback };
-  struct accumulator acc;
   struct wslay_iocb iocb;
   /* Masked text frame containing "Hello" */
   uint8_t msg[] = { 0x81u, 0x85u, 0x37u, 0xfau, 0x21u, 0x3du, 0x7fu, 0x9fu,
@@ -416,4 +467,34 @@ void test_wslay_frame_send_zero_payloadlen()
   CU_ASSERT(0 == wslay_frame_send(&session, &iocb));
   CU_ASSERT_EQUAL(sizeof(msg), acc.length);
   CU_ASSERT(memcmp(msg, acc.buf, sizeof(msg)) == 0);
+}
+
+void test_wslay_frame_send_too_large_payload()
+{
+  struct wslay_session session;
+  struct wslay_callbacks callbacks;
+  struct wslay_iocb iocb;
+  wslay_session_init(&session, &callbacks, NULL);
+  memset(&iocb, 0, sizeof(iocb));
+  iocb.fin = 1;
+  iocb.opcode = WSLAY_TEXT_FRAME;
+  iocb.mask = 0;
+  iocb.payload_length = UINT64_MAX;
+  CU_ASSERT_EQUAL(WSLAY_ERR_INVALID_ARGUMENT,
+                  wslay_frame_send(&session, &iocb));
+}
+
+void test_wslay_frame_send_ctrl_frame_too_large_payload()
+{
+  struct wslay_session session;
+  struct wslay_callbacks callbacks;
+  struct wslay_iocb iocb;
+  wslay_session_init(&session, &callbacks, NULL);
+  memset(&iocb, 0, sizeof(iocb));
+  iocb.fin = 1;
+  iocb.opcode = WSLAY_PING;
+  iocb.mask = 0;
+  iocb.payload_length = 1024;
+  CU_ASSERT_EQUAL(WSLAY_ERR_INVALID_ARGUMENT,
+                  wslay_frame_send(&session, &iocb));
 }

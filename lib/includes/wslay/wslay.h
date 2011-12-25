@@ -25,10 +25,68 @@
 #ifndef WSLAY_H
 #define WSLAY_H
 
+#ifdef  __cplusplus
+extern "C" {
+#endif
+
 #include <stdint.h>
 #include <stdlib.h>
 
-struct wslay_session;
+typedef ssize_t (*wslay_send_callback)(const uint8_t *buf, size_t len,
+                                       void *user_data);
+typedef ssize_t (*wslay_recv_callback)(uint8_t *buf, size_t len,
+                                       void *user_data);
+typedef ssize_t (*wslay_gen_mask_callback)(uint8_t *buf, size_t len,
+                                           void *user_data);
+
+struct wslay_callbacks {
+  wslay_send_callback send_callback;
+  wslay_recv_callback recv_callback;
+  wslay_gen_mask_callback gen_mask_callback;
+};
+
+enum wslay_state {
+  PREP_HEADER,
+  SEND_HEADER,
+  SEND_PAYLOAD,
+  RECV_HEADER1,
+  RECV_PAYLOADLEN,
+  RECV_EXT_PAYLOADLEN,
+  RECV_MASKKEY,
+  RECV_PAYLOAD
+};
+
+struct wslay_opcode_memo {
+  uint8_t fin;
+  uint8_t opcode;
+  uint8_t rsv;
+};
+
+struct wslay_session {
+  uint8_t ibuf[4096];
+  uint8_t *ibufmark;
+  uint8_t *ibuflimit;
+  struct wslay_opcode_memo iom;
+  uint64_t ipayloadlen;
+  uint64_t ipayloadoff;
+  uint8_t imask;
+  uint8_t imaskkey[4];
+  enum wslay_state istate;
+  size_t ireqread;
+
+  uint8_t oheader[14];
+  uint8_t *oheadermark;
+  uint8_t *oheaderlimit;
+  struct wslay_opcode_memo oom;
+  uint64_t opayloadlen;
+  uint64_t opayloadoff;
+  uint8_t omask;
+  uint8_t omaskkey[4];
+  enum wslay_state ostate;
+
+  struct wslay_callbacks callbacks;
+  void *user_data;
+};
 
 #define WSLAY_CONTINUATION_FRAME 0x0u
 #define WSLAY_TEXT_FRAME 0x1u
@@ -43,19 +101,6 @@ enum wslay_error {
   WSLAY_ERR_PROTO = -200,
   WSLAY_ERR_INVALID_ARGUMENT = -300,
   WSLAY_ERR_INVALID_CALLBACK = -301
-};
-
-typedef ssize_t (*wslay_send_callback)(const uint8_t *buf, size_t len,
-                                       void *user_data);
-typedef ssize_t (*wslay_recv_callback)(uint8_t *buf, size_t len,
-                                       void *user_data);
-typedef ssize_t (*wslay_gen_mask_callback)(uint8_t *buf, size_t len,
-                                           void *user_data);
-
-struct wslay_callbacks {
-  wslay_send_callback send_callback;
-  wslay_recv_callback recv_callback;
-  wslay_gen_mask_callback gen_mask_callback;
 };
 
 struct wslay_iocb {
@@ -76,5 +121,9 @@ ssize_t wslay_frame_send(struct wslay_session *session,
                          struct wslay_iocb *iocb);
 ssize_t wslay_frame_recv(struct wslay_session *session,
                          struct wslay_iocb *iocb);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // WSLAY_H
