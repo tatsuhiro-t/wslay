@@ -40,8 +40,8 @@ extern "C" {
  * must return the number of bytes sent. If there is an error, return
  * -1. The return value 0 is also treated an error by the library.
  */
-typedef ssize_t (*wslay_send_callback)(const uint8_t *buf, size_t len,
-                                       void *user_data);
+typedef ssize_t (*wslay_frame_send_callback)(const uint8_t *buf, size_t len,
+                                             void *user_data);
 /*
  * Callback function used by wslay_frame_recv function when it needs
  * more data. The implementation of this function must fill at most
@@ -52,8 +52,8 @@ typedef ssize_t (*wslay_send_callback)(const uint8_t *buf, size_t len,
  * there is an error, return -1. The return value 0 is also treated an
  * error by the library.
  */
-typedef ssize_t (*wslay_recv_callback)(uint8_t *buf, size_t len,
-                                       void *user_data);
+typedef ssize_t (*wslay_frame_recv_callback)(uint8_t *buf, size_t len,
+                                             void *user_data);
 /*
  * Callback function used by wslay_frame_send function when it needs
  * new mask key. The implementation of this function must write len
@@ -62,13 +62,13 @@ typedef ssize_t (*wslay_recv_callback)(uint8_t *buf, size_t len,
  * return the number of bytes written. If the return value is not len,
  * then the library treats it as an error.
  */
-typedef ssize_t (*wslay_gen_mask_callback)(uint8_t *buf, size_t len,
-                                           void *user_data);
+typedef ssize_t (*wslay_frame_genmask_callback)(uint8_t *buf, size_t len,
+                                                void *user_data);
 
-struct wslay_callbacks {
-  wslay_send_callback send_callback;
-  wslay_recv_callback recv_callback;
-  wslay_gen_mask_callback gen_mask_callback;
+struct wslay_frame_callbacks {
+  wslay_frame_send_callback send_callback;
+  wslay_frame_recv_callback recv_callback;
+  wslay_frame_genmask_callback genmask_callback;
 };
 
 /*
@@ -90,7 +90,7 @@ enum wslay_error {
   WSLAY_ERR_INVALID_CALLBACK = -301
 };
 
-struct wslay_iocb {
+struct wslay_frame_iocb {
   uint8_t fin; /* 1 for fragmented final frame, 0 for otherwise */
   uint8_t rsv; /* reserved 3 bits. RFC6455 requires 0 unless extensions are
                   negotiated */
@@ -101,8 +101,8 @@ struct wslay_iocb {
   size_t data_length; /* bytes of data defined above */
 };
 
-struct wslay_session;
-typedef struct wslay_session *wslay_session_ptr;
+struct wslay_frame_context;
+typedef struct wslay_frame_context *wslay_frame_context_ptr;
 
 /*
  * Initializes session using given callbacks and user_data.  This
@@ -112,14 +112,14 @@ typedef struct wslay_session *wslay_session_ptr;
  * be passed to callback functions. When the user code finished using
  * session, it must call wslay_session_free to deallocate memory.
  */
-int wslay_session_init(wslay_session_ptr *session,
-                       const struct wslay_callbacks *callbacks,
-                       void *user_data);
+int wslay_frame_context_init(wslay_frame_context_ptr *session,
+                             const struct wslay_frame_callbacks *callbacks,
+                             void *user_data);
 
 /*
  * Deallocates memory pointed by session.
  */
-void wslay_session_free(wslay_session_ptr session);
+void wslay_frame_context_free(wslay_frame_context_ptr session);
 
 /*
  * Send WebSocket frame specified in iocb. session must be initialized
@@ -142,8 +142,8 @@ void wslay_session_free(wslay_session_ptr session);
  * data and data_length in iocb accordingly and call this function
  * again.
  */
-ssize_t wslay_frame_send(wslay_session_ptr session,
-                         struct wslay_iocb *iocb);
+ssize_t wslay_frame_send(wslay_frame_context_ptr session,
+                         struct wslay_frame_iocb *iocb);
 
 /*
  * Receives WebSocket frame and stores it in iocb.  This function
@@ -166,8 +166,8 @@ ssize_t wslay_frame_send(wslay_session_ptr session,
  * remaining data to be received, call this function again.  This
  * function ensures frame alignment.
  */
-ssize_t wslay_frame_recv(wslay_session_ptr session,
-                         struct wslay_iocb *iocb);
+ssize_t wslay_frame_recv(wslay_frame_context_ptr session,
+                         struct wslay_frame_iocb *iocb);
 
 #ifdef __cplusplus
 }

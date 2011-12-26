@@ -26,7 +26,6 @@
 #include <string.h>
 #include <CUnit/Basic.h>
 /* include test cases' include files here */
-#include "wslay_session_test.h"
 #include "wslay_frame_test.h"
 
 int init_suite1(void)
@@ -56,7 +55,8 @@ int main()
    }
 
    /* add the tests to the suite */
-   if(!CU_add_test(pSuite, "wslay_session", test_wslay_session_init) ||
+   if(!CU_add_test(pSuite, "wslay_frame_context_init",
+                   test_wslay_frame_context_init) ||
       !CU_add_test(pSuite, "wslay_frame_recv", test_wslay_frame_recv) ||
       !CU_add_test(pSuite, "wslay_frame_recv_1byte",
                    test_wslay_frame_recv_1byte) ||

@@ -25,6 +25,7 @@
 #ifndef WSLAY_FRAME_TEST_H
 #define WSLAY_FRAME_TEST_H
 
+void test_wslay_frame_context_init();
 void test_wslay_frame_recv();
 void test_wslay_frame_recv_1byte();
 void test_wslay_frame_recv_fragmented();

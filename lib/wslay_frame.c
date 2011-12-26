@@ -29,8 +29,6 @@
 #include <arpa/inet.h>
 #include <assert.h>
 
-#include "wslay_session.h"
-
 #ifdef WORDS_BIGENDIAN
 static uint64_t ntoh64(uint64_t x) { return x; }
 static uint64_t hton64(uint64_t x) { return x; }
@@ -46,15 +44,38 @@ static uint64_t hton64(uint64_t x) { return byteswap64(x); }
 
 #define wslay_min(A, B) (((A) < (B)) ? (A) : (B))
 
-ssize_t wslay_frame_send(wslay_session_ptr session,
-                         struct wslay_iocb *iocb)
+int wslay_frame_context_init(wslay_frame_context_ptr *ctx,
+                             const struct wslay_frame_callbacks *callbacks,
+                             void *user_data)
+{
+  *ctx = (wslay_frame_context_ptr)malloc(sizeof(struct wslay_frame_context));
+  if(ctx == NULL) {
+    return -1;
+  }
+  memset(*ctx, 0, sizeof(struct wslay_frame_context));
+  (*ctx)->istate = RECV_HEADER1;
+  (*ctx)->ireqread = 2;
+  (*ctx)->ostate = PREP_HEADER;
+  (*ctx)->user_data = user_data;
+  (*ctx)->ibufmark = (*ctx)->ibuflimit = (*ctx)->ibuf;
+  (*ctx)->callbacks = *callbacks;
+  return 0;
+}
+
+void wslay_frame_context_free(wslay_frame_context_ptr ctx)
+{
+  free(ctx);
+}
+
+ssize_t wslay_frame_send(wslay_frame_context_ptr ctx,
+                         struct wslay_frame_iocb *iocb)
 {
   if(iocb->data_length > iocb->payload_length) {
     return WSLAY_ERR_INVALID_ARGUMENT;
   }
-  if(session->ostate == PREP_HEADER) {
-    uint8_t *hdptr = session->oheader;
-    memset(session->oheader, 0, sizeof(session->oheader));
+  if(ctx->ostate == PREP_HEADER) {
+    uint8_t *hdptr = ctx->oheader;
+    memset(ctx->oheader, 0, sizeof(ctx->oheader));
     *hdptr |= (iocb->fin & 1u) << 7;
     *hdptr |= (iocb->rsv & 7u) << 4;
     *hdptr |= iocb->opcode & 0xfu;
@@ -83,33 +104,33 @@ ssize_t wslay_frame_send(wslay_session_ptr session,
       return WSLAY_ERR_INVALID_ARGUMENT;
     }
     if(iocb->mask & 1u) {
-      if(session->callbacks.gen_mask_callback(session->omaskkey, 4,
-                                              session->user_data) != 4) {
+      if(ctx->callbacks.genmask_callback(ctx->omaskkey, 4,
+                                         ctx->user_data) != 4) {
         return WSLAY_ERR_INVALID_CALLBACK;
       } else {
-        session->omask = 1;
-        memcpy(hdptr, session->omaskkey, 4);
+        ctx->omask = 1;
+        memcpy(hdptr, ctx->omaskkey, 4);
         hdptr += 4;
       }
     }
-    session->ostate = SEND_HEADER;
-    session->oheadermark = session->oheader;
-    session->oheaderlimit = hdptr;
-    session->opayloadlen = iocb->payload_length;
-    session->opayloadoff = 0;
+    ctx->ostate = SEND_HEADER;
+    ctx->oheadermark = ctx->oheader;
+    ctx->oheaderlimit = hdptr;
+    ctx->opayloadlen = iocb->payload_length;
+    ctx->opayloadoff = 0;
   }
-  if(session->ostate == SEND_HEADER) {
-    ptrdiff_t len = session->oheaderlimit-session->oheadermark;
+  if(ctx->ostate == SEND_HEADER) {
+    ptrdiff_t len = ctx->oheaderlimit-ctx->oheadermark;
     ssize_t r;
-    r = session->callbacks.send_callback(session->oheadermark, len,
-                                         session->user_data);
+    r = ctx->callbacks.send_callback(ctx->oheadermark, len,
+                                     ctx->user_data);
     if(r > 0) {
       if(r > len) {
         return WSLAY_ERR_INVALID_CALLBACK;
       } else {
-        session->oheadermark += r;
-        if(session->oheadermark == session->oheaderlimit) {
-          session->ostate = SEND_PAYLOAD;
+        ctx->oheadermark += r;
+        if(ctx->oheadermark == ctx->oheaderlimit) {
+          ctx->ostate = SEND_PAYLOAD;
         } else {
           return WSLAY_ERR_WANT_WRITE;
         }
@@ -118,10 +139,10 @@ ssize_t wslay_frame_send(wslay_session_ptr session,
       return WSLAY_ERR_WANT_WRITE;
     }
   }
-  if(session->ostate == SEND_PAYLOAD) {
+  if(ctx->ostate == SEND_PAYLOAD) {
     size_t totallen = 0;
     if(iocb->data_length > 0) {
-      if(session->omask) {
+      if(ctx->omask) {
         uint8_t temp[4096];
         const uint8_t *datamark = iocb->data,
           *datalimit = iocb->data+iocb->data_length;
@@ -132,16 +153,16 @@ ssize_t wslay_frame_send(wslay_session_ptr session,
           ssize_t r;
           int i;
           for(i = 0; i < writelen; ++i) {
-            temp[i] = datamark[i]^session->omaskkey[(session->opayloadoff+i)%4];
+            temp[i] = datamark[i]^ctx->omaskkey[(ctx->opayloadoff+i)%4];
           }
-          r = session->callbacks.send_callback(temp, writelen,
-                                               session->user_data);
+          r = ctx->callbacks.send_callback(temp, writelen,
+                                           ctx->user_data);
           if(r > 0) {
             if(r > writelen) {
               return WSLAY_ERR_INVALID_CALLBACK;
             } else {
               datamark += r;
-              session->opayloadoff += r;
+              ctx->opayloadoff += r;
               totallen += r;
             }
           } else {
@@ -154,13 +175,13 @@ ssize_t wslay_frame_send(wslay_session_ptr session,
         }
       } else {
         ssize_t r;
-        r = session->callbacks.send_callback(iocb->data, iocb->data_length,
-                                             session->user_data);
+        r = ctx->callbacks.send_callback(iocb->data, iocb->data_length,
+                                         ctx->user_data);
         if(r > 0) {
           if(r > iocb->data_length) {
             return WSLAY_ERR_INVALID_CALLBACK;
           } else {
-            session->opayloadoff += r;
+            ctx->opayloadoff += r;
             totallen = r;
           }
         } else {
@@ -168,161 +189,161 @@ ssize_t wslay_frame_send(wslay_session_ptr session,
         }
       }
     }
-    if(session->opayloadoff == session->opayloadlen) {
-      session->ostate = PREP_HEADER;
+    if(ctx->opayloadoff == ctx->opayloadlen) {
+      ctx->ostate = PREP_HEADER;
     }
     return totallen;
   }
   return WSLAY_ERR_INVALID_ARGUMENT;
 }
 
-static void wslay_shift_ibuf(wslay_session_ptr session)
+static void wslay_shift_ibuf(wslay_frame_context_ptr ctx)
 {
-  ptrdiff_t len = session->ibuflimit-session->ibufmark;
-  memmove(session->ibuf, session->ibufmark, len);
-  session->ibuflimit = session->ibuf+len;
-  session->ibufmark = session->ibuf;
+  ptrdiff_t len = ctx->ibuflimit-ctx->ibufmark;
+  memmove(ctx->ibuf, ctx->ibufmark, len);
+  ctx->ibuflimit = ctx->ibuf+len;
+  ctx->ibufmark = ctx->ibuf;
 }
 
-static ssize_t wslay_recv(wslay_session_ptr session)
+static ssize_t wslay_recv(wslay_frame_context_ptr ctx)
 {
   ssize_t r;
-  if(session->ibufmark != session->ibuf) {
-    wslay_shift_ibuf(session);
+  if(ctx->ibufmark != ctx->ibuf) {
+    wslay_shift_ibuf(ctx);
   }
-  r = session->callbacks.recv_callback
-    (session->ibuflimit,
-     session->ibuf+sizeof(session->ibuf)-session->ibuflimit,
-     session->user_data);
+  r = ctx->callbacks.recv_callback
+    (ctx->ibuflimit,
+     ctx->ibuf+sizeof(ctx->ibuf)-ctx->ibuflimit,
+     ctx->user_data);
   if(r > 0) {
-    session->ibuflimit += r;
+    ctx->ibuflimit += r;
   } else {
     r = WSLAY_ERR_WANT_READ;
   }
   return r;
 }
 
-#define WSLAY_AVAIL_IBUF(session) (session->ibuflimit-session->ibufmark)
+#define WSLAY_AVAIL_IBUF(ctx) (ctx->ibuflimit-ctx->ibufmark)
 
-ssize_t wslay_frame_recv(wslay_session_ptr session,
-                         struct wslay_iocb *iocb)
+ssize_t wslay_frame_recv(wslay_frame_context_ptr ctx,
+                         struct wslay_frame_iocb *iocb)
 {
   ssize_t r;
-  if(session->istate == RECV_HEADER1) {
+  if(ctx->istate == RECV_HEADER1) {
     uint8_t fin, opcode, rsv, payloadlen;
-    if(WSLAY_AVAIL_IBUF(session) < session->ireqread) {
-      if((r = wslay_recv(session)) <= 0) {
+    if(WSLAY_AVAIL_IBUF(ctx) < ctx->ireqread) {
+      if((r = wslay_recv(ctx)) <= 0) {
         return r;
       }
     }
-    if(WSLAY_AVAIL_IBUF(session) < session->ireqread) {
+    if(WSLAY_AVAIL_IBUF(ctx) < ctx->ireqread) {
       return WSLAY_ERR_WANT_READ;
     }
-    fin = (session->ibufmark[0] & (1 << 7)) > 0;
-    rsv = (session->ibufmark[0] >> 4) & 0x7u;
-    opcode = session->ibufmark[0] & 0xfu;
-    session->iom.opcode = opcode;
-    session->iom.fin = fin;
-    session->iom.rsv = rsv;
-    ++session->ibufmark;
-    session->imask = (session->ibufmark[0] & (1 << 7)) > 0;
-    payloadlen = session->ibufmark[0] & 0x7fu;
-    ++session->ibufmark;
+    fin = (ctx->ibufmark[0] & (1 << 7)) > 0;
+    rsv = (ctx->ibufmark[0] >> 4) & 0x7u;
+    opcode = ctx->ibufmark[0] & 0xfu;
+    ctx->iom.opcode = opcode;
+    ctx->iom.fin = fin;
+    ctx->iom.rsv = rsv;
+    ++ctx->ibufmark;
+    ctx->imask = (ctx->ibufmark[0] & (1 << 7)) > 0;
+    payloadlen = ctx->ibufmark[0] & 0x7fu;
+    ++ctx->ibufmark;
     if((opcode & (1 << 3)) && (payloadlen >= 126 || !fin)) {
       return WSLAY_ERR_PROTO;
     }
     if(payloadlen == 126) {
-      session->istate = RECV_EXT_PAYLOADLEN;
-      session->ireqread = 2;
+      ctx->istate = RECV_EXT_PAYLOADLEN;
+      ctx->ireqread = 2;
     } else if(payloadlen == 127) {
-      session->istate = RECV_EXT_PAYLOADLEN;
-      session->ireqread = 8;
+      ctx->istate = RECV_EXT_PAYLOADLEN;
+      ctx->ireqread = 8;
     } else {
-      session->ipayloadlen = payloadlen;
-      session->ipayloadoff = 0;
-      if(session->imask) {
-        session->istate = RECV_MASKKEY;
-        session->ireqread = 4;
+      ctx->ipayloadlen = payloadlen;
+      ctx->ipayloadoff = 0;
+      if(ctx->imask) {
+        ctx->istate = RECV_MASKKEY;
+        ctx->ireqread = 4;
       } else {
-        session->istate = RECV_PAYLOAD;
+        ctx->istate = RECV_PAYLOAD;
       }
     }
   }
-  if(session->istate == RECV_EXT_PAYLOADLEN) {
-    if(WSLAY_AVAIL_IBUF(session) < session->ireqread) {
-      if((r = wslay_recv(session)) <= 0) {
+  if(ctx->istate == RECV_EXT_PAYLOADLEN) {
+    if(WSLAY_AVAIL_IBUF(ctx) < ctx->ireqread) {
+      if((r = wslay_recv(ctx)) <= 0) {
         return r;
       }
-      if(WSLAY_AVAIL_IBUF(session) < session->ireqread) {
+      if(WSLAY_AVAIL_IBUF(ctx) < ctx->ireqread) {
         return WSLAY_ERR_WANT_READ;
       }
     }
-    session->ipayloadlen = 0;
-    session->ipayloadoff = 0;
-    memcpy((uint8_t*)&session->ipayloadlen+(8-session->ireqread),
-           session->ibufmark, session->ireqread);
-    session->ipayloadlen = ntoh64(session->ipayloadlen);
-    session->ibufmark += session->ireqread;
-    if(session->ireqread == 8) {
-      if(session->ipayloadlen <= UINT16_MAX ||
-         session->ipayloadlen & (1LL << 63)) {
+    ctx->ipayloadlen = 0;
+    ctx->ipayloadoff = 0;
+    memcpy((uint8_t*)&ctx->ipayloadlen+(8-ctx->ireqread),
+           ctx->ibufmark, ctx->ireqread);
+    ctx->ipayloadlen = ntoh64(ctx->ipayloadlen);
+    ctx->ibufmark += ctx->ireqread;
+    if(ctx->ireqread == 8) {
+      if(ctx->ipayloadlen <= UINT16_MAX ||
+         ctx->ipayloadlen & (1LL << 63)) {
         return WSLAY_ERR_PROTO;
       }
     } else {
-      if(session->ipayloadlen <= 125) {
+      if(ctx->ipayloadlen <= 125) {
         return WSLAY_ERR_PROTO;
       }
     }
-    if(session->imask) {
-      session->istate = RECV_MASKKEY;
-      session->ireqread = 4;
+    if(ctx->imask) {
+      ctx->istate = RECV_MASKKEY;
+      ctx->ireqread = 4;
     } else {
-      session->istate = RECV_PAYLOAD;
+      ctx->istate = RECV_PAYLOAD;
     }
   }
-  if(session->istate == RECV_MASKKEY) {
-    if(WSLAY_AVAIL_IBUF(session) < session->ireqread) {
-      if((r = wslay_recv(session)) <= 0) {
+  if(ctx->istate == RECV_MASKKEY) {
+    if(WSLAY_AVAIL_IBUF(ctx) < ctx->ireqread) {
+      if((r = wslay_recv(ctx)) <= 0) {
         return r;
       }
-      if(WSLAY_AVAIL_IBUF(session) < session->ireqread) {
+      if(WSLAY_AVAIL_IBUF(ctx) < ctx->ireqread) {
         return WSLAY_ERR_WANT_READ;
       }
     }
-    memcpy(session->imaskkey, session->ibufmark, 4);
-    session->ibufmark += 4;
-    session->istate = RECV_PAYLOAD;
+    memcpy(ctx->imaskkey, ctx->ibufmark, 4);
+    ctx->ibufmark += 4;
+    ctx->istate = RECV_PAYLOAD;
   }
-  if(session->istate == RECV_PAYLOAD) {
+  if(ctx->istate == RECV_PAYLOAD) {
     uint8_t *readlimit, *readmark;
-    uint64_t rempayloadlen = session->ipayloadlen-session->ipayloadoff;
-    if(WSLAY_AVAIL_IBUF(session) == 0 && rempayloadlen > 0) {
-      if((r = wslay_recv(session)) <= 0) {
+    uint64_t rempayloadlen = ctx->ipayloadlen-ctx->ipayloadoff;
+    if(WSLAY_AVAIL_IBUF(ctx) == 0 && rempayloadlen > 0) {
+      if((r = wslay_recv(ctx)) <= 0) {
         return r;
       }
     }
-    readmark = session->ibufmark;
-    readlimit = WSLAY_AVAIL_IBUF(session) < rempayloadlen ?
-      session->ibuflimit : session->ibufmark+rempayloadlen;
-    if(session->imask) {
-      for(; session->ibufmark != readlimit;
-          ++session->ibufmark, ++session->ipayloadoff) {
-        session->ibufmark[0] ^= session->imaskkey[session->ipayloadoff % 4];
+    readmark = ctx->ibufmark;
+    readlimit = WSLAY_AVAIL_IBUF(ctx) < rempayloadlen ?
+      ctx->ibuflimit : ctx->ibufmark+rempayloadlen;
+    if(ctx->imask) {
+      for(; ctx->ibufmark != readlimit;
+          ++ctx->ibufmark, ++ctx->ipayloadoff) {
+        ctx->ibufmark[0] ^= ctx->imaskkey[ctx->ipayloadoff % 4];
       }
     } else {
-      session->ibufmark = readlimit;
-      session->ipayloadoff += readlimit-readmark;
+      ctx->ibufmark = readlimit;
+      ctx->ipayloadoff += readlimit-readmark;
     }
-    iocb->fin = session->iom.fin;
-    iocb->rsv = session->iom.rsv;
-    iocb->opcode = session->iom.opcode;
-    iocb->payload_length = session->ipayloadlen;
-    iocb->mask = session->imask;
+    iocb->fin = ctx->iom.fin;
+    iocb->rsv = ctx->iom.rsv;
+    iocb->opcode = ctx->iom.opcode;
+    iocb->payload_length = ctx->ipayloadlen;
+    iocb->mask = ctx->imask;
     iocb->data = readmark;
-    iocb->data_length = session->ibufmark-readmark;
-    if(session->ipayloadlen == session->ipayloadoff) {
-      session->istate = RECV_HEADER1;
-      session->ireqread = 2;
+    iocb->data_length = ctx->ibufmark-readmark;
+    if(ctx->ipayloadlen == ctx->ipayloadoff) {
+      ctx->istate = RECV_HEADER1;
+      ctx->ireqread = 2;
     }
     return iocb->data_length;
   }

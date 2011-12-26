@@ -25,15 +25,3 @@
 #include "wslay_session_test.h"
 
 #include <CUnit/CUnit.h>
-
-#include "wslay_session.h"
-
-void test_wslay_session_init()
-{
-  wslay_session_ptr session;
-  struct wslay_callbacks callbacks;
-  int user_data;
-  CU_ASSERT_FALSE(wslay_session_init(&session, &callbacks, &user_data));
-
-  wslay_session_free(session);
-}

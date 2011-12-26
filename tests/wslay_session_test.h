@@ -25,6 +25,4 @@
 #ifndef WSLAY_SESSION_TEST_H
 #define WSLAY_SESSION_TEST_H
 
-void test_wslay_session_init();
-
 #endif // WSLAY_SESSION_TEST_H
