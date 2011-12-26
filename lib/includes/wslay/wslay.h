@@ -36,9 +36,10 @@ extern "C" {
  * Callback function used by wslay_frame_send function when it needs
  * to send data. The implementation of this function must send at most
  * len bytes of data in buf. user_data is one given in
- * wslay_session_init function. The implementation of this functino
- * must return the number of bytes sent. If there is an error, return
- * -1. The return value 0 is also treated an error by the library.
+ * wslay_frame_context_init function. The implementation of this
+ * functino must return the number of bytes sent. If there is an
+ * error, return -1. The return value 0 is also treated an error by
+ * the library.
  */
 typedef ssize_t (*wslay_frame_send_callback)(const uint8_t *buf, size_t len,
                                              void *user_data);
@@ -47,8 +48,8 @@ typedef ssize_t (*wslay_frame_send_callback)(const uint8_t *buf, size_t len,
  * more data. The implementation of this function must fill at most
  * len bytes of data into buf. The memory area of buf is allocated by
  * library and not be freed by the application code.  user_data is one
- * given in wslay_session_init function. The implementation of this
- * function must return the number of bytes filled into buf.  If
+ * given in wslay_frame_context_init function. The implementation of
+ * this function must return the number of bytes filled into buf.  If
  * there is an error, return -1. The return value 0 is also treated an
  * error by the library.
  */
@@ -58,9 +59,9 @@ typedef ssize_t (*wslay_frame_recv_callback)(uint8_t *buf, size_t len,
  * Callback function used by wslay_frame_send function when it needs
  * new mask key. The implementation of this function must write len
  * bytes of mask key to buf. user_data is one given in
- * wslay_session_init function. The implementation of this functino
- * return the number of bytes written. If the return value is not len,
- * then the library treats it as an error.
+ * wslay_frame_context_init function. The implementation of this
+ * functino return the number of bytes written. If the return value is
+ * not len, then the library treats it as an error.
  */
 typedef ssize_t (*wslay_frame_genmask_callback)(uint8_t *buf, size_t len,
                                                 void *user_data);
@@ -73,7 +74,7 @@ struct wslay_frame_callbacks {
 
 /*
  * The opcode defined in RFC6455. These can be used to specify opcode
- * in wslay_iocb.
+ * in wslay_frame_iocb.
  */
 #define WSLAY_CONTINUATION_FRAME 0x0u
 #define WSLAY_TEXT_FRAME 0x1u
@@ -105,26 +106,26 @@ struct wslay_frame_context;
 typedef struct wslay_frame_context *wslay_frame_context_ptr;
 
 /*
- * Initializes session using given callbacks and user_data.  This
- * function allocates memory for struct wslay_session and stores the
- * result to *session. The callback functions specified in callbacks
- * are copied to session. user_data is stored in session and it will
- * be passed to callback functions. When the user code finished using
- * session, it must call wslay_session_free to deallocate memory.
+ * Initializes ctx using given callbacks and user_data.  This function
+ * allocates memory for struct wslay_frame_context and stores the
+ * result to *ctx. The callback functions specified in callbacks are
+ * copied to ctx. user_data is stored in ctx and it will be passed to
+ * callback functions. When the user code finished using ctx, it must
+ * call wslay_frame_context_free to deallocate memory.
  */
-int wslay_frame_context_init(wslay_frame_context_ptr *session,
+int wslay_frame_context_init(wslay_frame_context_ptr *ctx,
                              const struct wslay_frame_callbacks *callbacks,
                              void *user_data);
 
 /*
- * Deallocates memory pointed by session.
+ * Deallocates memory pointed by ctx.
  */
-void wslay_frame_context_free(wslay_frame_context_ptr session);
+void wslay_frame_context_free(wslay_frame_context_ptr ctx);
 
 /*
- * Send WebSocket frame specified in iocb. session must be initialized
- * using wslay_session_init function.  iocb->fin must be 1 if this is
- * a fin frame, otherwise 0.  iocb->rsv is reserved bits.
+ * Send WebSocket frame specified in iocb. ctx must be initialized
+ * using wslay_frame_context_init function.  iocb->fin must be 1 if
+ * this is a fin frame, otherwise 0.  iocb->rsv is reserved bits.
  * iocb->opcode must be the opcode of this frame.  iocb->mask must be
  * 1 if this is masked frame, otherwise 0.  iocb->payload_length is
  * the payload_length of this frame.  iocb->data must point to the
@@ -142,7 +143,7 @@ void wslay_frame_context_free(wslay_frame_context_ptr session);
  * data and data_length in iocb accordingly and call this function
  * again.
  */
-ssize_t wslay_frame_send(wslay_frame_context_ptr session,
+ssize_t wslay_frame_send(wslay_frame_context_ptr ctx,
                          struct wslay_frame_iocb *iocb);
 
 /*
@@ -166,7 +167,7 @@ ssize_t wslay_frame_send(wslay_frame_context_ptr session,
  * remaining data to be received, call this function again.  This
  * function ensures frame alignment.
  */
-ssize_t wslay_frame_recv(wslay_frame_context_ptr session,
+ssize_t wslay_frame_recv(wslay_frame_context_ptr ctx,
                          struct wslay_frame_iocb *iocb);
 
 #ifdef __cplusplus
