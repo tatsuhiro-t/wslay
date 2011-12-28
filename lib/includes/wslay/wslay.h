@@ -32,6 +32,19 @@ extern "C" {
 #include <stdint.h>
 #include <stdlib.h>
 
+enum wslay_error {
+  WSLAY_ERR_WANT_READ = -100,
+  WSLAY_ERR_WANT_WRITE = -101,
+  WSLAY_ERR_PROTO = -200,
+  WSLAY_ERR_INVALID_ARGUMENT = -300,
+  WSLAY_ERR_INVALID_CALLBACK = -301,
+
+  WSLAY_ERR_WOULDBLOCK = -400,
+  WSLAY_ERR_IO = -401,
+
+  WSLAY_ERR_NOMEM = -500
+};
+
 /*
  * Callback function used by wslay_frame_send function when it needs
  * to send data. The implementation of this function must send at most
@@ -82,14 +95,6 @@ struct wslay_frame_callbacks {
 #define WSLAY_CONNECTION_CLOSE 0x8u
 #define WSLAY_PING 0x9u
 #define WSLAY_PONG 0xau
-
-enum wslay_error {
-  WSLAY_ERR_WANT_READ = -100,
-  WSLAY_ERR_WANT_WRITE = -101,
-  WSLAY_ERR_PROTO = -200,
-  WSLAY_ERR_INVALID_ARGUMENT = -300,
-  WSLAY_ERR_INVALID_CALLBACK = -301
-};
 
 struct wslay_frame_iocb {
   uint8_t fin; /* 1 for fragmented final frame, 0 for otherwise */
@@ -169,6 +174,105 @@ ssize_t wslay_frame_send(wslay_frame_context_ptr ctx,
  */
 ssize_t wslay_frame_recv(wslay_frame_context_ptr ctx,
                          struct wslay_frame_iocb *iocb);
+
+struct wslay_event_context;
+typedef struct wslay_event_context *wslay_event_context_ptr;
+
+typedef void (*wslay_event_on_open_callback)(wslay_event_context_ptr ctx,
+                                             void *user_data);
+typedef void (*wslay_event_on_close_callback)(wslay_event_context_ptr ctx,
+                                              void *user_data);
+
+struct wslay_event_on_msg_recv_arg {
+  uint8_t rsv;
+  uint8_t opcode;
+  const uint8_t *msg;
+  size_t msg_length;
+};
+
+typedef void (*wslay_event_on_msg_recv_callback)
+(wslay_event_context_ptr ctx,
+ const struct wslay_event_on_msg_recv_arg *arg, void *user_data);
+
+struct wslay_event_on_frame_recv_start_arg {
+  uint8_t fin;
+  uint8_t rsv;
+  uint8_t opcode;
+  uint64_t payload_length;
+};
+
+typedef void (*wslay_event_on_frame_recv_start_callback)
+(wslay_event_context_ptr ctx,
+ const struct wslay_event_on_frame_recv_start_arg *arg, void *user_data);
+
+struct wslay_event_on_frame_recv_chunk_arg {
+  const uint8_t *data;
+  size_t data_length;
+};
+
+typedef void (*wslay_event_on_frame_recv_chunk_callback)
+(wslay_event_context_ptr ctx,
+ const struct wslay_event_on_frame_recv_chunk_arg *arg, void *user_data);
+
+typedef void (*wslay_event_on_frame_recv_end_callback)
+(wslay_event_context_ptr ctx, void *user_data);
+
+typedef ssize_t (*wslay_event_recv_callback)(wslay_event_context_ptr ctx,
+                                             uint8_t *buf, size_t len,
+                                             void *user_data);
+typedef ssize_t (*wslay_event_send_callback)(wslay_event_context_ptr ctx,
+                                             const uint8_t *data, size_t len,
+                                             void *user_data);
+typedef ssize_t (*wslay_event_genmask_callback)(wslay_event_context_ptr ctx,
+                                                uint8_t *buf, size_t len,
+                                                void *user_data);
+
+struct wslay_event_callbacks {
+  wslay_event_recv_callback recv_callback;
+  wslay_event_send_callback send_callback;
+  wslay_event_genmask_callback genmask_callback;
+  wslay_event_on_open_callback on_open_callback;
+  wslay_event_on_frame_recv_start_callback on_frame_recv_start_callback;
+  wslay_event_on_frame_recv_chunk_callback on_frame_recv_chunk_callback;
+  wslay_event_on_frame_recv_end_callback on_frame_recv_end_callback;
+  wslay_event_on_msg_recv_callback on_msg_recv_callback;
+  wslay_event_on_close_callback on_close_callback;
+};
+
+int wslay_event_context_init(wslay_event_context_ptr *ctx,
+                             const struct wslay_event_callbacks *callbacks,
+                             void *user_data);
+
+void wslay_event_context_free(wslay_event_context_ptr ctx);
+
+int wslay_event_recv(wslay_event_context_ptr ctx);
+int wslay_event_send(wslay_event_context_ptr ctx);
+
+struct wslay_event_queue_msg_arg {
+  uint8_t opcode;
+  const uint8_t *msg;
+  size_t msg_length;
+};
+
+int wslay_event_queue_msg(wslay_event_context_ptr ctx,
+                          const struct wslay_event_queue_msg_arg *arg);
+
+int wslay_event_queue_close(wslay_event_context_ptr ctx);
+
+void wslay_event_set_eof(wslay_event_context_ptr ctx, int val);
+void wslay_event_set_error(wslay_event_context_ptr ctx, int val);
+
+int wslay_event_want_read(wslay_event_context_ptr ctx);
+int wslay_event_want_write(wslay_event_context_ptr ctx);
+
+void wslay_event_set_read_enabled(wslay_event_context_ptr ctx, int val);
+void wslay_event_set_write_enabled(wslay_event_context_ptr ctx, int val);
+
+int wslay_event_get_read_enabled(wslay_event_context_ptr ctx);
+int wslay_event_get_write_enabled(wslay_event_context_ptr ctx);
+
+void wslay_event_set_abort(wslay_event_context_ptr ctx, int val);
+int wslay_event_get_abort(wslay_event_context_ptr ctx);
 
 #ifdef __cplusplus
 }

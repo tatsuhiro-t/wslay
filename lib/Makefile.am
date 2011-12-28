@@ -22,7 +22,7 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 SUBDIRS = includes
 
-AM_CFLAGS = -Wall -g -O2
+AM_CFLAGS = -Wall
 AM_CPPFLAGS = -I$(srcdir)/includes -I$(builddir)/includes
 
 pkgconfigdir = $(libdir)/pkgconfig
@@ -31,8 +31,12 @@ DISTCLEANFILES = $(pkgconfig_DATA)
 
 lib_LTLIBRARIES = libwslay.la
 
-OBJECTS = wslay_frame.c wslay_session.c
+OBJECTS = wslay_frame.c wslay_session.c\
+	wslay_stack.c wslay_queue.c\
+	wslay_event.c
 
-HFILES = wslay_frame.h wslay_session.h
+HFILES = wslay_frame.h wslay_session.h\
+	wslay_stack.h wslay_queue.h\
+	wslay_event.h
 
 libwslay_la_SOURCES = $(HFILES) $(OBJECTS)

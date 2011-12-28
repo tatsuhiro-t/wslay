@@ -27,6 +27,8 @@
 #include <CUnit/Basic.h>
 /* include test cases' include files here */
 #include "wslay_frame_test.h"
+#include "wslay_stack_test.h"
+#include "wslay_queue_test.h"
 
 int init_suite1(void)
 {
@@ -86,7 +88,9 @@ int main()
       !CU_add_test(pSuite, "wslay_frame_send_too_large_payload",
                    test_wslay_frame_send_too_large_payload) ||
       !CU_add_test(pSuite, "wslay_frame_send_ctrl_frame_too_large_payload",
-                   test_wslay_frame_send_ctrl_frame_too_large_payload)) {
+                   test_wslay_frame_send_ctrl_frame_too_large_payload) ||
+      !CU_add_test(pSuite, "wslay_stack", test_wslay_stack) ||
+      !CU_add_test(pSuite, "wslay_queue", test_wslay_queue)) {
      CU_cleanup_registry();
      return CU_get_error();
    }
