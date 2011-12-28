@@ -39,6 +39,7 @@ struct wslay_imsg {
   uint8_t fin;
   uint8_t rsv;
   uint8_t opcode;
+  uint32_t utf8state;
   struct wslay_queue *chunks;
   size_t msg_length;
 };

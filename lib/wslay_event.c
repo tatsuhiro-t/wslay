@@ -31,6 +31,48 @@
 #include "wslay_stack.h"
 #include "wslay_queue.h"
 
+/* Start of utf8 dfa */
+// Copyright (c) 2008-2010 Bjoern Hoehrmann <bjoern@hoehrmann.de>
+// See http://bjoern.hoehrmann.de/utf-8/decoder/dfa/ for details.
+
+#define UTF8_ACCEPT 0
+#define UTF8_REJECT 12
+
+static const uint8_t utf8d[] = {
+  // The first part of the table maps bytes to character classes that
+  // to reduce the size of the transition table and create bitmasks.
+   0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+   0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+   0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+   0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+   1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,  9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,
+   7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,  7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,
+   8,8,2,2,2,2,2,2,2,2,2,2,2,2,2,2,  2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
+  10,3,3,3,3,3,3,3,3,3,3,3,3,4,3,3, 11,6,6,6,5,8,8,8,8,8,8,8,8,8,8,8,
+
+  // The second part is a transition table that maps a combination
+  // of a state of the automaton and a character class to a state.
+   0,12,24,36,60,96,84,12,12,12,48,72, 12,12,12,12,12,12,12,12,12,12,12,12,
+  12, 0,12,12,12,12,12, 0,12, 0,12,12, 12,24,12,12,12,12,12,24,12,24,12,12,
+  12,12,12,12,12,12,12,24,12,12,12,12, 12,24,12,12,12,12,12,12,12,24,12,12,
+  12,12,12,12,12,12,12,36,12,36,12,12, 12,36,12,12,12,12,12,36,12,36,12,12,
+  12,36,12,12,12,12,12,12,12,12,12,12,
+};
+
+uint32_t inline
+decode(uint32_t* state, uint32_t* codep, uint32_t byte) {
+  uint32_t type = utf8d[byte];
+
+  *codep = (*state != UTF8_ACCEPT) ?
+    (byte & 0x3fu) | (*codep << 6) :
+    (0xff >> type) & (byte);
+
+  *state = utf8d[256 + *state + type];
+  return *state;
+}
+
+/* End of utf8 dfa */
+
 static ssize_t wslay_event_frame_recv_callback(uint8_t *buf, size_t len,
                                                void *user_data)
 {
@@ -92,7 +134,7 @@ static void wslay_imsg_set(struct wslay_imsg *m, uint8_t fin, uint8_t rsv,
   m->opcode = opcode;
   m->msg_length = 0;
 }
-                           
+
 static void wslay_imsg_chunks_free(struct wslay_imsg *m)
 {
   if(!m->chunks) {
@@ -102,6 +144,13 @@ static void wslay_imsg_chunks_free(struct wslay_imsg *m)
     wslay_byte_chunk_free(wslay_queue_top(m->chunks));
     wslay_queue_pop(m->chunks);
   }
+}
+
+static void wslay_imsg_reset(struct wslay_imsg *m)
+{
+  m->opcode = 0xffu;
+  m->utf8state = UTF8_ACCEPT;
+  wslay_imsg_chunks_free(m);
 }
 
 static int wslay_imsg_append_chunk(struct wslay_imsg *m, size_t len)
@@ -228,8 +277,8 @@ int wslay_event_context_init(wslay_event_context_ptr *ctx,
     wslay_event_context_free(*ctx);
     return WSLAY_ERR_NOMEM;
   }
-  (*ctx)->imsgs[0].opcode = 0xffu;
   for(i = 0; i < 2; ++i) {
+    wslay_imsg_reset(&(*ctx)->imsgs[i]);
     (*ctx)->imsgs[i].chunks = wslay_queue_new();
     if(!(*ctx)->imsgs[i].chunks) {
       wslay_event_context_free(*ctx);
@@ -351,6 +400,23 @@ int wslay_event_recv(wslay_event_context_ptr ctx)
         ctx->ipayloadlen = iocb.payload_length;
         wslay_event_call_on_frame_recv_start_callback(ctx, &iocb);
       }
+      if(ctx->imsg->opcode == WSLAY_TEXT_FRAME) {
+        size_t i;
+        for(i = 0; i < iocb.data_length; ++i) {
+          uint32_t codep;
+          if(decode(&ctx->imsg->utf8state, &codep,
+                    iocb.data[i]) == UTF8_REJECT) {
+            ctx->read_enabled = 0;
+            if((r = wslay_event_queue_close(ctx)) != 0) {
+              return r;
+            }
+            break;
+          }
+        }
+      }
+      if(ctx->imsg->utf8state == UTF8_REJECT) {
+        break;
+      }
       wslay_event_call_on_frame_recv_chunk_callback(ctx, &iocb);
       if(iocb.data_length > 0) {
         chunk = wslay_queue_tail(ctx->imsg->chunks);
@@ -359,6 +425,14 @@ int wslay_event_recv(wslay_event_context_ptr ctx)
         ctx->ipayloadoff += iocb.data_length;
       }
       if(ctx->ipayloadoff == ctx->ipayloadlen) {
+        if(ctx->imsg->fin && ctx->imsg->opcode == WSLAY_TEXT_FRAME &&
+           ctx->imsg->utf8state != UTF8_ACCEPT) {
+          ctx->read_enabled = 0;
+          if((r = wslay_event_queue_close(ctx)) != 0) {
+            return r;
+          }
+          break;
+        }
         wslay_event_call_on_frame_recv_end_callback(ctx);
         if(ctx->imsg->fin) {
           if(ctx->callbacks.on_msg_recv_callback) {
@@ -376,8 +450,7 @@ int wslay_event_recv(wslay_event_context_ptr ctx)
             ctx->callbacks.on_msg_recv_callback(ctx, &arg, ctx->user_data);
             free(msg);
           }
-          ctx->imsg->opcode = 0xffu;
-          wslay_imsg_chunks_free(ctx->imsg);
+          wslay_imsg_reset(ctx->imsg);
           if(ctx->imsg == &ctx->imsgs[1]) {
             ctx->imsg = &ctx->imsgs[0];
           }
