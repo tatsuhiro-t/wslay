@@ -347,7 +347,7 @@ int wslay_event_recv(wslay_event_context_ptr ctx)
 {
   struct wslay_frame_iocb iocb;
   ssize_t r;
-  while(!ctx->abort_run && ctx->read_enabled) {
+  while(ctx->read_enabled) {
     memset(&iocb, 0, sizeof(iocb));
     r = wslay_frame_recv(ctx->frame_ctx, &iocb);
     if(r >= 0) {
@@ -454,13 +454,7 @@ int wslay_event_recv(wslay_event_context_ptr ctx)
         ctx->ipayloadlen = ctx->ipayloadoff = 0;
       }
     } else {
-      if(r == WSLAY_ERR_WANT_READ) {
-        if(ctx->error == WSLAY_ERR_IO || ctx->eof) {
-          if((r = wslay_event_queue_close(ctx)) != 0) {
-            return r;
-          }
-        }
-      } else {
+      if(r != WSLAY_ERR_WANT_READ || ctx->error != WSLAY_ERR_WOULDBLOCK) {
         if((r = wslay_event_queue_close(ctx)) != 0) {
           return r;
         }
@@ -468,7 +462,6 @@ int wslay_event_recv(wslay_event_context_ptr ctx)
       break;
     }
   }
-  /* TODO handle malloc failure */
   return 0;
 }
 
@@ -476,7 +469,7 @@ int wslay_event_send(wslay_event_context_ptr ctx)
 {
   struct wslay_frame_iocb iocb;
   ssize_t r;
-  while(!ctx->abort_run && ctx->write_enabled &&
+  while(ctx->write_enabled &&
         (!wslay_queue_empty(ctx->send_queue) || ctx->omsg)) {
     if(!ctx->omsg) {
       ctx->omsg = wslay_queue_top(ctx->send_queue);
@@ -504,26 +497,13 @@ int wslay_event_send(wslay_event_context_ptr ctx)
         ctx->omsg = NULL;
       }
     } else {
-      if(r == WSLAY_ERR_WANT_WRITE) {
-        if(ctx->error == WSLAY_ERR_IO) {
-          ctx->write_enabled = 0;
-          ctx->abort_run = 1;
-          /* TODO Return error code, instead of using abort_run? */
-        }
-      } else {
+      if(r != WSLAY_ERR_WANT_WRITE || ctx->error != WSLAY_ERR_WOULDBLOCK) {
         ctx->write_enabled = 0;
-        ctx->abort_run = 1;
-        /* TODO Return error code, instead of using abort_run? */
       }
       break;
     }
   }
   return 0;
-}
-
-void wslay_event_set_eof(wslay_event_context_ptr ctx, int val)
-{
-  ctx->eof = val;
 }
 
 void wslay_event_set_error(wslay_event_context_ptr ctx, int val)
@@ -560,14 +540,4 @@ int wslay_event_get_read_enabled(wslay_event_context_ptr ctx)
 int wslay_event_get_write_enabled(wslay_event_context_ptr ctx)
 {
   return ctx->write_enabled;
-}
-
-void wslay_event_set_abort(wslay_event_context_ptr ctx, int val)
-{
-  ctx->abort_run = val;
-}
-
-int wslay_event_get_abort(wslay_event_context_ptr ctx)
-{
-  return ctx->abort_run;
 }

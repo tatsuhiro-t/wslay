@@ -39,8 +39,9 @@ enum wslay_error {
   WSLAY_ERR_INVALID_ARGUMENT = -300,
   WSLAY_ERR_INVALID_CALLBACK = -301,
 
-  WSLAY_ERR_WOULDBLOCK = -400,
-  WSLAY_ERR_IO = -401,
+  WSLAY_ERR_IO = -400,
+  WSLAY_ERR_WOULDBLOCK = -401,
+  WSLAY_ERR_EOF = -402,
 
   WSLAY_ERR_NOMEM = -500
 };
@@ -259,7 +260,6 @@ int wslay_event_queue_msg(wslay_event_context_ptr ctx,
 
 int wslay_event_queue_close(wslay_event_context_ptr ctx);
 
-void wslay_event_set_eof(wslay_event_context_ptr ctx, int val);
 void wslay_event_set_error(wslay_event_context_ptr ctx, int val);
 
 int wslay_event_want_read(wslay_event_context_ptr ctx);
@@ -270,9 +270,6 @@ void wslay_event_set_write_enabled(wslay_event_context_ptr ctx, int val);
 
 int wslay_event_get_read_enabled(wslay_event_context_ptr ctx);
 int wslay_event_get_write_enabled(wslay_event_context_ptr ctx);
-
-void wslay_event_set_abort(wslay_event_context_ptr ctx, int val);
-int wslay_event_get_abort(wslay_event_context_ptr ctx);
 
 #ifdef __cplusplus
 }

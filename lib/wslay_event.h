@@ -61,7 +61,6 @@ struct wslay_event_context {
   wslay_frame_context_ptr frame_ctx;
   uint8_t read_enabled;
   uint8_t write_enabled;
-  uint8_t abort_run;
   struct wslay_imsg imsgs[2];
   struct wslay_imsg *imsg;
   uint64_t ipayloadlen;
@@ -69,7 +68,6 @@ struct wslay_event_context {
   uint8_t imask;
   uint8_t imaskkey[4];
   int error;
-  uint8_t eof;
   struct wslay_omsg *omsg;
   /* TODO maybe for separete send_queue for ctrl msg */
   struct wslay_queue *send_queue; // <wslay_omsg*>
