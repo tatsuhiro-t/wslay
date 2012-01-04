@@ -226,7 +226,6 @@ static uint8_t* wslay_flatten_queue(struct wslay_queue *queue, size_t len)
 
 int wslay_event_queue_close(wslay_event_context_ptr ctx)
 {
-  ctx->read_enabled = 0;
   struct wslay_event_msg arg = {
     WSLAY_CONNECTION_CLOSE, NULL, 0
   };
@@ -354,6 +353,7 @@ int wslay_event_recv(wslay_event_context_ptr ctx)
       struct wslay_byte_chunk *chunk;
       /* We only allow rsv == 0 ATM. */
       if(iocb.rsv != 0) {
+        ctx->read_enabled = 0;
         if((r = wslay_event_queue_close(ctx)) != 0) {
           return r;
         }
@@ -373,6 +373,7 @@ int wslay_event_recv(wslay_event_context_ptr ctx)
             return r;
           }
         } else {
+          ctx->read_enabled = 0;
           if((r = wslay_event_queue_close(ctx)) != 0) {
             return r;
           }
@@ -387,6 +388,7 @@ int wslay_event_recv(wslay_event_context_ptr ctx)
           ctx->imsg = &ctx->imsgs[1];
           wslay_imsg_set(ctx->imsg, iocb.fin, iocb.rsv, iocb.opcode);
         } else {
+          ctx->read_enabled = 0;
           if((r = wslay_event_queue_close(ctx)) != 0) {
             return r;
           }
@@ -404,6 +406,7 @@ int wslay_event_recv(wslay_event_context_ptr ctx)
           uint32_t codep;
           if(decode(&ctx->imsg->utf8state, &codep,
                     iocb.data[i]) == UTF8_REJECT) {
+            ctx->read_enabled = 0;
             if((r = wslay_event_queue_close(ctx)) != 0) {
               return r;
             }
@@ -424,6 +427,7 @@ int wslay_event_recv(wslay_event_context_ptr ctx)
       if(ctx->ipayloadoff == ctx->ipayloadlen) {
         if(ctx->imsg->fin && ctx->imsg->opcode == WSLAY_TEXT_FRAME &&
            ctx->imsg->utf8state != UTF8_ACCEPT) {
+          ctx->read_enabled = 0;
           if((r = wslay_event_queue_close(ctx)) != 0) {
             return r;
           }
@@ -455,6 +459,7 @@ int wslay_event_recv(wslay_event_context_ptr ctx)
       }
     } else {
       if(r != WSLAY_ERR_WANT_READ || ctx->error != WSLAY_ERR_WOULDBLOCK) {
+        ctx->read_enabled = 0;
         if((r = wslay_event_queue_close(ctx)) != 0) {
           return r;
         }
