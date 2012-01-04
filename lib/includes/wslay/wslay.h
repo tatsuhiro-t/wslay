@@ -248,14 +248,14 @@ void wslay_event_context_free(wslay_event_context_ptr ctx);
 int wslay_event_recv(wslay_event_context_ptr ctx);
 int wslay_event_send(wslay_event_context_ptr ctx);
 
-struct wslay_event_queue_msg_arg {
+struct wslay_event_msg {
   uint8_t opcode;
   const uint8_t *msg;
   size_t msg_length;
 };
 
 int wslay_event_queue_msg(wslay_event_context_ptr ctx,
-                          const struct wslay_event_queue_msg_arg *arg);
+                          const struct wslay_event_msg *arg);
 
 int wslay_event_queue_close(wslay_event_context_ptr ctx);
 

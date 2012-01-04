@@ -226,14 +226,14 @@ static uint8_t* wslay_flatten_queue(struct wslay_queue *queue, size_t len)
 
 int wslay_event_queue_close(wslay_event_context_ptr ctx)
 {
-  struct wslay_event_queue_msg_arg arg = {
+  struct wslay_event_msg arg = {
     WSLAY_CONNECTION_CLOSE, NULL, 0
   };
   return wslay_event_queue_msg(ctx, &arg);
 }
 
 int wslay_event_queue_msg(wslay_event_context_ptr ctx,
-                          const struct wslay_event_queue_msg_arg *arg)
+                          const struct wslay_event_msg *arg)
 {
   int r;
   struct wslay_omsg *omsg;
