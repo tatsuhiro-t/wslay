@@ -501,7 +501,8 @@ int wslay_event_recv(wslay_event_context_ptr ctx)
           }
           if(ctx->callbacks.on_msg_recv_callback ||
              (ctx->write_enabled &&
-              ctx->imsg->opcode == WSLAY_CONNECTION_CLOSE)) {
+              (ctx->imsg->opcode == WSLAY_CONNECTION_CLOSE ||
+               ctx->imsg->opcode == WSLAY_PING))) {
             struct wslay_event_on_msg_recv_arg arg;
             uint16_t close_code = 0;
             uint8_t *msg = wslay_flatten_queue(ctx->imsg->chunks,
@@ -509,15 +510,24 @@ int wslay_event_recv(wslay_event_context_ptr ctx)
             if(ctx->imsg->msg_length && !msg) {
               return WSLAY_ERR_NOMEM;
             }
-            if(ctx->write_enabled &&
-               ctx->imsg->opcode == WSLAY_CONNECTION_CLOSE) {
-              if(ctx->imsg->msg_length > 2) {
-                memcpy(&close_code, msg, 2);
-                close_code = ntohs(close_code);
-              }
-              if((r = wslay_event_queue_close(ctx)) != 0) {
-                free(msg);
-                return r;
+            if(ctx->write_enabled) {
+              if(ctx->imsg->opcode == WSLAY_CONNECTION_CLOSE) {
+                if(ctx->imsg->msg_length > 2) {
+                  memcpy(&close_code, msg, 2);
+                  close_code = ntohs(close_code);
+                }
+                if((r = wslay_event_queue_close(ctx)) != 0) {
+                  free(msg);
+                  return r;
+                }
+              } else if(ctx->imsg->opcode == WSLAY_PING) {
+                struct wslay_event_msg arg = {
+                  WSLAY_PONG, msg, ctx->imsg->msg_length
+                };
+                if((r = wslay_event_queue_msg(ctx, &arg)) != 0) {
+                  free(msg);
+                  return r;
+                }
               }
             }
             if(ctx->callbacks.on_msg_recv_callback) {
