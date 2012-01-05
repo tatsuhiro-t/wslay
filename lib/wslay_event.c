@@ -27,6 +27,7 @@
 #include <string.h>
 #include <assert.h>
 #include <stdio.h>
+#include <arpa/inet.h>
 
 #include "wslay_stack.h"
 #include "wslay_queue.h"
@@ -495,19 +496,39 @@ int wslay_event_recv(wslay_event_context_ptr ctx)
         }
         wslay_event_call_on_frame_recv_end_callback(ctx);
         if(ctx->imsg->fin) {
-          if(ctx->callbacks.on_msg_recv_callback) {
+          if(ctx->imsg->opcode == WSLAY_CONNECTION_CLOSE) {
+            ctx->read_enabled = 0;
+          }
+          if(ctx->callbacks.on_msg_recv_callback ||
+             (ctx->write_enabled &&
+              ctx->imsg->opcode == WSLAY_CONNECTION_CLOSE)) {
             struct wslay_event_on_msg_recv_arg arg;
+            uint16_t close_code = 0;
             uint8_t *msg = wslay_flatten_queue(ctx->imsg->chunks,
                                                ctx->imsg->msg_length);
             if(ctx->imsg->msg_length && !msg) {
               return WSLAY_ERR_NOMEM;
             }
-            arg.rsv = ctx->imsg->rsv;
-            arg.opcode = ctx->imsg->opcode;
-            arg.msg = msg;
-            arg.msg_length = ctx->imsg->msg_length;
-            ctx->error = 0;
-            ctx->callbacks.on_msg_recv_callback(ctx, &arg, ctx->user_data);
+            if(ctx->write_enabled &&
+               ctx->imsg->opcode == WSLAY_CONNECTION_CLOSE) {
+              if(ctx->imsg->msg_length > 2) {
+                memcpy(&close_code, msg, 2);
+                close_code = ntohs(close_code);
+              }
+              if((r = wslay_event_queue_close(ctx)) != 0) {
+                free(msg);
+                return r;
+              }
+            }
+            if(ctx->callbacks.on_msg_recv_callback) {
+              arg.rsv = ctx->imsg->rsv;
+              arg.opcode = ctx->imsg->opcode;
+              arg.msg = msg;
+              arg.msg_length = ctx->imsg->msg_length;
+              arg.close_code = close_code;
+              ctx->error = 0;
+              ctx->callbacks.on_msg_recv_callback(ctx, &arg, ctx->user_data);
+            }
             free(msg);
           }
           wslay_imsg_reset(ctx->imsg);

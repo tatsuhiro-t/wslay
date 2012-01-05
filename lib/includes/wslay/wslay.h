@@ -189,6 +189,7 @@ struct wslay_event_on_msg_recv_arg {
   uint8_t opcode;
   const uint8_t *msg;
   size_t msg_length;
+  uint16_t close_code; /* Only for opcode == WSLAY_CONNECTION_CLOSE */
 };
 
 typedef void (*wslay_event_on_msg_recv_callback)
