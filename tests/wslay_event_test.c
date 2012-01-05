@@ -317,3 +317,14 @@ void test_wslay_event_reply_close()
   CU_ASSERT(1 == wslay_event_get_close_sent(ctx));
   wslay_event_context_free(ctx);
 }
+
+void test_wslay_event_no_more_msg()
+{
+  wslay_event_context_ptr ctx;
+  struct wslay_event_callbacks callbacks;
+  memset(&callbacks, 0, sizeof(callbacks));
+  wslay_event_context_server_init(&ctx, &callbacks, NULL);
+  CU_ASSERT(0 == wslay_event_queue_close(ctx, 0, NULL, 0));
+  CU_ASSERT(WSLAY_ERR_NO_MORE_MSG == wslay_event_queue_close(ctx, 0, NULL, 0));
+  wslay_event_context_free(ctx);
+}
