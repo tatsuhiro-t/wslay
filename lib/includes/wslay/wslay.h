@@ -256,9 +256,13 @@ struct wslay_event_callbacks {
   wslay_event_on_close_callback on_close_callback;
 };
 
-int wslay_event_context_init(wslay_event_context_ptr *ctx,
-                             const struct wslay_event_callbacks *callbacks,
-                             void *user_data);
+int wslay_event_context_server_init
+(wslay_event_context_ptr *ctx,
+ const struct wslay_event_callbacks *callbacks, void *user_data);
+
+int wslay_event_context_client_init
+(wslay_event_context_ptr *ctx,
+ const struct wslay_event_callbacks *callbacks, void *user_data);
 
 void wslay_event_context_free(wslay_event_context_ptr ctx);
 

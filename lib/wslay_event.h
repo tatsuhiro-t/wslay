@@ -69,6 +69,7 @@ struct wslay_event_frame_user_data {
 };
 
 struct wslay_event_context {
+  uint8_t server;
   wslay_frame_context_ptr frame_ctx;
   uint8_t read_enabled;
   uint8_t write_enabled;

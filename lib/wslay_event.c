@@ -312,9 +312,10 @@ int wslay_event_queue_fragmented_msg
   return 0;
 }
 
-int wslay_event_context_init(wslay_event_context_ptr *ctx,
-                             const struct wslay_event_callbacks *callbacks,
-                             void *user_data)
+static int wslay_event_context_init
+(wslay_event_context_ptr *ctx,
+ const struct wslay_event_callbacks *callbacks,
+ void *user_data)
 {
   int i, r;
   struct wslay_frame_callbacks frame_callbacks = {
@@ -357,6 +358,32 @@ int wslay_event_context_init(wslay_event_context_ptr *ctx,
   }
   (*ctx)->imsg = &(*ctx)->imsgs[0];
   (*ctx)->obufmark = (*ctx)->obuflimit = (*ctx)->obuf;
+  return 0;
+}
+
+int wslay_event_context_server_init
+(wslay_event_context_ptr *ctx,
+ const struct wslay_event_callbacks *callbacks,
+ void *user_data)
+{
+  int r;
+  if((r = wslay_event_context_init(ctx, callbacks, user_data)) != 0) {
+    return r;
+  }
+  (*ctx)->server = 1;
+  return 0;
+}
+
+int wslay_event_context_client_init
+(wslay_event_context_ptr *ctx,
+ const struct wslay_event_callbacks *callbacks,
+ void *user_data)
+{
+  int r;
+  if((r = wslay_event_context_init(ctx, callbacks, user_data)) != 0) {
+    return r;
+  }
+  (*ctx)->server = 0;
   return 0;
 }
 
@@ -430,7 +457,8 @@ int wslay_event_recv(wslay_event_context_ptr ctx)
     if(r >= 0) {
       struct wslay_byte_chunk *chunk;
       /* We only allow rsv == 0 ATM. */
-      if(iocb.rsv != 0) {
+      if(iocb.rsv != 0 ||
+         ((ctx->server && !iocb.mask) || (!ctx->server && iocb.mask))) {
         ctx->read_enabled = 0;
         if((r = wslay_event_queue_close(ctx, WSLAY_CODE_PROTOCOL_ERROR,
                                         NULL, 0)) != 0) {
@@ -453,7 +481,7 @@ int wslay_event_recv(wslay_event_context_ptr ctx)
           }
         } else {
           ctx->read_enabled = 0;
-          if((r = wslay_event_queue_close(ctx, WSLAY_CODE_UNSUPPORTED_DATA,
+          if((r = wslay_event_queue_close(ctx, WSLAY_CODE_PROTOCOL_ERROR,
                                           NULL, 0)) != 0) {
             return r;
           }
@@ -633,8 +661,7 @@ int wslay_event_send(wslay_event_context_ptr ctx)
       /* TODO No fragmentation */
       iocb.fin = 1;
       iocb.opcode = ctx->omsg->opcode;
-      /* TODO No mask */
-      iocb.mask = 0;
+      iocb.mask = ctx->server ? 0 : 1;
       iocb.data = ctx->omsg->data+ctx->opayloadoff;
       iocb.data_length = ctx->opayloadlen-ctx->opayloadoff;
       iocb.payload_length = ctx->opayloadlen;
@@ -682,8 +709,7 @@ int wslay_event_send(wslay_event_context_ptr ctx)
       memset(&iocb, 0, sizeof(iocb));
       iocb.fin = ctx->omsg->fin;
       iocb.opcode = ctx->omsg->opcode;
-      /* TODO No mask */
-      iocb.mask = 0;
+      iocb.mask = ctx->server ? 0 : 1;
       iocb.data = ctx->obufmark;
       iocb.data_length = ctx->obuflimit-ctx->obufmark;
       iocb.payload_length = ctx->opayloadlen;

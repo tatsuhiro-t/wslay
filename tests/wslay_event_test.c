@@ -152,7 +152,7 @@ void test_wslay_event_send_fragmented_msg()
   callbacks.send_callback = accumulator_send_callback;
   memset(&acc, 0, sizeof(acc));
   ud.acc = &acc;
-  wslay_event_context_init(&ctx, &callbacks, &ud);
+  wslay_event_context_server_init(&ctx, &callbacks, &ud);
 
   memset(&arg, 0, sizeof(arg));
   arg.opcode = WSLAY_TEXT_FRAME;
@@ -188,7 +188,7 @@ void test_wslay_event_send_fragmented_msg_with_ctrl()
   callbacks.send_callback = one_accumulator_send_callback;
   memset(&acc, 0, sizeof(acc));
   ud.acc = &acc;
-  wslay_event_context_init(&ctx, &callbacks, &ud);
+  wslay_event_context_server_init(&ctx, &callbacks, &ud);
   
   memset(&arg, 0, sizeof(arg));
   arg.opcode = WSLAY_TEXT_FRAME;
@@ -225,7 +225,7 @@ void test_wslay_event_send_ctrl_msg_first()
   callbacks.send_callback = accumulator_send_callback;
   memset(&acc, 0, sizeof(acc));
   ud.acc = &acc;
-  wslay_event_context_init(&ctx, &callbacks, &ud);
+  wslay_event_context_server_init(&ctx, &callbacks, &ud);
   
   memset(&arg, 0, sizeof(arg));
   arg.opcode = WSLAY_PING;
@@ -255,7 +255,7 @@ void test_wslay_event_queue_close()
   callbacks.send_callback = accumulator_send_callback;
   memset(&acc, 0, sizeof(acc));
   ud.acc = &acc;
-  wslay_event_context_init(&ctx, &callbacks, &ud);
+  wslay_event_context_server_init(&ctx, &callbacks, &ud);
   CU_ASSERT(0 == wslay_event_queue_close(ctx, WSLAY_CODE_MESSAGE_TOO_BIG,
                                          (const uint8_t*)msg, 1));
   CU_ASSERT(0 == wslay_event_send(ctx));
@@ -275,7 +275,7 @@ void test_wslay_event_queue_close_without_code()
   callbacks.send_callback = accumulator_send_callback;
   memset(&acc, 0, sizeof(acc));
   ud.acc = &acc;
-  wslay_event_context_init(&ctx, &callbacks, &ud);
+  wslay_event_context_server_init(&ctx, &callbacks, &ud);
   CU_ASSERT(0 == wslay_event_queue_close(ctx, 0, NULL, 0));
   CU_ASSERT(0 == wslay_event_send(ctx));
   CU_ASSERT(2 == acc.length);
@@ -306,7 +306,7 @@ void test_wslay_event_reply_close()
   memset(&acc, 0, sizeof(acc));
   ud.df = &df;
   ud.acc = &acc;
-  wslay_event_context_init(&ctx, &callbacks, &ud);
+  wslay_event_context_server_init(&ctx, &callbacks, &ud);
   CU_ASSERT(0 == wslay_event_recv(ctx));
   CU_ASSERT(0 == wslay_event_send(ctx));
   CU_ASSERT(9 == acc.length);
