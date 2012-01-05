@@ -44,10 +44,21 @@ struct wslay_imsg {
   size_t msg_length;
 };
 
+enum wslay_msg_type {
+  WSLAY_NON_FRAGMENTED,
+  WSLAY_FRAGMENTED
+};
+
 struct wslay_omsg {
+  uint8_t fin;
   uint8_t opcode;
+  enum wslay_msg_type type;
+
   uint8_t *data;
   size_t data_length;
+
+  union wslay_event_msg_source source;
+  wslay_event_fragmented_msg_callback read_callback;
   /* TODO To support fragmented send, remember offset where we already
      sent */
 };
@@ -71,6 +82,10 @@ struct wslay_event_context {
   struct wslay_omsg *omsg;
   /* TODO maybe for separete send_queue for ctrl msg */
   struct wslay_queue *send_queue; // <wslay_omsg*>
+  struct wslay_queue *send_ctrl_queue; // <wslay_omsg*>, ctrl frame only
+  uint8_t obuf[4096];
+  uint8_t *obuflimit;
+  uint8_t *obufmark;
   uint64_t opayloadlen;
   uint64_t opayloadoff;
   uint8_t omask;

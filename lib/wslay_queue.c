@@ -71,6 +71,22 @@ int wslay_queue_push(struct wslay_queue *queue, void *data)
   return 0;
 }
 
+int wslay_queue_push_front(struct wslay_queue *queue, void *data)
+{
+  struct wslay_queue_cell *new_cell = (struct wslay_queue_cell*)malloc
+    (sizeof(struct wslay_queue_cell));
+  if(!new_cell) {
+    return WSLAY_ERR_NOMEM;
+  }
+  new_cell->data = data;
+  new_cell->next = queue->top;
+  queue->top = new_cell;
+  if(!queue->tail) {
+    queue->tail = queue->top;
+  }
+  return 0;
+}
+
 void wslay_queue_pop(struct wslay_queue *queue)
 {
   struct wslay_queue_cell *top = queue->top;

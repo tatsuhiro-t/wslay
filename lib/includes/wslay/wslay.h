@@ -51,7 +51,7 @@ enum wslay_error {
  * to send data. The implementation of this function must send at most
  * len bytes of data in buf. user_data is one given in
  * wslay_frame_context_init function. The implementation of this
- * functino must return the number of bytes sent. If there is an
+ * function must return the number of bytes sent. If there is an
  * error, return -1. The return value 0 is also treated an error by
  * the library.
  */
@@ -74,7 +74,7 @@ typedef ssize_t (*wslay_frame_recv_callback)(uint8_t *buf, size_t len,
  * new mask key. The implementation of this function must write len
  * bytes of mask key to buf. user_data is one given in
  * wslay_frame_context_init function. The implementation of this
- * functino return the number of bytes written. If the return value is
+ * function return the number of bytes written. If the return value is
  * not len, then the library treats it as an error.
  */
 typedef ssize_t (*wslay_frame_genmask_callback)(uint8_t *buf, size_t len,
@@ -257,6 +257,25 @@ struct wslay_event_msg {
 
 int wslay_event_queue_msg(wslay_event_context_ptr ctx,
                           const struct wslay_event_msg *arg);
+
+union wslay_event_msg_source {
+  int fd;
+  void *data;
+};
+
+typedef ssize_t (*wslay_event_fragmented_msg_callback)
+(wslay_event_context_ptr ctx,
+ uint8_t *buf, size_t len, const union wslay_event_msg_source *source,
+ int *eof, void *user_data);
+
+struct wslay_event_fragmented_msg {
+  uint8_t opcode;
+  union wslay_event_msg_source source;
+  wslay_event_fragmented_msg_callback read_callback;
+};
+
+int wslay_event_queue_fragmented_msg
+(wslay_event_context_ptr ctx, const struct wslay_event_fragmented_msg *arg);
 
 int wslay_event_queue_close(wslay_event_context_ptr ctx);
 

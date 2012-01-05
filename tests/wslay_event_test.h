@@ -22,37 +22,11 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-#include "wslay_queue_test.h"
+#ifndef WSLAY_EVENT_TEST_H
+#define WSLAY_EVENT_TEST_H
 
-#include <CUnit/CUnit.h>
+void test_wslay_event_send_fragmented_msg();
+void test_wslay_event_send_fragmented_msg_with_ctrl();
+void test_wslay_event_send_ctrl_msg_first();
 
-#include "wslay_queue.h"
-
-void test_wslay_queue()
-{
-  int ints[] = { 1, 2, 3, 4, 5 };
-  int i;
-  struct wslay_queue *queue = wslay_queue_new();
-  CU_ASSERT(wslay_queue_empty(queue));
-  for(i = 0; i < 5; ++i) {
-    wslay_queue_push(queue, &ints[i]);
-    CU_ASSERT_EQUAL(ints[0], *(int*)(wslay_queue_top(queue)));
-    CU_ASSERT(!wslay_queue_empty(queue));
-  }
-  for(i = 0; i < 5; ++i) {
-    CU_ASSERT_EQUAL(ints[i], *(int*)(wslay_queue_top(queue)));
-    wslay_queue_pop(queue);
-  }
-  CU_ASSERT(wslay_queue_empty(queue));
-
-  for(i = 0; i < 5; ++i) {
-    wslay_queue_push_front(queue, &ints[i]);
-    CU_ASSERT_EQUAL(ints[i], *(int*)(wslay_queue_top(queue)));
-    CU_ASSERT(!wslay_queue_empty(queue));
-  }
-  for(i = 4; i >= 0; --i) {
-    CU_ASSERT_EQUAL(ints[i], *(int*)(wslay_queue_top(queue)));
-    wslay_queue_pop(queue);
-  }
-  CU_ASSERT(wslay_queue_empty(queue));
-}
+#endif // WSLAY_EVENT_TEST_H
