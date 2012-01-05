@@ -447,6 +447,13 @@ static void wslay_event_call_on_frame_recv_end_callback
   }
 }
 
+static int wslay_event_check_status_code(uint16_t status_code)
+{
+  return (1000 <= status_code && status_code <= 1011 &&
+          status_code != 1004 && status_code != 1005 && status_code != 1006) ||
+    (3000 <= status_code && status_code <= 4999) ? 0 : -1;
+}
+
 int wslay_event_recv(wslay_event_context_ptr ctx)
 {
   struct wslay_frame_iocb iocb;
@@ -509,9 +516,15 @@ int wslay_event_recv(wslay_event_context_ptr ctx)
         ctx->ipayloadlen = iocb.payload_length;
         wslay_event_call_on_frame_recv_start_callback(ctx, &iocb);
       }
-      if(ctx->imsg->opcode == WSLAY_TEXT_FRAME) {
+      if(ctx->imsg->opcode == WSLAY_TEXT_FRAME ||
+         ctx->imsg->opcode == WSLAY_CONNECTION_CLOSE) {
         size_t i;
-        for(i = 0; i < iocb.data_length; ++i) {
+        if(ctx->imsg->opcode == WSLAY_CONNECTION_CLOSE) {
+          i = 2;
+        } else {
+          i = 0;
+        }
+        for(; i < iocb.data_length; ++i) {
           uint32_t codep;
           if(decode(&ctx->imsg->utf8state, &codep,
                     iocb.data[i]) == UTF8_REJECT) {
@@ -535,7 +548,9 @@ int wslay_event_recv(wslay_event_context_ptr ctx)
         ctx->ipayloadoff += iocb.data_length;
       }
       if(ctx->ipayloadoff == ctx->ipayloadlen) {
-        if(ctx->imsg->fin && ctx->imsg->opcode == WSLAY_TEXT_FRAME &&
+        if(ctx->imsg->fin &&
+           (ctx->imsg->opcode == WSLAY_TEXT_FRAME ||
+            ctx->imsg->opcode == WSLAY_CONNECTION_CLOSE) &&
            ctx->imsg->utf8state != UTF8_ACCEPT) {
           ctx->read_enabled = 0;
           if((r = wslay_event_queue_close
@@ -567,6 +582,14 @@ int wslay_event_recv(wslay_event_context_ptr ctx)
                 if(ctx->imsg->msg_length >= 2) {
                   memcpy(&status_code, msg, 2);
                   status_code = ntohs(status_code);
+                  if(wslay_event_check_status_code(status_code) != 0) {
+                    free(msg);
+                    if((r = wslay_event_queue_close
+                        (ctx, WSLAY_CODE_PROTOCOL_ERROR, NULL, 0)) != 0) {
+                      return r;
+                    }
+                    break;
+                  }
                   reason = msg+2;
                   reason_length = ctx->imsg->msg_length-2;
                 } else {
