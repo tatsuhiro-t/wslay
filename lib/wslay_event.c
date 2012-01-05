@@ -662,6 +662,7 @@ int wslay_event_recv(wslay_event_context_ptr ctx)
            r != WSLAY_ERR_NO_MORE_MSG) {
           return r;
         }
+        return WSLAY_ERR_CALLBACK_FAILURE;
       }
       break;
     }
@@ -731,6 +732,7 @@ int wslay_event_send(wslay_event_context_ptr ctx)
         if(r != WSLAY_ERR_WANT_WRITE ||
            (ctx->error != WSLAY_ERR_WOULDBLOCK && ctx->error != 0)) {
           ctx->write_enabled = 0;
+          return WSLAY_ERR_CALLBACK_FAILURE;
         }
         break;
       }
@@ -744,8 +746,7 @@ int wslay_event_send(wslay_event_context_ptr ctx)
           break;
         } else if(r < 0) {
           ctx->write_enabled = 0;
-          /* TODO should return error code */
-          break;
+          return WSLAY_ERR_CALLBACK_FAILURE;
         }
         ctx->obuflimit = ctx->obuf+r;
         if(eof) {
@@ -782,6 +783,7 @@ int wslay_event_send(wslay_event_context_ptr ctx)
            (ctx->error != WSLAY_ERR_WOULDBLOCK &&
             ctx->error != 0)) {
           ctx->write_enabled = 0;
+          return WSLAY_ERR_CALLBACK_FAILURE;
         }
         break;
       }
