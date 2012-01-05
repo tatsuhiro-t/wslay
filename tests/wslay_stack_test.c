@@ -43,5 +43,6 @@ void test_wslay_stack()
     CU_ASSERT_EQUAL(ints[i], *(int*)(wslay_stack_top(stack)));
     wslay_stack_pop(stack);
   }
-  CU_ASSERT(wslay_stack_empty(stack));  
+  CU_ASSERT(wslay_stack_empty(stack));
+  wslay_stack_free(stack);
 }

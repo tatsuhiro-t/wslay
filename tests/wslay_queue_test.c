@@ -55,4 +55,5 @@ void test_wslay_queue()
     wslay_queue_pop(queue);
   }
   CU_ASSERT(wslay_queue_empty(queue));
+  wslay_queue_free(queue);
 }
