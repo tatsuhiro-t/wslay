@@ -46,6 +46,21 @@ enum wslay_error {
   WSLAY_ERR_NOMEM = -500
 };
 
+enum wslay_status_code {
+  WSLAY_CODE_NORMAL_CLOSURE = 1000,
+  WSLAY_CODE_GOING_AWAY = 1001,
+  WSLAY_CODE_PROTOCOL_ERROR = 1002,
+  WSLAY_CODE_UNSUPPORTED_DATA = 1003,
+  WSLAY_CODE_NO_STATUS_RCVD = 1005,
+  WSLAY_CODE_ABNORMAL_CLOSURE = 1006,
+  WSLAY_CODE_INVALID_FRAME_PAYLOAD_DATA = 1007,
+  WSLAY_CODE_POLICY_VIOLATION = 1008,
+  WSLAY_CODE_MESSAGE_TOO_BIG = 1009,
+  WSLAY_CODE_MANDATORY_EXT = 1010,
+  WSLAY_CODE_INTERNAL_SERVER_ERROR = 1011,
+  WSLAY_CODE_TLS_HANDSHAKE = 1015
+};
+
 /*
  * Callback function used by wslay_frame_send function when it needs
  * to send data. The implementation of this function must send at most
@@ -189,7 +204,7 @@ struct wslay_event_on_msg_recv_arg {
   uint8_t opcode;
   const uint8_t *msg;
   size_t msg_length;
-  uint16_t close_code; /* Only for opcode == WSLAY_CONNECTION_CLOSE */
+  uint16_t status_code; /* Only for opcode == WSLAY_CONNECTION_CLOSE */
 };
 
 typedef void (*wslay_event_on_msg_recv_callback)
@@ -278,7 +293,14 @@ struct wslay_event_fragmented_msg {
 int wslay_event_queue_fragmented_msg
 (wslay_event_context_ptr ctx, const struct wslay_event_fragmented_msg *arg);
 
-int wslay_event_queue_close(wslay_event_context_ptr ctx);
+/*
+ * Queue close frame. If status_code is 0, close frame has no body
+ * even if reason_length is non-zero. For non-zero status_code value,
+ * use one of enum wslay_status_code.
+ */
+int wslay_event_queue_close(wslay_event_context_ptr ctx,
+                            uint16_t status_code,
+                            const uint8_t *reason, size_t reason_length);
 
 void wslay_event_set_error(wslay_event_context_ptr ctx, int val);
 

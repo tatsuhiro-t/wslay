@@ -28,5 +28,8 @@
 void test_wslay_event_send_fragmented_msg();
 void test_wslay_event_send_fragmented_msg_with_ctrl();
 void test_wslay_event_send_ctrl_msg_first();
+void test_wslay_event_queue_close();
+void test_wslay_event_queue_close_without_code();
+void test_wslay_event_reply_close();
 
 #endif // WSLAY_EVENT_TEST_H

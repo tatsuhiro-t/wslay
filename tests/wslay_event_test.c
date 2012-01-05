@@ -38,6 +38,16 @@ struct scripted_data_feed {
   size_t seqidx;
 };
 
+struct accumulator {
+  uint8_t buf[4096];
+  size_t length;
+};
+
+struct my_user_data {
+  struct scripted_data_feed *df;
+  struct accumulator *acc;
+};
+
 static void scripted_data_feed_init(struct scripted_data_feed *df,
                                     const uint8_t *data, size_t data_length)
 {
@@ -72,7 +82,7 @@ static ssize_t scripted_recv_callback(wslay_event_context_ptr ctx,
                                       uint8_t* data, size_t len,
                                       void *user_data)
 {
-  struct scripted_data_feed *df = (struct scripted_data_feed*)user_data;
+  struct scripted_data_feed *df = ((struct my_user_data*)user_data)->df;
   size_t wlen = df->feedseq[df->seqidx] > len ? len : df->feedseq[df->seqidx];
   memcpy(data, df->datamark, wlen);
   df->datamark += wlen;
@@ -88,7 +98,7 @@ static ssize_t scripted_send_callback(wslay_event_context_ptr ctx,
                                       const uint8_t* data, size_t len,
                                       void *user_data)
 {
-  struct scripted_data_feed *df = (struct scripted_data_feed*)user_data;
+  struct scripted_data_feed *df = ((struct my_user_data*)user_data)->df;
   size_t wlen = df->feedseq[df->seqidx] > len ? len : df->feedseq[df->seqidx];
   memcpy(df->datamark, data, wlen);
   df->datamark += wlen;
@@ -100,16 +110,11 @@ static ssize_t scripted_send_callback(wslay_event_context_ptr ctx,
   return wlen;
 }
 
-struct accumulator {
-  uint8_t buf[4096];
-  size_t length;
-};
-
 static ssize_t accumulator_send_callback(wslay_event_context_ptr ctx,
                                          const uint8_t *buf, size_t len,
                                          void* user_data)
 {
-  struct accumulator *acc = (struct accumulator*)user_data;
+  struct accumulator *acc = ((struct my_user_data*)user_data)->acc;
   assert(acc->length+len < sizeof(acc->buf));
   memcpy(acc->buf+acc->length, buf, len);
   acc->length += len;
@@ -120,7 +125,7 @@ static ssize_t one_accumulator_send_callback(wslay_event_context_ptr ctx,
                                              const uint8_t *buf, size_t len,
                                              void* user_data)
 {
-  struct accumulator *acc = (struct accumulator*)user_data;
+  struct accumulator *acc = ((struct my_user_data*)user_data)->acc;
   assert(len > 0);
   memcpy(acc->buf+acc->length, buf, 1);
   acc->length += 1;
@@ -131,6 +136,7 @@ void test_wslay_event_send_fragmented_msg()
 {
   wslay_event_context_ptr ctx;
   struct wslay_event_callbacks callbacks;
+  struct my_user_data ud;
   struct accumulator acc;
   const char msg[] = "Hello";
   struct scripted_data_feed df;
@@ -145,7 +151,8 @@ void test_wslay_event_send_fragmented_msg()
   memset(&callbacks, 0, sizeof(callbacks));
   callbacks.send_callback = accumulator_send_callback;
   memset(&acc, 0, sizeof(acc));
-  wslay_event_context_init(&ctx, &callbacks, &acc);
+  ud.acc = &acc;
+  wslay_event_context_init(&ctx, &callbacks, &ud);
 
   memset(&arg, 0, sizeof(arg));
   arg.opcode = WSLAY_TEXT_FRAME;
@@ -163,6 +170,7 @@ void test_wslay_event_send_fragmented_msg_with_ctrl()
   int i;
   wslay_event_context_ptr ctx;
   struct wslay_event_callbacks callbacks;
+  struct my_user_data ud;
   struct accumulator acc;
   const char msg[] = "Hello";
   struct scripted_data_feed df;
@@ -179,7 +187,8 @@ void test_wslay_event_send_fragmented_msg_with_ctrl()
   memset(&callbacks, 0, sizeof(callbacks));
   callbacks.send_callback = one_accumulator_send_callback;
   memset(&acc, 0, sizeof(acc));
-  wslay_event_context_init(&ctx, &callbacks, &acc);
+  ud.acc = &acc;
+  wslay_event_context_init(&ctx, &callbacks, &ud);
   
   memset(&arg, 0, sizeof(arg));
   arg.opcode = WSLAY_TEXT_FRAME;
@@ -204,6 +213,7 @@ void test_wslay_event_send_ctrl_msg_first()
 {
   wslay_event_context_ptr ctx;
   struct wslay_event_callbacks callbacks;
+  struct my_user_data ud;
   struct accumulator acc;
   const char msg[] = "Hello";
   struct wslay_event_msg arg;
@@ -214,7 +224,8 @@ void test_wslay_event_send_ctrl_msg_first()
   memset(&callbacks, 0, sizeof(callbacks));
   callbacks.send_callback = accumulator_send_callback;
   memset(&acc, 0, sizeof(acc));
-  wslay_event_context_init(&ctx, &callbacks, &acc);
+  ud.acc = &acc;
+  wslay_event_context_init(&ctx, &callbacks, &ud);
   
   memset(&arg, 0, sizeof(arg));
   arg.opcode = WSLAY_PING;
@@ -224,6 +235,79 @@ void test_wslay_event_send_ctrl_msg_first()
   arg.msg = (const uint8_t*)msg;
   arg.msg_length = 5;
   CU_ASSERT(0 == wslay_event_queue_msg(ctx, &arg));
+  CU_ASSERT(0 == wslay_event_send(ctx));
+  CU_ASSERT(9 == acc.length);
+  CU_ASSERT(0 == memcmp(ans, acc.buf, acc.length));
+  wslay_event_context_free(ctx);
+}
+
+void test_wslay_event_queue_close()
+{
+  wslay_event_context_ptr ctx;
+  struct wslay_event_callbacks callbacks;
+  struct my_user_data ud;
+  struct accumulator acc;
+  const char msg[] = "H";
+  const uint8_t ans[] = {
+    0x88, 0x03, 0x03, 0xf1, 0x48 /* "H" */
+  };
+  memset(&callbacks, 0, sizeof(callbacks));
+  callbacks.send_callback = accumulator_send_callback;
+  memset(&acc, 0, sizeof(acc));
+  ud.acc = &acc;
+  wslay_event_context_init(&ctx, &callbacks, &ud);
+  CU_ASSERT(0 == wslay_event_queue_close(ctx, WSLAY_CODE_MESSAGE_TOO_BIG,
+                                         (const uint8_t*)msg, 1));
+  CU_ASSERT(0 == wslay_event_send(ctx));
+  CU_ASSERT(5 == acc.length);
+  CU_ASSERT(0 == memcmp(ans, acc.buf, acc.length));
+  wslay_event_context_free(ctx);
+}
+
+void test_wslay_event_queue_close_without_code()
+{
+  wslay_event_context_ptr ctx;
+  struct wslay_event_callbacks callbacks;
+  struct my_user_data ud;
+  struct accumulator acc;
+  const uint8_t ans[] = { 0x88, 0x00 };
+  memset(&callbacks, 0, sizeof(callbacks));
+  callbacks.send_callback = accumulator_send_callback;
+  memset(&acc, 0, sizeof(acc));
+  ud.acc = &acc;
+  wslay_event_context_init(&ctx, &callbacks, &ud);
+  CU_ASSERT(0 == wslay_event_queue_close(ctx, 0, NULL, 0));
+  CU_ASSERT(0 == wslay_event_send(ctx));
+  CU_ASSERT(2 == acc.length);
+  CU_ASSERT(0 == memcmp(ans, acc.buf, acc.length));
+  wslay_event_context_free(ctx);
+}
+
+void test_wslay_event_reply_close()
+{
+  wslay_event_context_ptr ctx;
+  struct wslay_event_callbacks callbacks;
+  struct my_user_data ud;
+  struct accumulator acc;
+  /* Masked close frame with code = 1009, reason = "Hello" */
+  const uint8_t msg[] = { 0x88u, 0x87u, 0x00u, 0x00u, 0x00u, 0x00u,
+                          0x03, 0xf1, /* 1009 */
+                          0x48, 0x65, 0x6c, 0x6c, 0x6f /* "Hello" */
+  };
+  const uint8_t ans[] = { 0x88u, 0x07u,
+                          0x03, 0xf1, /* 1009 */
+                          0x48, 0x65, 0x6c, 0x6c, 0x6f /* "Hello" */
+  };
+  struct scripted_data_feed df;
+  scripted_data_feed_init(&df, (const uint8_t*)msg, sizeof(msg));
+  memset(&callbacks, 0, sizeof(callbacks));
+  callbacks.send_callback = accumulator_send_callback;
+  callbacks.recv_callback = scripted_recv_callback;
+  memset(&acc, 0, sizeof(acc));
+  ud.df = &df;
+  ud.acc = &acc;
+  wslay_event_context_init(&ctx, &callbacks, &ud);
+  CU_ASSERT(0 == wslay_event_recv(ctx));
   CU_ASSERT(0 == wslay_event_send(ctx));
   CU_ASSERT(9 == acc.length);
   CU_ASSERT(0 == memcmp(ans, acc.buf, acc.length));

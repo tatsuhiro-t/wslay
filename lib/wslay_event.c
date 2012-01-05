@@ -245,12 +245,29 @@ static uint8_t* wslay_flatten_queue(struct wslay_queue *queue, size_t len)
   }
 }
 
-int wslay_event_queue_close(wslay_event_context_ptr ctx)
+int wslay_event_queue_close(wslay_event_context_ptr ctx, uint16_t status_code,
+                            const uint8_t *reason, size_t reason_length)
 {
-  struct wslay_event_msg arg = {
-    WSLAY_CONNECTION_CLOSE, NULL, 0
-  };
-  return wslay_event_queue_msg(ctx, &arg);
+  if(reason_length > 123) {
+    return WSLAY_ERR_INVALID_ARGUMENT;
+  } else {
+    uint8_t msg[128];
+    size_t msg_length;
+    struct wslay_event_msg arg;
+    uint16_t ncode;
+    if(status_code == 0) {
+      msg_length = 0;
+    } else {
+      ncode = htons(status_code);
+      memcpy(msg, &ncode, 2);
+      memcpy(msg+2, reason, reason_length);
+      msg_length = reason_length+2;
+    }
+    arg.opcode = WSLAY_CONNECTION_CLOSE;
+    arg.msg = msg;
+    arg.msg_length = msg_length;
+    return wslay_event_queue_msg(ctx, &arg);
+  }
 }
 
 int wslay_event_queue_msg(wslay_event_context_ptr ctx,
@@ -415,7 +432,8 @@ int wslay_event_recv(wslay_event_context_ptr ctx)
       /* We only allow rsv == 0 ATM. */
       if(iocb.rsv != 0) {
         ctx->read_enabled = 0;
-        if((r = wslay_event_queue_close(ctx)) != 0) {
+        if((r = wslay_event_queue_close(ctx, WSLAY_CODE_PROTOCOL_ERROR,
+                                        NULL, 0)) != 0) {
           return r;
         }
         break;
@@ -435,7 +453,8 @@ int wslay_event_recv(wslay_event_context_ptr ctx)
           }
         } else {
           ctx->read_enabled = 0;
-          if((r = wslay_event_queue_close(ctx)) != 0) {
+          if((r = wslay_event_queue_close(ctx, WSLAY_CODE_UNSUPPORTED_DATA,
+                                          NULL, 0)) != 0) {
             return r;
           }
           break;
@@ -450,7 +469,8 @@ int wslay_event_recv(wslay_event_context_ptr ctx)
           wslay_imsg_set(ctx->imsg, iocb.fin, iocb.rsv, iocb.opcode);
         } else {
           ctx->read_enabled = 0;
-          if((r = wslay_event_queue_close(ctx)) != 0) {
+          if((r = wslay_event_queue_close(ctx, WSLAY_CODE_PROTOCOL_ERROR,
+                                          NULL, 0)) != 0) {
             return r;
           }
           break;
@@ -468,7 +488,8 @@ int wslay_event_recv(wslay_event_context_ptr ctx)
           if(decode(&ctx->imsg->utf8state, &codep,
                     iocb.data[i]) == UTF8_REJECT) {
             ctx->read_enabled = 0;
-            if((r = wslay_event_queue_close(ctx)) != 0) {
+            if((r = wslay_event_queue_close
+                (ctx, WSLAY_CODE_INVALID_FRAME_PAYLOAD_DATA, NULL, 0)) != 0) {
               return r;
             }
             break;
@@ -489,7 +510,8 @@ int wslay_event_recv(wslay_event_context_ptr ctx)
         if(ctx->imsg->fin && ctx->imsg->opcode == WSLAY_TEXT_FRAME &&
            ctx->imsg->utf8state != UTF8_ACCEPT) {
           ctx->read_enabled = 0;
-          if((r = wslay_event_queue_close(ctx)) != 0) {
+          if((r = wslay_event_queue_close
+              (ctx, WSLAY_CODE_INVALID_FRAME_PAYLOAD_DATA, NULL, 0)) != 0) {
             return r;
           }
           break;
@@ -504,7 +526,7 @@ int wslay_event_recv(wslay_event_context_ptr ctx)
               (ctx->imsg->opcode == WSLAY_CONNECTION_CLOSE ||
                ctx->imsg->opcode == WSLAY_PING))) {
             struct wslay_event_on_msg_recv_arg arg;
-            uint16_t close_code = 0;
+            uint16_t status_code = 0;
             uint8_t *msg = wslay_flatten_queue(ctx->imsg->chunks,
                                                ctx->imsg->msg_length);
             if(ctx->imsg->msg_length && !msg) {
@@ -512,11 +534,19 @@ int wslay_event_recv(wslay_event_context_ptr ctx)
             }
             if(ctx->write_enabled) {
               if(ctx->imsg->opcode == WSLAY_CONNECTION_CLOSE) {
-                if(ctx->imsg->msg_length > 2) {
-                  memcpy(&close_code, msg, 2);
-                  close_code = ntohs(close_code);
+                const uint8_t *reason;
+                size_t reason_length;
+                if(ctx->imsg->msg_length >= 2) {
+                  memcpy(&status_code, msg, 2);
+                  status_code = ntohs(status_code);
+                  reason = msg+2;
+                  reason_length = ctx->imsg->msg_length-2;
+                } else {
+                  reason = NULL;
+                  reason_length = 0;
                 }
-                if((r = wslay_event_queue_close(ctx)) != 0) {
+                if((r = wslay_event_queue_close(ctx, status_code,
+                                                reason, reason_length)) != 0) {
                   free(msg);
                   return r;
                 }
@@ -535,7 +565,7 @@ int wslay_event_recv(wslay_event_context_ptr ctx)
               arg.opcode = ctx->imsg->opcode;
               arg.msg = msg;
               arg.msg_length = ctx->imsg->msg_length;
-              arg.close_code = close_code;
+              arg.status_code = status_code;
               ctx->error = 0;
               ctx->callbacks.on_msg_recv_callback(ctx, &arg, ctx->user_data);
             }
@@ -552,7 +582,7 @@ int wslay_event_recv(wslay_event_context_ptr ctx)
       if(r != WSLAY_ERR_WANT_READ ||
          (ctx->error != WSLAY_ERR_WOULDBLOCK && ctx->error != 0)) {
         ctx->read_enabled = 0;
-        if((r = wslay_event_queue_close(ctx)) != 0) {
+        if((r = wslay_event_queue_close(ctx, 0, NULL, 0)) != 0) {
           return r;
         }
       }

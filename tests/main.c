@@ -96,6 +96,12 @@ int main()
                    test_wslay_event_send_fragmented_msg_with_ctrl) ||
       !CU_add_test(pSuite, "wslay_event_send_ctrl_msg_first",
                    test_wslay_event_send_ctrl_msg_first) ||
+      !CU_add_test(pSuite, "wslay_event_queue_close",
+                   test_wslay_event_queue_close) ||
+      !CU_add_test(pSuite, "wslay_event_queue_close_without_code",
+                   test_wslay_event_queue_close_without_code) ||
+      !CU_add_test(pSuite, "wslay_event_reply_close",
+                   test_wslay_event_reply_close) ||
       !CU_add_test(pSuite, "wslay_stack", test_wslay_stack) ||
       !CU_add_test(pSuite, "wslay_queue", test_wslay_queue)) {
      CU_cleanup_registry();
