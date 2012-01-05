@@ -261,6 +261,7 @@ void test_wslay_event_queue_close()
   CU_ASSERT(0 == wslay_event_send(ctx));
   CU_ASSERT(5 == acc.length);
   CU_ASSERT(0 == memcmp(ans, acc.buf, acc.length));
+  CU_ASSERT(1 == wslay_event_get_close_sent(ctx));
   wslay_event_context_free(ctx);
 }
 
@@ -280,6 +281,7 @@ void test_wslay_event_queue_close_without_code()
   CU_ASSERT(0 == wslay_event_send(ctx));
   CU_ASSERT(2 == acc.length);
   CU_ASSERT(0 == memcmp(ans, acc.buf, acc.length));
+  CU_ASSERT(1 == wslay_event_get_close_sent(ctx));
   wslay_event_context_free(ctx);
 }
 
@@ -308,8 +310,10 @@ void test_wslay_event_reply_close()
   ud.acc = &acc;
   wslay_event_context_server_init(&ctx, &callbacks, &ud);
   CU_ASSERT(0 == wslay_event_recv(ctx));
+  CU_ASSERT(1 == wslay_event_get_close_received(ctx));
   CU_ASSERT(0 == wslay_event_send(ctx));
   CU_ASSERT(9 == acc.length);
   CU_ASSERT(0 == memcmp(ans, acc.buf, acc.length));
+  CU_ASSERT(1 == wslay_event_get_close_sent(ctx));
   wslay_event_context_free(ctx);
 }

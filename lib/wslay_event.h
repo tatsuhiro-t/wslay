@@ -68,8 +68,14 @@ struct wslay_event_frame_user_data {
   void *user_data;
 };
 
+enum wslay_event_close_status {
+  WSLAY_CLOSE_RECEIVED = 1 << 0,
+  WSLAY_CLOSE_SENT = 1 << 1
+};
+
 struct wslay_event_context {
   uint8_t server;
+  uint8_t close_status;
   wslay_frame_context_ptr frame_ctx;
   uint8_t read_enabled;
   uint8_t write_enabled;

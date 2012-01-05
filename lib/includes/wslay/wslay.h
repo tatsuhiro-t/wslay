@@ -317,6 +317,15 @@ void wslay_event_set_write_enabled(wslay_event_context_ptr ctx, int val);
 int wslay_event_get_read_enabled(wslay_event_context_ptr ctx);
 int wslay_event_get_write_enabled(wslay_event_context_ptr ctx);
 
+/*
+ * Returns 1 if close frame is recived. Otherwise returns 0.
+ */
+int wslay_event_get_close_received(wslay_event_context_ptr ctx);
+/*
+ * Returns 1 if close frame is sent. Otherwise returns 0.
+ */
+int wslay_event_get_close_sent(wslay_event_context_ptr ctx);
+
 #ifdef __cplusplus
 }
 #endif

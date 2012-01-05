@@ -565,9 +565,8 @@ int wslay_event_recv(wslay_event_context_ptr ctx)
             ctx->read_enabled = 0;
           }
           if(ctx->callbacks.on_msg_recv_callback ||
-             (ctx->write_enabled &&
-              (ctx->imsg->opcode == WSLAY_CONNECTION_CLOSE ||
-               ctx->imsg->opcode == WSLAY_PING))) {
+             ctx->imsg->opcode == WSLAY_CONNECTION_CLOSE ||
+             (ctx->write_enabled && ctx->imsg->opcode == WSLAY_PING)) {
             struct wslay_event_on_msg_recv_arg arg;
             uint16_t status_code = 0;
             uint8_t *msg = wslay_flatten_queue(ctx->imsg->chunks,
@@ -575,40 +574,43 @@ int wslay_event_recv(wslay_event_context_ptr ctx)
             if(ctx->imsg->msg_length && !msg) {
               return WSLAY_ERR_NOMEM;
             }
-            if(ctx->write_enabled) {
-              if(ctx->imsg->opcode == WSLAY_CONNECTION_CLOSE) {
-                const uint8_t *reason;
-                size_t reason_length;
-                if(ctx->imsg->msg_length >= 2) {
-                  memcpy(&status_code, msg, 2);
-                  status_code = ntohs(status_code);
-                  if(wslay_event_check_status_code(status_code) != 0) {
-                    free(msg);
+            if(ctx->imsg->opcode == WSLAY_CONNECTION_CLOSE) {
+              const uint8_t *reason;
+              size_t reason_length;
+              if(ctx->imsg->msg_length >= 2) {
+                memcpy(&status_code, msg, 2);
+                status_code = ntohs(status_code);
+                if(wslay_event_check_status_code(status_code) != 0) {
+                  free(msg);
+                  if(ctx->write_enabled) {
                     if((r = wslay_event_queue_close
                         (ctx, WSLAY_CODE_PROTOCOL_ERROR, NULL, 0)) != 0) {
                       return r;
                     }
-                    break;
                   }
-                  reason = msg+2;
-                  reason_length = ctx->imsg->msg_length-2;
-                } else {
-                  reason = NULL;
-                  reason_length = 0;
+                  break;
                 }
+                reason = msg+2;
+                reason_length = ctx->imsg->msg_length-2;
+              } else {
+                reason = NULL;
+                reason_length = 0;
+              }
+              ctx->close_status |= WSLAY_CLOSE_RECEIVED;
+              if(ctx->write_enabled) {
                 if((r = wslay_event_queue_close(ctx, status_code,
                                                 reason, reason_length)) != 0) {
                   free(msg);
                   return r;
                 }
-              } else if(ctx->imsg->opcode == WSLAY_PING) {
-                struct wslay_event_msg arg = {
-                  WSLAY_PONG, msg, ctx->imsg->msg_length
-                };
-                if((r = wslay_event_queue_msg(ctx, &arg)) != 0) {
-                  free(msg);
-                  return r;
-                }
+              }
+            } else if(ctx->write_enabled && ctx->imsg->opcode == WSLAY_PING) {
+              struct wslay_event_msg arg = {
+                WSLAY_PONG, msg, ctx->imsg->msg_length
+              };
+              if((r = wslay_event_queue_msg(ctx, &arg)) != 0) {
+                free(msg);
+                return r;
               }
             }
             if(ctx->callbacks.on_msg_recv_callback) {
@@ -694,6 +696,7 @@ int wslay_event_send(wslay_event_context_ptr ctx)
         if(ctx->opayloadoff == ctx->opayloadlen) {
           if(ctx->omsg->opcode == WSLAY_CONNECTION_CLOSE) {
             ctx->write_enabled = 0;
+            ctx->close_status |= WSLAY_CLOSE_SENT;
           }
           wslay_omsg_free(ctx->omsg);
           ctx->omsg = NULL;
@@ -798,4 +801,14 @@ int wslay_event_get_read_enabled(wslay_event_context_ptr ctx)
 int wslay_event_get_write_enabled(wslay_event_context_ptr ctx)
 {
   return ctx->write_enabled;
+}
+
+int wslay_event_get_close_received(wslay_event_context_ptr ctx)
+{
+  return (ctx->close_status & WSLAY_CLOSE_RECEIVED) > 0;
+}
+
+int wslay_event_get_close_sent(wslay_event_context_ptr ctx)
+{
+  return (ctx->close_status & WSLAY_CLOSE_SENT) > 0;
 }
