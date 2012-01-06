@@ -203,6 +203,10 @@ struct wslay_event_on_msg_recv_arg {
   uint16_t status_code; /* Only for opcode == WSLAY_CONNECTION_CLOSE */
 };
 
+/*
+ * Callback function invoked by wslay_event_recv() when a message is
+ * completely received.
+ */
 typedef void (*wslay_event_on_msg_recv_callback)
 (wslay_event_context_ptr ctx,
  const struct wslay_event_on_msg_recv_arg *arg, void *user_data);
@@ -214,6 +218,10 @@ struct wslay_event_on_frame_recv_start_arg {
   uint64_t payload_length;
 };
 
+/*
+ * Callback function invoked by wslay_event_recv() when a header of
+ * frame is received.
+ */
 typedef void (*wslay_event_on_frame_recv_start_callback)
 (wslay_event_context_ptr ctx,
  const struct wslay_event_on_frame_recv_start_arg *arg, void *user_data);
@@ -223,10 +231,18 @@ struct wslay_event_on_frame_recv_chunk_arg {
   size_t data_length;
 };
 
+/*
+ * Callback function invoked by wslay_event_recv() when (part of)
+ * payload data of frame is received.
+ */
 typedef void (*wslay_event_on_frame_recv_chunk_callback)
 (wslay_event_context_ptr ctx,
  const struct wslay_event_on_frame_recv_chunk_arg *arg, void *user_data);
 
+/*
+ * Callback function invoked by wslay_event_recv() when a frame is
+ * completely received.
+ */
 typedef void (*wslay_event_on_frame_recv_end_callback)
 (wslay_event_context_ptr ctx, void *user_data);
 
@@ -250,14 +266,33 @@ struct wslay_event_callbacks {
   wslay_event_on_msg_recv_callback on_msg_recv_callback;
 };
 
+/*
+ * Initializes ctx as WebSocket Server.
+ *
+ * On success, returns 0. On error, returns one of following negative
+ * values:
+ *
+ * WSLAY_ERR_NOMEM - Not enough memory.
+  */
 int wslay_event_context_server_init
 (wslay_event_context_ptr *ctx,
  const struct wslay_event_callbacks *callbacks, void *user_data);
 
+/*
+ * Initializes ctx as WebSocket client.
+ *
+ * On success, returns 0. On error, returns one of following negative
+ * values:
+ *
+ * WSLAY_ERR_NOMEM - Not enough memory.
+  */
 int wslay_event_context_client_init
 (wslay_event_context_ptr *ctx,
  const struct wslay_event_callbacks *callbacks, void *user_data);
 
+/*
+ * Releases allocated resources for ctx.
+ */
 void wslay_event_context_free(wslay_event_context_ptr ctx);
 
 /*
@@ -278,6 +313,21 @@ struct wslay_event_msg {
   size_t msg_length;
 };
 
+/*
+ * Queues non-fragmented message. This function supports both control
+ * and non-control messages.
+ *
+ * On success, returns 0. Otherwise returns one of following negative
+ * values:
+ *
+ * WSLAY_ERR_NO_MORE_MSG - Could not queue further message. The one of
+ *     possible reason is that close control frame has been
+ *     queued/sent.
+ *
+ * WSLAY_ERR_INVALID_ARGUMENT - arg is not properly crafted.
+ *
+ * WSLAY_ERR_NOMEM - Not enough memory.
+ */
 int wslay_event_queue_msg(wslay_event_context_ptr ctx,
                           const struct wslay_event_msg *arg);
 
@@ -297,6 +347,21 @@ struct wslay_event_fragmented_msg {
   wslay_event_fragmented_msg_callback read_callback;
 };
 
+/*
+ * Queues fragmented message. This function only supports non-control
+ * messages. For control frames, use wslay_event_queue_msg().
+ *
+ * On success, returns 0. Otherwise returns one of following negative
+ * values:
+ *
+ * WSLAY_ERR_NO_MORE_MSG - Could not queue further message. The one of
+ *     possible reason is that close control frame has been
+ *     queued/sent.
+ *
+ * WSLAY_ERR_INVALID_ARGUMENT - arg is not properly crafted.
+ *
+ * WSLAY_ERR_NOMEM - Not enough memory.
+ */
 int wslay_event_queue_fragmented_msg
 (wslay_event_context_ptr ctx, const struct wslay_event_fragmented_msg *arg);
 
