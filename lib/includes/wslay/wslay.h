@@ -267,6 +267,15 @@ int wslay_event_context_client_init
 
 void wslay_event_context_free(wslay_event_context_ptr ctx);
 
+/*
+ * Disable buffering for non-control frames.  If val is zero, enable
+ * buffering for non-control frames.  If val is non-zero, disable
+ * buffering for non-control frames. If on_msg_recv_callback is
+ * invoked when buffering is disabled, msg_length of struct
+ * wslay_event_on_msg_recv_arg is set to 0 for non-control frames.
+ */
+void wslay_event_config_set_no_buffering(wslay_event_context_ptr ctx, int val);
+
 int wslay_event_recv(wslay_event_context_ptr ctx);
 int wslay_event_send(wslay_event_context_ptr ctx);
 

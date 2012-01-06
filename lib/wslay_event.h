@@ -72,7 +72,12 @@ enum wslay_event_close_status {
   WSLAY_CLOSE_SENT = 1 << 2,
 };
 
+enum wslay_event_config {
+  WSLAY_CONFIG_NO_BUFFERING = 1 << 0
+};
+
 struct wslay_event_context {
+  uint32_t config;
   uint8_t server;
   uint8_t close_status;
   wslay_frame_context_ptr frame_ctx;

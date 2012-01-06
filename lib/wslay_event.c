@@ -476,6 +476,11 @@ static int wslay_event_is_valid_status_code(uint16_t status_code)
     (3000 <= status_code && status_code <= 4999);
 }
 
+static int wslay_event_config_get_no_buffering(wslay_event_context_ptr ctx)
+{
+  return (ctx->config & WSLAY_CONFIG_NO_BUFFERING) > 0;
+}
+
 int wslay_event_recv(wslay_event_context_ptr ctx)
 {
   struct wslay_frame_iocb iocb;
@@ -484,7 +489,6 @@ int wslay_event_recv(wslay_event_context_ptr ctx)
     memset(&iocb, 0, sizeof(iocb));
     r = wslay_frame_recv(ctx->frame_ctx, &iocb);
     if(r >= 0) {
-      struct wslay_event_byte_chunk *chunk;
       /* We only allow rsv == 0 ATM. */
       if(iocb.rsv != 0 ||
          ((ctx->server && !iocb.mask) || (!ctx->server && iocb.mask))) {
@@ -505,9 +509,12 @@ int wslay_event_recv(wslay_event_context_ptr ctx)
           wslay_event_imsg_set(ctx->imsg, iocb.fin, iocb.rsv, iocb.opcode);
           ctx->ipayloadlen = iocb.payload_length;
           wslay_event_call_on_frame_recv_start_callback(ctx, &iocb);
-          if((r = wslay_event_imsg_append_chunk(ctx->imsg,
-                                                iocb.payload_length)) != 0) {
-            return r;
+          if(!wslay_event_config_get_no_buffering(ctx) ||
+             (iocb.opcode & 1 << 3)) {
+            if((r = wslay_event_imsg_append_chunk(ctx->imsg,
+                                                  iocb.payload_length)) != 0) {
+              return r;
+            }
           }
         } else {
           ctx->read_enabled = 0;
@@ -535,9 +542,12 @@ int wslay_event_recv(wslay_event_context_ptr ctx)
           }
           break;
         }
-        if((r = wslay_event_imsg_append_chunk
-            (ctx->imsg, iocb.payload_length)) != 0) {
-          return r;
+        if(!wslay_event_config_get_no_buffering(ctx) ||
+           (iocb.opcode & 1 << 3)) {
+          if((r = wslay_event_imsg_append_chunk
+              (ctx->imsg, iocb.payload_length)) != 0) {
+            return r;
+          }
         }
         ctx->ipayloadlen = iocb.payload_length;
         wslay_event_call_on_frame_recv_start_callback(ctx, &iocb);
@@ -569,9 +579,13 @@ int wslay_event_recv(wslay_event_context_ptr ctx)
       }
       wslay_event_call_on_frame_recv_chunk_callback(ctx, &iocb);
       if(iocb.data_length > 0) {
-        chunk = wslay_queue_tail(ctx->imsg->chunks);
-        wslay_event_byte_chunk_copy(chunk, ctx->ipayloadoff,
-                                    iocb.data, iocb.data_length);
+        if(!wslay_event_config_get_no_buffering(ctx) ||
+           (iocb.opcode & 1 << 3)) {
+          struct wslay_event_byte_chunk *chunk;
+          chunk = wslay_queue_tail(ctx->imsg->chunks);
+          wslay_event_byte_chunk_copy(chunk, ctx->ipayloadoff,
+                                      iocb.data, iocb.data_length);
+        }
         ctx->ipayloadoff += iocb.data_length;
       }
       if(ctx->ipayloadoff == ctx->ipayloadlen) {
@@ -597,10 +611,16 @@ int wslay_event_recv(wslay_event_context_ptr ctx)
              ctx->imsg->opcode == WSLAY_PING) {
             struct wslay_event_on_msg_recv_arg arg;
             uint16_t status_code = 0;
-            uint8_t *msg = wslay_event_flatten_queue(ctx->imsg->chunks,
-                                                     ctx->imsg->msg_length);
-            if(ctx->imsg->msg_length && !msg) {
-              return WSLAY_ERR_NOMEM;
+            uint8_t *msg = NULL;
+            size_t msg_length = 0;
+            if(!wslay_event_config_get_no_buffering(ctx) ||
+               (iocb.opcode & 1 << 3)) {
+              msg = wslay_event_flatten_queue(ctx->imsg->chunks,
+                                              ctx->imsg->msg_length);
+              if(ctx->imsg->msg_length && !msg) {
+                return WSLAY_ERR_NOMEM;
+              }
+              msg_length = ctx->imsg->msg_length;
             }
             if(ctx->imsg->opcode == WSLAY_CONNECTION_CLOSE) {
               const uint8_t *reason;
@@ -644,7 +664,7 @@ int wslay_event_recv(wslay_event_context_ptr ctx)
               arg.rsv = ctx->imsg->rsv;
               arg.opcode = ctx->imsg->opcode;
               arg.msg = msg;
-              arg.msg_length = ctx->imsg->msg_length;
+              arg.msg_length = msg_length;
               arg.status_code = status_code;
               ctx->error = 0;
               ctx->callbacks.on_msg_recv_callback(ctx, &arg, ctx->user_data);
@@ -842,4 +862,13 @@ int wslay_event_get_close_received(wslay_event_context_ptr ctx)
 int wslay_event_get_close_sent(wslay_event_context_ptr ctx)
 {
   return (ctx->close_status & WSLAY_CLOSE_SENT) > 0;
+}
+
+void wslay_event_config_set_no_buffering(wslay_event_context_ptr ctx, int val)
+{
+  if(val) {
+    ctx->config |= WSLAY_CONFIG_NO_BUFFERING;
+  } else {
+    ctx->config &= ~WSLAY_CONFIG_NO_BUFFERING;
+  }
 }

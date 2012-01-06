@@ -106,6 +106,8 @@ int main()
                    test_wslay_event_no_more_msg) ||
       !CU_add_test(pSuite, "wslay_event_callback_failure",
                    test_wslay_event_callback_failure) ||
+      !CU_add_test(pSuite, "wslay_event_no_buffering",
+                   test_wslay_event_no_buffering) ||
       !CU_add_test(pSuite, "wslay_stack", test_wslay_stack) ||
       !CU_add_test(pSuite, "wslay_queue", test_wslay_queue)) {
      CU_cleanup_registry();

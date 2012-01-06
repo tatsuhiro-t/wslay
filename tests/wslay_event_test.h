@@ -33,5 +33,6 @@ void test_wslay_event_queue_close_without_code();
 void test_wslay_event_reply_close();
 void test_wslay_event_no_more_msg();
 void test_wslay_event_callback_failure();
+void test_wslay_event_no_buffering();
 
 #endif // WSLAY_EVENT_TEST_H

@@ -358,3 +358,40 @@ void test_wslay_event_callback_failure()
   CU_ASSERT(WSLAY_ERR_CALLBACK_FAILURE == wslay_event_send(ctx));
   wslay_event_context_free(ctx);
 }
+
+static void no_buffering_callback(wslay_event_context_ptr ctx,
+                                  const struct wslay_event_on_msg_recv_arg *arg,
+                                  void *user_data)
+{
+  if(arg->opcode == WSLAY_PING) {
+    CU_ASSERT(3 == arg->msg_length);
+    CU_ASSERT(0 == memcmp("Foo", arg->msg, arg->msg_length));
+  } else {
+    CU_ASSERT(WSLAY_TEXT_FRAME == arg->opcode);
+    CU_ASSERT(0 == arg->msg_length);
+  }
+}
+
+void test_wslay_event_no_buffering()
+{
+  wslay_event_context_ptr ctx;
+  struct wslay_event_callbacks callbacks;
+  struct my_user_data ud;
+  const uint8_t msg[] = {
+    0x01, 0x03, 0x48, 0x65, 0x6c, /* "Hel" */
+    0x89, 0x03, 0x46, 0x6f, 0x6f, /* ping with "Foo" */
+    0x80, 0x02, 0x6c, 0x6f, /* "lo" */
+  };
+  struct scripted_data_feed df;
+  scripted_data_feed_init(&df, (const uint8_t*)msg, sizeof(msg));
+  memset(&callbacks, 0, sizeof(callbacks));
+  ud.df = &df;
+  callbacks.recv_callback = scripted_recv_callback;
+  callbacks.on_msg_recv_callback = no_buffering_callback;
+  wslay_event_context_client_init(&ctx, &callbacks, &ud);
+  wslay_event_config_set_no_buffering(ctx, 1);
+  CU_ASSERT(0 == wslay_event_recv(ctx));
+  /* pong must be queued */
+  CU_ASSERT(wslay_event_want_write(ctx));
+  wslay_event_context_free(ctx);
+}
