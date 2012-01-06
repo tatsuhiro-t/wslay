@@ -195,11 +195,6 @@ ssize_t wslay_frame_recv(wslay_frame_context_ptr ctx,
 struct wslay_event_context;
 typedef struct wslay_event_context *wslay_event_context_ptr;
 
-typedef void (*wslay_event_on_open_callback)(wslay_event_context_ptr ctx,
-                                             void *user_data);
-typedef void (*wslay_event_on_close_callback)(wslay_event_context_ptr ctx,
-                                              void *user_data);
-
 struct wslay_event_on_msg_recv_arg {
   uint8_t rsv;
   uint8_t opcode;
@@ -249,12 +244,10 @@ struct wslay_event_callbacks {
   wslay_event_recv_callback recv_callback;
   wslay_event_send_callback send_callback;
   wslay_event_genmask_callback genmask_callback;
-  wslay_event_on_open_callback on_open_callback;
   wslay_event_on_frame_recv_start_callback on_frame_recv_start_callback;
   wslay_event_on_frame_recv_chunk_callback on_frame_recv_chunk_callback;
   wslay_event_on_frame_recv_end_callback on_frame_recv_end_callback;
   wslay_event_on_msg_recv_callback on_msg_recv_callback;
-  wslay_event_on_close_callback on_close_callback;
 };
 
 int wslay_event_context_server_init
