@@ -30,12 +30,12 @@
 struct wslay_stack;
 struct wslay_queue;
 
-struct wslay_byte_chunk {
+struct wslay_event_byte_chunk {
   uint8_t *data;
   size_t data_length;
 };
 
-struct wslay_imsg {
+struct wslay_event_imsg {
   uint8_t fin;
   uint8_t rsv;
   uint8_t opcode;
@@ -44,23 +44,21 @@ struct wslay_imsg {
   size_t msg_length;
 };
 
-enum wslay_msg_type {
+enum wslay_event_msg_type {
   WSLAY_NON_FRAGMENTED,
   WSLAY_FRAGMENTED
 };
 
-struct wslay_omsg {
+struct wslay_event_omsg {
   uint8_t fin;
   uint8_t opcode;
-  enum wslay_msg_type type;
+  enum wslay_event_msg_type type;
 
   uint8_t *data;
   size_t data_length;
 
   union wslay_event_msg_source source;
   wslay_event_fragmented_msg_callback read_callback;
-  /* TODO To support fragmented send, remember offset where we already
-     sent */
 };
 
 struct wslay_event_frame_user_data {
@@ -80,17 +78,16 @@ struct wslay_event_context {
   wslay_frame_context_ptr frame_ctx;
   uint8_t read_enabled;
   uint8_t write_enabled;
-  struct wslay_imsg imsgs[2];
-  struct wslay_imsg *imsg;
+  struct wslay_event_imsg imsgs[2];
+  struct wslay_event_imsg *imsg;
   uint64_t ipayloadlen;
   uint64_t ipayloadoff;
   uint8_t imask;
   uint8_t imaskkey[4];
   int error;
-  struct wslay_omsg *omsg;
-  /* TODO maybe for separete send_queue for ctrl msg */
-  struct wslay_queue *send_queue; // <wslay_omsg*>
-  struct wslay_queue *send_ctrl_queue; // <wslay_omsg*>, ctrl frame only
+  struct wslay_event_omsg *omsg;
+  struct wslay_queue/*<wslay_omsg*>*/ *send_queue;
+  struct wslay_queue/*<wslay_omsg*>*/ *send_ctrl_queue; /* ctrl frame only */
   uint8_t obuf[4096];
   uint8_t *obuflimit;
   uint8_t *obufmark;
