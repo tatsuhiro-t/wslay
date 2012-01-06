@@ -26,8 +26,8 @@ libdir=${exec_prefix}/lib
 includedir=${prefix}/include
 
 Name: Wslay
-Description: Low-level WebSocket data frame library
+Description: WebSocket library
 URL: http://wslay.sourceforge.net/
-Version: 0.0.1
+Version: 0.0.0
 Libs: -L${libdir} -lwslay
 Cflags: -I${includedir}
