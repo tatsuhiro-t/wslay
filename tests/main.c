@@ -100,6 +100,8 @@ int main()
                    test_wslay_event_queue_close) ||
       !CU_add_test(pSuite, "wslay_event_queue_close_without_code",
                    test_wslay_event_queue_close_without_code) ||
+      !CU_add_test(pSuite, "wslay_event_recv_close_without_code",
+                   test_wslay_event_recv_close_without_code) ||
       !CU_add_test(pSuite, "wslay_event_reply_close",
                    test_wslay_event_reply_close) ||
       !CU_add_test(pSuite, "wslay_event_no_more_msg",

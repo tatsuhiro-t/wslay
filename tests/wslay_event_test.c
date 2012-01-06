@@ -299,6 +299,27 @@ void test_wslay_event_queue_close_without_code()
   CU_ASSERT(2 == acc.length);
   CU_ASSERT(0 == memcmp(ans, acc.buf, acc.length));
   CU_ASSERT(1 == wslay_event_get_close_sent(ctx));
+  CU_ASSERT(WSLAY_CODE_NO_STATUS_RCVD ==
+            wslay_event_get_status_code_sent(ctx));
+  wslay_event_context_free(ctx);
+}
+
+void test_wslay_event_recv_close_without_code()
+{
+  wslay_event_context_ptr ctx;
+  struct wslay_event_callbacks callbacks;
+  struct my_user_data ud;
+  const uint8_t msg[] = { 0x88u, 0x00 };
+  struct scripted_data_feed df;
+  scripted_data_feed_init(&df, (const uint8_t*)msg, sizeof(msg));
+  memset(&callbacks, 0, sizeof(callbacks));
+  callbacks.recv_callback = scripted_recv_callback;
+  ud.df = &df;
+  wslay_event_context_client_init(&ctx, &callbacks, &ud);
+  CU_ASSERT(0 == wslay_event_recv(ctx));
+  CU_ASSERT(1 == wslay_event_get_close_received(ctx));
+  CU_ASSERT(WSLAY_CODE_NO_STATUS_RCVD ==
+            wslay_event_get_status_code_received(ctx));
   wslay_event_context_free(ctx);
 }
 
@@ -328,10 +349,18 @@ void test_wslay_event_reply_close()
   wslay_event_context_server_init(&ctx, &callbacks, &ud);
   CU_ASSERT(0 == wslay_event_recv(ctx));
   CU_ASSERT(1 == wslay_event_get_close_received(ctx));
+  CU_ASSERT(WSLAY_CODE_MESSAGE_TOO_BIG ==
+            wslay_event_get_status_code_received(ctx));
+  CU_ASSERT(WSLAY_CODE_ABNORMAL_CLOSURE ==
+            wslay_event_get_status_code_sent(ctx));
   CU_ASSERT(0 == wslay_event_send(ctx));
   CU_ASSERT(9 == acc.length);
   CU_ASSERT(0 == memcmp(ans, acc.buf, acc.length));
   CU_ASSERT(1 == wslay_event_get_close_sent(ctx));
+  CU_ASSERT(WSLAY_CODE_MESSAGE_TOO_BIG ==
+            wslay_event_get_status_code_received(ctx));
+  CU_ASSERT(WSLAY_CODE_MESSAGE_TOO_BIG ==
+            wslay_event_get_status_code_sent(ctx));
   wslay_event_context_free(ctx);
 }
 

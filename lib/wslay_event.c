@@ -380,6 +380,8 @@ static int wslay_event_context_init
   }
   (*ctx)->imsg = &(*ctx)->imsgs[0];
   (*ctx)->obufmark = (*ctx)->obuflimit = (*ctx)->obuf;
+  (*ctx)->status_code_sent = WSLAY_CODE_ABNORMAL_CLOSURE;
+  (*ctx)->status_code_recv = WSLAY_CODE_ABNORMAL_CLOSURE;
   return 0;
 }
 
@@ -644,6 +646,8 @@ int wslay_event_recv(wslay_event_context_ptr ctx)
                 reason_length = 0;
               }
               ctx->close_status |= WSLAY_CLOSE_RECEIVED;
+              ctx->status_code_recv =
+                status_code == 0 ? WSLAY_CODE_NO_STATUS_RCVD : status_code;
               if((r = wslay_event_queue_close(ctx, status_code,
                                               reason, reason_length)) &&
                  r != WSLAY_ERR_NO_MORE_MSG) {
@@ -733,7 +737,6 @@ int wslay_event_send(wslay_event_context_ptr ctx)
     }
     if(ctx->omsg->type == WSLAY_NON_FRAGMENTED) {
       memset(&iocb, 0, sizeof(iocb));
-      /* TODO No fragmentation */
       iocb.fin = 1;
       iocb.opcode = ctx->omsg->opcode;
       iocb.mask = ctx->server ? 0 : 1;
@@ -747,6 +750,13 @@ int wslay_event_send(wslay_event_context_ptr ctx)
           if(ctx->omsg->opcode == WSLAY_CONNECTION_CLOSE) {
             ctx->write_enabled = 0;
             ctx->close_status |= WSLAY_CLOSE_SENT;
+            uint16_t status_code = 0;
+            if(ctx->omsg->data_length >= 2) {
+              memcpy(&status_code, ctx->omsg->data, 2);
+              status_code = ntohs(status_code);
+            }
+            ctx->status_code_sent =
+              status_code == 0 ? WSLAY_CODE_NO_STATUS_RCVD : status_code;
           }
           wslay_event_omsg_free(ctx->omsg);
           ctx->omsg = NULL;
@@ -871,4 +881,14 @@ void wslay_event_config_set_no_buffering(wslay_event_context_ptr ctx, int val)
   } else {
     ctx->config &= ~WSLAY_CONFIG_NO_BUFFERING;
   }
+}
+
+uint16_t wslay_event_get_status_code_received(wslay_event_context_ptr ctx)
+{
+  return ctx->status_code_recv;
+}
+
+uint16_t wslay_event_get_status_code_sent(wslay_event_context_ptr ctx)
+{
+  return ctx->status_code_sent;
 }

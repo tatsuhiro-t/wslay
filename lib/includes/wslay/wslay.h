@@ -329,6 +329,22 @@ int wslay_event_get_close_received(wslay_event_context_ptr ctx);
  */
 int wslay_event_get_close_sent(wslay_event_context_ptr ctx);
 
+/*
+ * Returns received status code in close control frame. If no close
+ * control frame has not been received, returns
+ * WSLAY_CODE_ABNORMAL_CLOSURE.  If received close control frame has
+ * no status code, returns WSLAY_CODE_NO_STATUS_RCVD.
+ */
+uint16_t wslay_event_get_status_code_received(wslay_event_context_ptr ctx);
+
+/*
+ * Returns sent status code in close control frame. If no close
+ * control frame has not been sent, returns
+ * WSLAY_CODE_ABNORMAL_CLOSURE. If sent close control frame has no
+ * status code, returns WSLAY_CODE_NO_STATUS_RCVD.
+ */
+uint16_t wslay_event_get_status_code_sent(wslay_event_context_ptr ctx);
+
 #ifdef __cplusplus
 }
 #endif

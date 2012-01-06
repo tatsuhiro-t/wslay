@@ -80,6 +80,8 @@ struct wslay_event_context {
   uint32_t config;
   uint8_t server;
   uint8_t close_status;
+  uint16_t status_code_recv;
+  uint16_t status_code_sent;
   wslay_frame_context_ptr frame_ctx;
   uint8_t read_enabled;
   uint8_t write_enabled;
