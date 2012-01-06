@@ -249,16 +249,15 @@ static uint8_t* wslay_event_flatten_queue(struct wslay_queue *queue, size_t len)
   }
 }
 
-static int wslay_event_check_queue_msg(wslay_event_context_ptr ctx)
+static int wslay_event_is_msg_queueable(wslay_event_context_ptr ctx)
 {
-  return ctx->write_enabled && (ctx->close_status & WSLAY_CLOSE_QUEUED) == 0
-    ? 0 : -1;
+  return ctx->write_enabled && (ctx->close_status & WSLAY_CLOSE_QUEUED) == 0;
 }
 
 int wslay_event_queue_close(wslay_event_context_ptr ctx, uint16_t status_code,
                             const uint8_t *reason, size_t reason_length)
 {
-  if(wslay_event_check_queue_msg(ctx) != 0) {
+  if(!wslay_event_is_msg_queueable(ctx)) {
     return WSLAY_ERR_NO_MORE_MSG;
   } else if(reason_length > 123) {
     return WSLAY_ERR_INVALID_ARGUMENT;
@@ -292,7 +291,7 @@ int wslay_event_queue_msg(wslay_event_context_ptr ctx,
 {
   int r;
   struct wslay_event_omsg *omsg;
-  if(wslay_event_check_queue_msg(ctx) != 0) {
+  if(!wslay_event_is_msg_queueable(ctx)) {
     return WSLAY_ERR_NO_MORE_MSG;
   }
   if((arg->opcode & (1 << 3)) && arg->msg_length > 125) {
@@ -319,7 +318,7 @@ int wslay_event_queue_fragmented_msg
 {
   int r;
   struct wslay_event_omsg *omsg;
-  if(wslay_event_check_queue_msg(ctx) != 0) {
+  if(!wslay_event_is_msg_queueable(ctx)) {
     return WSLAY_ERR_NO_MORE_MSG;
   }
   if(arg->opcode & (1 << 3)) {
@@ -470,11 +469,11 @@ static void wslay_event_call_on_frame_recv_end_callback
   }
 }
 
-static int wslay_event_check_status_code(uint16_t status_code)
+static int wslay_event_is_valid_status_code(uint16_t status_code)
 {
   return (1000 <= status_code && status_code <= 1011 &&
           status_code != 1004 && status_code != 1005 && status_code != 1006) ||
-    (3000 <= status_code && status_code <= 4999) ? 0 : -1;
+    (3000 <= status_code && status_code <= 4999);
 }
 
 int wslay_event_recv(wslay_event_context_ptr ctx)
@@ -609,7 +608,7 @@ int wslay_event_recv(wslay_event_context_ptr ctx)
               if(ctx->imsg->msg_length >= 2) {
                 memcpy(&status_code, msg, 2);
                 status_code = ntohs(status_code);
-                if(wslay_event_check_status_code(status_code) != 0) {
+                if(!wslay_event_is_valid_status_code(status_code)) {
                   free(msg);
                   if((r = wslay_event_queue_close
                       (ctx, WSLAY_CODE_PROTOCOL_ERROR, NULL, 0)) &&
