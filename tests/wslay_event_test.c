@@ -132,6 +132,23 @@ static ssize_t one_accumulator_send_callback(wslay_event_context_ptr ctx,
   return 1;
 }
 
+static ssize_t fail_recv_callback(wslay_event_context_ptr ctx,
+                                  uint8_t* data, size_t len,
+                                  void *user_data)
+{
+  wslay_event_set_error(ctx, WSLAY_ERR_CALLBACK_FAILURE);
+  return -1;
+}
+
+static ssize_t fail_send_callback(wslay_event_context_ptr ctx,
+                                  const uint8_t *buf, size_t len,
+                                  void* user_data)
+{
+  wslay_event_set_error(ctx, WSLAY_ERR_CALLBACK_FAILURE);
+  return -1;
+}
+
+
 void test_wslay_event_send_fragmented_msg()
 {
   wslay_event_context_ptr ctx;
@@ -326,5 +343,18 @@ void test_wslay_event_no_more_msg()
   wslay_event_context_server_init(&ctx, &callbacks, NULL);
   CU_ASSERT(0 == wslay_event_queue_close(ctx, 0, NULL, 0));
   CU_ASSERT(WSLAY_ERR_NO_MORE_MSG == wslay_event_queue_close(ctx, 0, NULL, 0));
+  wslay_event_context_free(ctx);
+}
+
+void test_wslay_event_callback_failure()
+{
+  wslay_event_context_ptr ctx;
+  struct wslay_event_callbacks callbacks;
+  memset(&callbacks, 0, sizeof(callbacks));
+  callbacks.recv_callback = fail_recv_callback;
+  callbacks.send_callback = fail_send_callback;
+  wslay_event_context_server_init(&ctx, &callbacks, NULL);
+  CU_ASSERT(WSLAY_ERR_CALLBACK_FAILURE == wslay_event_recv(ctx));
+  CU_ASSERT(WSLAY_ERR_CALLBACK_FAILURE == wslay_event_send(ctx));
   wslay_event_context_free(ctx);
 }
