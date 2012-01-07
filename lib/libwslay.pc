@@ -1,6 +1,6 @@
 # Wslay - The WebSocket Library
 
-# Copyright (c) 2011 Tatsuhiro Tsujikawa
+# Copyright (c) 2011, 2012 Tatsuhiro Tsujikawa
 
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -26,8 +26,8 @@ libdir=${exec_prefix}/lib
 includedir=${prefix}/include
 
 Name: Wslay
-Description: WebSocket library
+Description: Low-level WebSockets library
 URL: http://wslay.sourceforge.net/
-Version: 0.0.0
+Version: 0.0.1
 Libs: -L${libdir} -lwslay
 Cflags: -I${includedir}

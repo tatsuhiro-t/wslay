@@ -1,7 +1,7 @@
 /*
  * Wslay - The WebSocket Library
  *
- * Copyright (c) 2011 Tatsuhiro Tsujikawa
+ * Copyright (c) 2011, 2012 Tatsuhiro Tsujikawa
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the

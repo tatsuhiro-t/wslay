@@ -1,6 +1,6 @@
 dnl Wslay - The WebSocket Library
 
-dnl Copyright (c) 2011 Tatsuhiro Tsujikawa
+dnl Copyright (c) 2011, 2012 Tatsuhiro Tsujikawa
 
 dnl Permission is hereby granted, free of charge, to any person obtaining
 dnl a copy of this software and associated documentation files (the
