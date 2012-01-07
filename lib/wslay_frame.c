@@ -81,7 +81,7 @@ ssize_t wslay_frame_send(wslay_frame_context_ptr ctx,
     *hdptr |= iocb->opcode & 0xfu;
     ++hdptr;
     *hdptr |= (iocb->mask & 1u) << 7;
-    if((iocb->opcode & (1 << 3)) && iocb->payload_length >= 126) {
+    if(wslay_is_ctrl_frame(iocb->opcode) && iocb->payload_length >= 126) {
       return WSLAY_ERR_INVALID_ARGUMENT;
     }
     if(iocb->payload_length < 126) {
@@ -249,7 +249,7 @@ ssize_t wslay_frame_recv(wslay_frame_context_ptr ctx,
     ctx->imask = (ctx->ibufmark[0] & (1 << 7)) > 0;
     payloadlen = ctx->ibufmark[0] & 0x7fu;
     ++ctx->ibufmark;
-    if((opcode & (1 << 3)) && (payloadlen >= 126 || !fin)) {
+    if(wslay_is_ctrl_frame(opcode) && (payloadlen >= 126 || !fin)) {
       return WSLAY_ERR_PROTO;
     }
     if(payloadlen == 126) {

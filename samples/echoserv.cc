@@ -234,9 +234,7 @@ void on_msg_recv_callback(wslay_event_context_ptr ctx,
                           const struct wslay_event_on_msg_recv_arg *arg,
                           void *user_data)
 {
-  if(arg->opcode == WSLAY_PONG) {
-    // ignore
-  } else {
+  if(!wslay_is_ctrl_frame(arg->opcode)) {
     struct wslay_event_msg msgarg = {
       arg->opcode, arg->msg, arg->msg_length
     };

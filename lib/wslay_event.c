@@ -294,14 +294,14 @@ int wslay_event_queue_msg(wslay_event_context_ptr ctx,
   if(!wslay_event_is_msg_queueable(ctx)) {
     return WSLAY_ERR_NO_MORE_MSG;
   }
-  if((arg->opcode & (1 << 3)) && arg->msg_length > 125) {
+  if(wslay_is_ctrl_frame(arg->opcode) && arg->msg_length > 125) {
     return WSLAY_ERR_INVALID_ARGUMENT;
   }
   if((r = wslay_event_omsg_non_fragmented_init
       (&omsg, arg->opcode, arg->msg, arg->msg_length)) != 0) {
     return r;
   }
-  if(arg->opcode & (1 << 3)) {
+  if(wslay_is_ctrl_frame(arg->opcode)) {
     if((r = wslay_queue_push(ctx->send_ctrl_queue, omsg)) != 0) {
       return r;
     }
@@ -321,7 +321,7 @@ int wslay_event_queue_fragmented_msg
   if(!wslay_event_is_msg_queueable(ctx)) {
     return WSLAY_ERR_NO_MORE_MSG;
   }
-  if(arg->opcode & (1 << 3)) {
+  if(wslay_is_ctrl_frame(arg->opcode)) {
     return WSLAY_ERR_INVALID_ARGUMENT;
   }
   if((r = wslay_event_omsg_fragmented_init
@@ -512,7 +512,7 @@ int wslay_event_recv(wslay_event_context_ptr ctx)
           ctx->ipayloadlen = iocb.payload_length;
           wslay_event_call_on_frame_recv_start_callback(ctx, &iocb);
           if(!wslay_event_config_get_no_buffering(ctx) ||
-             (iocb.opcode & 1 << 3)) {
+             wslay_is_ctrl_frame(iocb.opcode)) {
             if((r = wslay_event_imsg_append_chunk(ctx->imsg,
                                                   iocb.payload_length)) != 0) {
               return r;
@@ -545,7 +545,7 @@ int wslay_event_recv(wslay_event_context_ptr ctx)
           break;
         }
         if(!wslay_event_config_get_no_buffering(ctx) ||
-           (iocb.opcode & 1 << 3)) {
+           wslay_is_ctrl_frame(iocb.opcode)) {
           if((r = wslay_event_imsg_append_chunk
               (ctx->imsg, iocb.payload_length)) != 0) {
             return r;
@@ -582,7 +582,7 @@ int wslay_event_recv(wslay_event_context_ptr ctx)
       wslay_event_call_on_frame_recv_chunk_callback(ctx, &iocb);
       if(iocb.data_length > 0) {
         if(!wslay_event_config_get_no_buffering(ctx) ||
-           (iocb.opcode & 1 << 3)) {
+           wslay_is_ctrl_frame(iocb.opcode)) {
           struct wslay_event_byte_chunk *chunk;
           chunk = wslay_queue_tail(ctx->imsg->chunks);
           wslay_event_byte_chunk_copy(chunk, ctx->ipayloadoff,
@@ -616,7 +616,7 @@ int wslay_event_recv(wslay_event_context_ptr ctx)
             uint8_t *msg = NULL;
             size_t msg_length = 0;
             if(!wslay_event_config_get_no_buffering(ctx) ||
-               (iocb.opcode & 1 << 3)) {
+               wslay_is_ctrl_frame(iocb.opcode)) {
               msg = wslay_event_flatten_queue(ctx->imsg->chunks,
                                               ctx->imsg->msg_length);
               if(ctx->imsg->msg_length && !msg) {
@@ -724,7 +724,7 @@ int wslay_event_send(wslay_event_context_ptr ctx)
       if(ctx->omsg->type == WSLAY_NON_FRAGMENTED) {
         wslay_event_on_non_fragmented_msg_popped(ctx);
       }
-    } else if((ctx->omsg->opcode & (1 << 3)) == 0 &&
+    } else if(!wslay_is_ctrl_frame(ctx->omsg->opcode) &&
               ctx->frame_ctx->ostate == PREP_HEADER &&
               !wslay_queue_empty(ctx->send_ctrl_queue)) {
       if((r = wslay_queue_push_front(ctx->send_queue, ctx->omsg)) != 0) {
