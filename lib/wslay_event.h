@@ -79,6 +79,8 @@ enum wslay_event_config {
 struct wslay_event_context {
   /* config status, bitwise OR of enum wslay_event_config values*/
   uint32_t config;
+  /* maximum message length that can be received */
+  uint64_t max_recv_msg_length;
   /* 1 if initialized for server, otherwise 0 */
   uint8_t server;
   /* bitwise OR of enum wslay_event_close_status values */

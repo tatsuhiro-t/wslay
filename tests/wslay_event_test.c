@@ -424,3 +424,71 @@ void test_wslay_event_no_buffering()
   CU_ASSERT(wslay_event_want_write(ctx));
   wslay_event_context_free(ctx);
 }
+
+void test_wslay_event_frame_too_big()
+{
+  wslay_event_context_ptr ctx;
+  struct wslay_event_callbacks callbacks;
+  struct my_user_data ud;
+  struct accumulator acc;
+  /* Masked text frame */
+  const uint8_t msg[] = { 0x81, 0x85, 0x00, 0x00, 0x00, 0x00,
+                          0x48, 0x65, 0x6c, 0x6c, 0x6f /* "Hello" */
+  };
+  const uint8_t ans[] = { 0x88, 0x02,
+                          0x03, 0xf1 /* 1009 */
+  };
+  struct scripted_data_feed df;
+  scripted_data_feed_init(&df, (const uint8_t*)msg, sizeof(msg));
+  memset(&callbacks, 0, sizeof(callbacks));
+  callbacks.send_callback = accumulator_send_callback;
+  callbacks.recv_callback = scripted_recv_callback;
+  memset(&acc, 0, sizeof(acc));
+  ud.df = &df;
+  ud.acc = &acc;
+  wslay_event_context_server_init(&ctx, &callbacks, &ud);
+  wslay_event_config_set_max_recv_msg_length(ctx, 4);
+  CU_ASSERT(0 == wslay_event_recv(ctx));
+  CU_ASSERT(0 == wslay_event_send(ctx));
+  CU_ASSERT(4 == acc.length);
+  CU_ASSERT(0 == memcmp(ans, acc.buf, acc.length));
+  CU_ASSERT(1 == wslay_event_get_close_sent(ctx));
+  CU_ASSERT(WSLAY_CODE_MESSAGE_TOO_BIG ==
+            wslay_event_get_status_code_sent(ctx));
+  wslay_event_context_free(ctx);
+}
+
+void test_wslay_event_message_too_big()
+{
+  wslay_event_context_ptr ctx;
+  struct wslay_event_callbacks callbacks;
+  struct my_user_data ud;
+  struct accumulator acc;
+  /* Masked text 2 frames */
+  const uint8_t msg[] = { 0x01, 0x85, 0x00, 0x00, 0x00, 0x00,
+                          0x48, 0x65, 0x6c, 0x6c, 0x6f, /* "Hello" */
+                          0x80, 0x85, 0x00, 0x00, 0x00, 0x00,
+                          0x48, 0x65, 0x6c, 0x6c, 0x6f /* "Hello" */
+  };
+  const uint8_t ans[] = { 0x88, 0x02,
+                          0x03, 0xf1 /* 1009 */
+  };
+  struct scripted_data_feed df;
+  scripted_data_feed_init(&df, (const uint8_t*)msg, sizeof(msg));
+  memset(&callbacks, 0, sizeof(callbacks));
+  callbacks.send_callback = accumulator_send_callback;
+  callbacks.recv_callback = scripted_recv_callback;
+  memset(&acc, 0, sizeof(acc));
+  ud.df = &df;
+  ud.acc = &acc;
+  wslay_event_context_server_init(&ctx, &callbacks, &ud);
+  wslay_event_config_set_max_recv_msg_length(ctx, 9);
+  CU_ASSERT(0 == wslay_event_recv(ctx));
+  CU_ASSERT(0 == wslay_event_send(ctx));
+  CU_ASSERT(4 == acc.length);
+  CU_ASSERT(0 == memcmp(ans, acc.buf, acc.length));
+  CU_ASSERT(1 == wslay_event_get_close_sent(ctx));
+  CU_ASSERT(WSLAY_CODE_MESSAGE_TOO_BIG ==
+            wslay_event_get_status_code_sent(ctx));
+  wslay_event_context_free(ctx);
+}

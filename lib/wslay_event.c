@@ -382,6 +382,7 @@ static int wslay_event_context_init
   (*ctx)->obufmark = (*ctx)->obuflimit = (*ctx)->obuf;
   (*ctx)->status_code_sent = WSLAY_CODE_ABNORMAL_CLOSURE;
   (*ctx)->status_code_recv = WSLAY_CODE_ABNORMAL_CLOSURE;
+  (*ctx)->max_recv_msg_length = UINT32_MAX;
   return 0;
 }
 
@@ -491,6 +492,7 @@ int wslay_event_recv(wslay_event_context_ptr ctx)
     memset(&iocb, 0, sizeof(iocb));
     r = wslay_frame_recv(ctx->frame_ctx, &iocb);
     if(r >= 0) {
+      int new_frame = 0;
       /* We only allow rsv == 0 ATM. */
       if(iocb.rsv != 0 ||
          ((ctx->server && !iocb.mask) || (!ctx->server && iocb.mask))) {
@@ -509,15 +511,7 @@ int wslay_event_recv(wslay_event_context_ptr ctx)
            iocb.opcode == WSLAY_PING ||
            iocb.opcode == WSLAY_PONG) {
           wslay_event_imsg_set(ctx->imsg, iocb.fin, iocb.rsv, iocb.opcode);
-          ctx->ipayloadlen = iocb.payload_length;
-          wslay_event_call_on_frame_recv_start_callback(ctx, &iocb);
-          if(!wslay_event_config_get_no_buffering(ctx) ||
-             wslay_is_ctrl_frame(iocb.opcode)) {
-            if((r = wslay_event_imsg_append_chunk(ctx->imsg,
-                                                  iocb.payload_length)) != 0) {
-              return r;
-            }
-          }
+          new_frame = 1;
         } else {
           ctx->read_enabled = 0;
           if((r = wslay_event_queue_close(ctx, WSLAY_CODE_PROTOCOL_ERROR,
@@ -544,15 +538,28 @@ int wslay_event_recv(wslay_event_context_ptr ctx)
           }
           break;
         }
-        if(!wslay_event_config_get_no_buffering(ctx) ||
-           wslay_is_ctrl_frame(iocb.opcode)) {
-          if((r = wslay_event_imsg_append_chunk
-              (ctx->imsg, iocb.payload_length)) != 0) {
+        new_frame = 1;
+      }
+      if(new_frame) {
+        if(ctx->imsg->msg_length+iocb.payload_length >
+           ctx->max_recv_msg_length) {
+          ctx->read_enabled = 0;
+          if((r = wslay_event_queue_close(ctx, WSLAY_CODE_MESSAGE_TOO_BIG,
+                                          NULL, 0)) &&
+             r != WSLAY_ERR_NO_MORE_MSG) {
             return r;
           }
+          break;
         }
         ctx->ipayloadlen = iocb.payload_length;
         wslay_event_call_on_frame_recv_start_callback(ctx, &iocb);
+        if(!wslay_event_config_get_no_buffering(ctx) ||
+           wslay_is_ctrl_frame(iocb.opcode)) {
+          if((r = wslay_event_imsg_append_chunk(ctx->imsg,
+                                                iocb.payload_length)) != 0) {
+            return r;
+          }
+        }
       }
       if(ctx->imsg->opcode == WSLAY_TEXT_FRAME ||
          ctx->imsg->opcode == WSLAY_CONNECTION_CLOSE) {
@@ -881,6 +888,12 @@ void wslay_event_config_set_no_buffering(wslay_event_context_ptr ctx, int val)
   } else {
     ctx->config &= ~WSLAY_CONFIG_NO_BUFFERING;
   }
+}
+
+void wslay_event_config_set_max_recv_msg_length(wslay_event_context_ptr ctx,
+                                                uint64_t val)
+{
+  ctx->max_recv_msg_length = val;
 }
 
 uint16_t wslay_event_get_status_code_received(wslay_event_context_ptr ctx)

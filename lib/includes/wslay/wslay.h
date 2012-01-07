@@ -44,6 +44,9 @@ enum wslay_error {
   WSLAY_ERR_NOMEM = -500
 };
 
+/*
+ * Status codes defined in RFC6455
+ */
 enum wslay_status_code {
   WSLAY_CODE_NORMAL_CLOSURE = 1000,
   WSLAY_CODE_GOING_AWAY = 1001,
@@ -320,6 +323,18 @@ void wslay_event_context_free(wslay_event_context_ptr ctx);
  * wslay_event_on_msg_recv_arg is set to 0 for non-control frames.
  */
 void wslay_event_config_set_no_buffering(wslay_event_context_ptr ctx, int val);
+
+/*
+ * Set maximum length of a message that can be received.  If the
+ * length of a message is larger than this value, close control frame
+ * with WSLAY_CODE_MESSAGE_TOO_BIG is queued.  If buffering for
+ * non-control frames is disabled, the library only checks frame
+ * payload length and does not check length of entire message.
+ *
+ * The default value is (1 << 32)-1.
+ */
+void wslay_event_config_set_max_recv_msg_length(wslay_event_context_ptr ctx,
+                                                uint64_t val);
 
 int wslay_event_recv(wslay_event_context_ptr ctx);
 int wslay_event_send(wslay_event_context_ptr ctx);
