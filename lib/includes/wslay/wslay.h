@@ -110,6 +110,12 @@ struct wslay_frame_callbacks {
 #define WSLAY_PING 0x9u
 #define WSLAY_PONG 0xau
 
+/*
+ * Macro that returns 1 if opcode is control frame opcode, otherwise
+ * returns 0.
+ */
+#define wslay_is_ctrl_frame(opcode) (opcode & (1 << 3)) > 0
+
 struct wslay_frame_iocb {
   uint8_t fin; /* 1 for fragmented final frame, 0 for otherwise */
   uint8_t rsv; /* reserved 3 bits. RFC6455 requires 0 unless extensions are
