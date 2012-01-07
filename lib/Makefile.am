@@ -1,4 +1,4 @@
-# The MIT License
+# Wslay - The WebSocket Library
 
 # Copyright (c) 2011 Tatsuhiro Tsujikawa
 

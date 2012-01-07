@@ -1,4 +1,4 @@
-dnl The MIT License
+dnl Wslay - The WebSocket Library
 
 dnl Copyright (c) 2011 Tatsuhiro Tsujikawa
 
