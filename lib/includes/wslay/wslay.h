@@ -243,12 +243,26 @@ typedef void (*wslay_event_on_frame_recv_chunk_callback)
 typedef void (*wslay_event_on_frame_recv_end_callback)
 (wslay_event_context_ptr ctx, void *user_data);
 
+/*
+ * Callback function invoked by wslay_event_recv() when the library
+ * wants to receive more data from peer.
+ */
 typedef ssize_t (*wslay_event_recv_callback)(wslay_event_context_ptr ctx,
                                              uint8_t *buf, size_t len,
                                              void *user_data);
+
+/*
+ * Callback function invoked by wslay_event_send() when the library
+ * wants to send data to peer.
+ */
 typedef ssize_t (*wslay_event_send_callback)(wslay_event_context_ptr ctx,
                                              const uint8_t *data, size_t len,
                                              void *user_data);
+
+/*
+ * Callback function invoked by wslay_event_send() when the library
+ * wants new mask key.
+ */
 typedef ssize_t (*wslay_event_genmask_callback)(wslay_event_context_ptr ctx,
                                                 uint8_t *buf, size_t len,
                                                 void *user_data);
