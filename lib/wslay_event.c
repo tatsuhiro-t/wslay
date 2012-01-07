@@ -334,6 +334,12 @@ int wslay_event_queue_fragmented_msg
   return 0;
 }
 
+void wslay_event_config_set_callbacks
+(wslay_event_context_ptr ctx, const struct wslay_event_callbacks *callbacks)
+{
+  ctx->callbacks = *callbacks;
+}
+
 static int wslay_event_context_init
 (wslay_event_context_ptr *ctx,
  const struct wslay_event_callbacks *callbacks,
@@ -350,7 +356,7 @@ static int wslay_event_context_init
     return WSLAY_ERR_NOMEM;
   }
   memset(*ctx, 0, sizeof(struct wslay_event_context));
-  (*ctx)->callbacks = *callbacks;
+  wslay_event_config_set_callbacks(*ctx, callbacks);
   (*ctx)->user_data = user_data;
   (*ctx)->frame_user_data.ctx = *ctx;
   (*ctx)->frame_user_data.user_data = user_data;
