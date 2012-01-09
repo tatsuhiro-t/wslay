@@ -29,6 +29,10 @@ See Autobahn test reports:
 and
 `client <http://wslay.sourceforge.net/autobahn/reports/clients/index.html>`_.
 
+This project is hosted at http://sourceforge.net/projects/wslay/
+
+Source code is hosted at https://github.com/tatsuhiro-t/wslay
+
 Contents:
 
 .. toctree::
