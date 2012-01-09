@@ -211,6 +211,27 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'wslay', u'wslay Documentation',
-     [u'Tatsuhiro Tsujikawa'], 1)
-]
+    ('man/wslay_event_context_server_init', 'wslay_event_context_server_init',
+     u'Initialize a context for WebSocket server', [u'Tatsuhiro Tsujikawa'], 3),
+    ('man/wslay_event_context_server_init', 'wslay_event_context_client_init',
+     u'Initialize a context for WebSocket client', [u'Tatsuhiro Tsujikawa'], 3),
+    ('man/wslay_event_send', 'wslay_event_send',
+     u'Send any pending messages', [u'Tatsuhiro Tsujikawa'], 3),
+    ('man/wslay_event_recv', 'wslay_event_recv',
+     u'Receive messages', [u'Tatsuhiro Tsujikawa'], 3),
+    ('man/wslay_event_queue_msg', 'wslay_event_queue_msg',
+     u'Queue a message for future transmission', [u'Tatsuhiro Tsujikawa'], 3),
+    ('man/wslay_event_queue_fragmented_msg', 'wslay_event_queue_fragmented_msg',
+     u'Queue a fragmented message for future transmission',
+     [u'Tatsuhiro Tsujikawa'], 3),
+    ('man/wslay_event_queue_close', 'wslay_event_queue_close',
+     u'Queue a close control frame', [u'Tatsuhiro Tsujikawa'], 3),
+    ('man/wslay_event_set_error', 'wslay_event_set_error',
+     u'Set error code', [u'Tatsuhiro Tsujikawa'], 3),
+    ('man/wslay_event_want_read', 'wslay_event_want_read',
+     u'Tell whether the library wants to read more data',
+     [u'Tatsuhiro Tsujikawa'], 3),
+    ('man/wslay_event_want_write', 'wslay_event_want_write',
+     u'Tell whether the library wants to send more data',
+     [u'Tatsuhiro Tsujikawa'], 3),
+    ]
