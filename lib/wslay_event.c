@@ -286,6 +286,19 @@ int wslay_event_queue_close(wslay_event_context_ptr ctx, uint16_t status_code,
   }
 }
 
+static int wslay_event_queue_close_wrapper
+(wslay_event_context_ptr ctx, uint16_t status_code,
+ const uint8_t *reason, size_t reason_length)
+{
+  int r;
+  ctx->read_enabled = 0;
+  if((r = wslay_event_queue_close(ctx, status_code, reason, reason_length)) &&
+     r != WSLAY_ERR_NO_MORE_MSG) {
+    return r;
+  }
+  return 0;
+}
+
 int wslay_event_queue_msg(wslay_event_context_ptr ctx,
                           const struct wslay_event_msg *arg)
 {
@@ -502,10 +515,8 @@ int wslay_event_recv(wslay_event_context_ptr ctx)
       /* We only allow rsv == 0 ATM. */
       if(iocb.rsv != 0 ||
          ((ctx->server && !iocb.mask) || (!ctx->server && iocb.mask))) {
-        ctx->read_enabled = 0;
-        if((r = wslay_event_queue_close(ctx, WSLAY_CODE_PROTOCOL_ERROR,
-                                        NULL, 0)) &&
-           r != WSLAY_ERR_NO_MORE_MSG) {
+        if((r = wslay_event_queue_close_wrapper
+            (ctx, WSLAY_CODE_PROTOCOL_ERROR, NULL, 0)) != 0) {
           return r;
         }
         break;
@@ -519,10 +530,8 @@ int wslay_event_recv(wslay_event_context_ptr ctx)
           wslay_event_imsg_set(ctx->imsg, iocb.fin, iocb.rsv, iocb.opcode);
           new_frame = 1;
         } else {
-          ctx->read_enabled = 0;
-          if((r = wslay_event_queue_close(ctx, WSLAY_CODE_PROTOCOL_ERROR,
-                                          NULL, 0)) &&
-             r != WSLAY_ERR_NO_MORE_MSG) {
+          if((r = wslay_event_queue_close_wrapper
+              (ctx, WSLAY_CODE_PROTOCOL_ERROR, NULL, 0)) != 0) {
             return r;
           }
           break;
@@ -536,10 +545,8 @@ int wslay_event_recv(wslay_event_context_ptr ctx)
           ctx->imsg = &ctx->imsgs[1];
           wslay_event_imsg_set(ctx->imsg, iocb.fin, iocb.rsv, iocb.opcode);
         } else {
-          ctx->read_enabled = 0;
-          if((r = wslay_event_queue_close(ctx, WSLAY_CODE_PROTOCOL_ERROR,
-                                          NULL, 0)) &&
-             r != WSLAY_ERR_NO_MORE_MSG) {
+          if((r = wslay_event_queue_close_wrapper
+              (ctx, WSLAY_CODE_PROTOCOL_ERROR, NULL, 0)) != 0) {
             return r;
           }
           break;
@@ -549,10 +556,8 @@ int wslay_event_recv(wslay_event_context_ptr ctx)
       if(new_frame) {
         if(ctx->imsg->msg_length+iocb.payload_length >
            ctx->max_recv_msg_length) {
-          ctx->read_enabled = 0;
-          if((r = wslay_event_queue_close(ctx, WSLAY_CODE_MESSAGE_TOO_BIG,
-                                          NULL, 0)) &&
-             r != WSLAY_ERR_NO_MORE_MSG) {
+          if((r = wslay_event_queue_close_wrapper
+              (ctx, WSLAY_CODE_MESSAGE_TOO_BIG, NULL, 0)) != 0) {
             return r;
           }
           break;
@@ -580,10 +585,8 @@ int wslay_event_recv(wslay_event_context_ptr ctx)
           uint32_t codep;
           if(decode(&ctx->imsg->utf8state, &codep,
                     iocb.data[i]) == UTF8_REJECT) {
-            ctx->read_enabled = 0;
-            if((r = wslay_event_queue_close
-                (ctx, WSLAY_CODE_INVALID_FRAME_PAYLOAD_DATA, NULL, 0)) &&
-               r != WSLAY_ERR_NO_MORE_MSG) {
+            if((r = wslay_event_queue_close_wrapper
+                (ctx, WSLAY_CODE_INVALID_FRAME_PAYLOAD_DATA, NULL, 0)) != 0) {
               return r;
             }
             break;
@@ -609,19 +612,14 @@ int wslay_event_recv(wslay_event_context_ptr ctx)
            (ctx->imsg->opcode == WSLAY_TEXT_FRAME ||
             ctx->imsg->opcode == WSLAY_CONNECTION_CLOSE) &&
            ctx->imsg->utf8state != UTF8_ACCEPT) {
-          ctx->read_enabled = 0;
-          if((r = wslay_event_queue_close
-              (ctx, WSLAY_CODE_INVALID_FRAME_PAYLOAD_DATA, NULL, 0)) &&
-             r != WSLAY_ERR_NO_MORE_MSG) {
+          if((r = wslay_event_queue_close_wrapper
+              (ctx, WSLAY_CODE_INVALID_FRAME_PAYLOAD_DATA, NULL, 0)) != 0) {
             return r;
           }
           break;
         }
         wslay_event_call_on_frame_recv_end_callback(ctx);
         if(ctx->imsg->fin) {
-          if(ctx->imsg->opcode == WSLAY_CONNECTION_CLOSE) {
-            ctx->read_enabled = 0;
-          }
           if(ctx->callbacks.on_msg_recv_callback ||
              ctx->imsg->opcode == WSLAY_CONNECTION_CLOSE ||
              ctx->imsg->opcode == WSLAY_PING) {
@@ -647,9 +645,8 @@ int wslay_event_recv(wslay_event_context_ptr ctx)
                 status_code = ntohs(status_code);
                 if(!wslay_event_is_valid_status_code(status_code)) {
                   free(msg);
-                  if((r = wslay_event_queue_close
-                      (ctx, WSLAY_CODE_PROTOCOL_ERROR, NULL, 0)) &&
-                     r != WSLAY_ERR_NO_MORE_MSG) {
+                  if((r = wslay_event_queue_close_wrapper
+                      (ctx, WSLAY_CODE_PROTOCOL_ERROR, NULL, 0)) != 0) {
                     return r;
                   }
                   break;
@@ -663,9 +660,8 @@ int wslay_event_recv(wslay_event_context_ptr ctx)
               ctx->close_status |= WSLAY_CLOSE_RECEIVED;
               ctx->status_code_recv =
                 status_code == 0 ? WSLAY_CODE_NO_STATUS_RCVD : status_code;
-              if((r = wslay_event_queue_close(ctx, status_code,
-                                              reason, reason_length)) &&
-                 r != WSLAY_ERR_NO_MORE_MSG) {
+              if((r = wslay_event_queue_close_wrapper
+                  (ctx, status_code, reason, reason_length)) != 0) {
                 free(msg);
                 return r;
               }
@@ -701,9 +697,7 @@ int wslay_event_recv(wslay_event_context_ptr ctx)
     } else {
       if(r != WSLAY_ERR_WANT_READ ||
          (ctx->error != WSLAY_ERR_WOULDBLOCK && ctx->error != 0)) {
-        ctx->read_enabled = 0;
-        if((r = wslay_event_queue_close(ctx, 0, NULL, 0)) &&
-           r != WSLAY_ERR_NO_MORE_MSG) {
+        if((r = wslay_event_queue_close_wrapper(ctx, 0, NULL, 0)) != 0) {
           return r;
         }
         return WSLAY_ERR_CALLBACK_FAILURE;
