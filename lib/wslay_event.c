@@ -563,6 +563,7 @@ int wslay_event_recv(wslay_event_context_ptr ctx)
            wslay_is_ctrl_frame(iocb.opcode)) {
           if((r = wslay_event_imsg_append_chunk(ctx->imsg,
                                                 iocb.payload_length)) != 0) {
+            ctx->read_enabled = 0;
             return r;
           }
         }
@@ -633,6 +634,7 @@ int wslay_event_recv(wslay_event_context_ptr ctx)
               msg = wslay_event_flatten_queue(ctx->imsg->chunks,
                                               ctx->imsg->msg_length);
               if(ctx->imsg->msg_length && !msg) {
+                ctx->read_enabled = 0;
                 return WSLAY_ERR_NOMEM;
               }
               msg_length = ctx->imsg->msg_length;
@@ -673,6 +675,7 @@ int wslay_event_recv(wslay_event_context_ptr ctx)
               };
               if((r = wslay_event_queue_msg(ctx, &arg)) &&
                  r != WSLAY_ERR_NO_MORE_MSG) {
+                ctx->read_enabled = 0;
                 free(msg);
                 return r;
               }
@@ -741,6 +744,7 @@ int wslay_event_send(wslay_event_context_ptr ctx)
               ctx->frame_ctx->ostate == PREP_HEADER &&
               !wslay_queue_empty(ctx->send_ctrl_queue)) {
       if((r = wslay_queue_push_front(ctx->send_queue, ctx->omsg)) != 0) {
+        ctx->write_enabled = 0;
         return r;
       }
       ctx->omsg = wslay_queue_top(ctx->send_ctrl_queue);
