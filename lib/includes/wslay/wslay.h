@@ -106,12 +106,14 @@ struct wslay_frame_callbacks {
  * The opcode defined in RFC6455. These can be used to specify opcode
  * in wslay_frame_iocb.
  */
-#define WSLAY_CONTINUATION_FRAME 0x0u
-#define WSLAY_TEXT_FRAME 0x1u
-#define WSLAY_BINARY_FRAME 0x2u
-#define WSLAY_CONNECTION_CLOSE 0x8u
-#define WSLAY_PING 0x9u
-#define WSLAY_PONG 0xau
+enum wslay_opcode {
+  WSLAY_CONTINUATION_FRAME = 0x0u,
+  WSLAY_TEXT_FRAME = 0x1u,
+  WSLAY_BINARY_FRAME = 0x2u,
+  WSLAY_CONNECTION_CLOSE = 0x8u,
+  WSLAY_PING = 0x9u,
+  WSLAY_PONG = 0xau
+};
 
 /*
  * Macro that returns 1 if opcode is control frame opcode, otherwise
