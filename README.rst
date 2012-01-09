@@ -1,8 +1,12 @@
-Wslay - WebSocket library
-=========================
+Wslay - The WebSocket library
+=============================
+
+Project Web: http://wslay.sourceforge.net/
 
 Wslay is a WebSocket library written in C. The supported protocol is
-version 13 described in RFC6455.  This library offers 2 levels API:
+version 13 described in
+`RFC6455 <http://tools.ietf.org/html/rfc6455>`_.
+This library offers 2 levels of API:
 event-based API and frame-based low-level API. For event-based API, it
 is suitable for non-blocking reactor pattern style. You can set
 callbacks in various events. For frame-based API, you can send
@@ -21,3 +25,8 @@ offers callbacks for them. This makes Wslay independent on any I/O
 frameworks, SSL, sockets, etc.  This makes Wslay protable across
 various platforms and the application authors can choose freely IO
 frameworks.
+
+See Autobahn test reports:
+`server <http://wslay.sourceforge.net/autobahn/reports/servers/index.html>`_
+and
+`client <http://wslay.sourceforge.net/autobahn/reports/clients/index.html>`_.
