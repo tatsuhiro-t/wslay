@@ -15,7 +15,8 @@ DESCRIPTION
 read more data from peer.
 
 This is useful to decide whether to wait for read event in
-I/O event notification functions such as :c:func:`select` and :c:func:`poll`.
+I/O event notification functions such as :manpage:`select(2)`
+and :manpage:`poll(2)`.
 
 RETURN VALUE
 ------------
@@ -27,5 +28,5 @@ SEE ALSO
 --------
 
 :c:func:`wslay_event_want_write`,
-:c:func:`wslay_event_set_read_enabled`,
+:c:func:`wslay_event_shutdown_read`,
 :c:func:`wslay_event_get_read_enabled`

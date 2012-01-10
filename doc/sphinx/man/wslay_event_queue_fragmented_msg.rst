@@ -1,3 +1,5 @@
+.. highlight:: c
+
 wslay_event_queue_fragmented_msg
 ================================
 

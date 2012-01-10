@@ -1,3 +1,5 @@
+.. highlight:: c
+
 wslay_event_context_server_init, wslay_event_context_client_init
 ================================================================
 

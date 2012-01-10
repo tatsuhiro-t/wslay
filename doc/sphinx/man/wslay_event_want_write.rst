@@ -15,7 +15,8 @@ DESCRIPTION
 send more data to peer.
 
 This is useful to decide whether to wait for write event in
-I/O event notification functions such as :c:func:`select` and :c:func:`poll`.
+I/O event notification functions such as :manpage:`select(2)`
+and :manpage:`poll(2)`.
 
 RETURN VALUE
 ------------
@@ -27,5 +28,5 @@ SEE ALSO
 --------
 
 :c:func:`wslay_event_want_read`,
-:c:func:`wslay_event_set_write_enabled`,
+:c:func:`wslay_event_shutdown_write`,
 :c:func:`wslay_event_get_write_enabled`

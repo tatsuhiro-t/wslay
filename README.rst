@@ -3,9 +3,9 @@ Wslay - The WebSocket library
 
 Project Web: http://wslay.sourceforge.net/
 
-Wslay is a WebSocket library written in C. The supported protocol is
-version 13 described in
-`RFC6455 <http://tools.ietf.org/html/rfc6455>`_.
+Wslay is a WebSocket library written in C.
+It implements the protocol version 13 described in
+`RFC 6455 <http://tools.ietf.org/html/rfc6455>`_.
 This library offers 2 levels of API:
 event-based API and frame-based low-level API. For event-based API, it
 is suitable for non-blocking reactor pattern style. You can set
@@ -15,10 +15,10 @@ WebSocket protocol and does not perform opening handshake in HTTP.
 
 Wslay supports:
 
- * Text/Binary messages.
- * Automatic ping reply.
- * Callback interface.
- * External event loop.
+* Text/Binary messages.
+* Automatic ping reply.
+* Callback interface.
+* External event loop.
 
 Wslay does not perform any I/O operations for its own. Instead, it
 offers callbacks for them. This makes Wslay independent on any I/O

@@ -11,7 +11,7 @@ SYNOPSIS
 DESCRIPTION
 -----------
 
-:c:func:`wslay_event_recv` freceives messages from peer.
+:c:func:`wslay_event_recv` receives messages from peer.
 When receiving messages, it uses :c:type:`wslay_event_recv_callback`
 function. Single call of this function receives multiple messages
 until :c:type:`wslay_event_recv_callback` function
