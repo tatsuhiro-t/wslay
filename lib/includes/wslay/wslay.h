@@ -426,8 +426,8 @@ void wslay_event_set_error(wslay_event_context_ptr ctx, int val);
 int wslay_event_want_read(wslay_event_context_ptr ctx);
 int wslay_event_want_write(wslay_event_context_ptr ctx);
 
-void wslay_event_set_read_enabled(wslay_event_context_ptr ctx, int val);
-void wslay_event_set_write_enabled(wslay_event_context_ptr ctx, int val);
+void wslay_event_shutdown_read(wslay_event_context_ptr ctx);
+void wslay_event_shutdown_write(wslay_event_context_ptr ctx);
 
 int wslay_event_get_read_enabled(wslay_event_context_ptr ctx);
 int wslay_event_get_write_enabled(wslay_event_context_ptr ctx);

@@ -855,14 +855,14 @@ int wslay_event_want_write(wslay_event_context_ptr ctx)
      !wslay_queue_empty(ctx->send_ctrl_queue) || ctx->omsg);
 }
 
-void wslay_event_set_read_enabled(wslay_event_context_ptr ctx, int val)
+void wslay_event_shutdown_read(wslay_event_context_ptr ctx)
 {
-  ctx->read_enabled = val;
+  ctx->read_enabled = 0;
 }
 
-void wslay_event_set_write_enabled(wslay_event_context_ptr ctx, int val)
+void wslay_event_shutdown_write(wslay_event_context_ptr ctx)
 {
-  ctx->write_enabled = val;
+  ctx->write_enabled = 0;
 }
 
 int wslay_event_get_read_enabled(wslay_event_context_ptr ctx)
