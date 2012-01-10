@@ -40,3 +40,5 @@ HFILES = wslay_frame.h wslay_session.h\
 	wslay_event.h
 
 libwslay_la_SOURCES = $(HFILES) $(OBJECTS)
+libwslay_la_LDFLAGS = -no-undefined \
+	-version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE)

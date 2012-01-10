@@ -32,6 +32,11 @@ dnl Checks for programs
 AC_PROG_CC
 AM_PROG_LIBTOOL
 
+dnl See versioning rule: http://www.gnu.org/software/libtool/manual/html_node/Updating-version-info.html
+AC_SUBST(LT_CURRENT, 0)
+AC_SUBST(LT_REVISION, 0)
+AC_SUBST(LT_AGE, 0)
+
 AC_CONFIG_FILES([
   Makefile
   lib/Makefile
@@ -40,3 +45,13 @@ AC_CONFIG_FILES([
   tests/Makefile
 ])
 AC_OUTPUT
+
+AC_MSG_NOTICE([summary of build options:
+
+    version:        ${VERSION} shared $LT_CURRENT:$LT_REVISION:$LT_AGE
+    Host type:      ${host}
+    Install prefix: ${prefix}
+    C compiler:     ${CC}
+    CFlags:         ${CFLAGS}
+    Library types:  Shared=${enable_shared}, Static=${enable_static}
+])
