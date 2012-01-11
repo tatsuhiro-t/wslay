@@ -31,13 +31,11 @@ DISTCLEANFILES = $(pkgconfig_DATA)
 
 lib_LTLIBRARIES = libwslay.la
 
-OBJECTS = wslay_frame.c wslay_session.c\
-	wslay_stack.c wslay_queue.c\
-	wslay_event.c
+OBJECTS = wslay_frame.c wslay_event.c\
+	wslay_queue.c
 
-HFILES = wslay_frame.h wslay_session.h\
-	wslay_stack.h wslay_queue.h\
-	wslay_event.h
+HFILES = wslay_frame.h wslay_event.h\
+	wslay_queue.h
 
 libwslay_la_SOURCES = $(HFILES) $(OBJECTS)
 libwslay_la_LDFLAGS = -no-undefined \
