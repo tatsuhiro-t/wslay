@@ -384,6 +384,7 @@ void test_wslay_event_callback_failure()
   callbacks.send_callback = fail_send_callback;
   wslay_event_context_server_init(&ctx, &callbacks, NULL);
   CU_ASSERT(WSLAY_ERR_CALLBACK_FAILURE == wslay_event_recv(ctx));
+  /* close control frame is in queue */
   CU_ASSERT(WSLAY_ERR_CALLBACK_FAILURE == wslay_event_send(ctx));
   wslay_event_context_free(ctx);
 }
