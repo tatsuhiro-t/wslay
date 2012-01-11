@@ -234,4 +234,9 @@ man_pages = [
     ('man/wslay_event_want_write', 'wslay_event_want_write',
      u'Tell whether the library wants to send more data',
      [u'Tatsuhiro Tsujikawa'], 3),
+    ('man/wslay_event_get_queued_msg_count', 'wslay_event_get_queued_msg_count',
+     u'Tell the number of queued messages', [u'Tatsuhiro Tsujikawa'], 3),
+    ('man/wslay_event_get_queued_msg_length',
+     'wslay_event_get_queued_msg_length',
+     u'Tell the sum of queued message length', [u'Tatsuhiro Tsujikawa'], 3),
     ]

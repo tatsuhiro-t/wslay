@@ -16,9 +16,9 @@ When sending a message, it uses
 :c:type:`wslay_event_send_callback` function.
 Single call of :c:func:`wslay_event_send` sends multiple messages
 until :c:type:`wslay_event_send_callback` sets error code
-`WSLAY_ERR_WOULDBLOCK`.
+*WSLAY_ERR_WOULDBLOCK*.
 
-If `ctx` is initialized for WebSocket client use,
+If *ctx* is initialized for WebSocket client use,
 :c:func:`wslay_event_send` uses :c:type:`wslay_event_genmask_callback`
 to get new mask key.
 

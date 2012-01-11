@@ -14,8 +14,8 @@ DESCRIPTION
 -----------
 
 :c:func:`wslay_event_queue_fragmented_msg` queues a fragmented message
-specified in `arg`.
-The `struct wslay_event_fragmented_msg` is defined as::
+specified in *arg*.
+The *struct wslay_event_fragmented_msg* is defined as::
 
   union wslay_event_msg_source {
       int   fd;
@@ -30,17 +30,17 @@ The `struct wslay_event_fragmented_msg` is defined as::
 
 .. c:type:: typedef ssize_t (*wslay_event_fragmented_msg_callback)(wslay_event_context_ptr ctx, uint8_t *buf, size_t len, const union wslay_event_msg_source *source, int *eof, void *user_data)
 
-The `opcode` member is the opcode of the message.
-The `source` member is an union and nomally it contains a "source" to
+The *opcode* member is the opcode of the message.
+The *source* member is an union and nomally it contains a "source" to
 generate message data.
-The `read_callback` is a callback function called by
-:c:func:`wslay_event_send` to read message data from `source`.
+The *read_callback* is a callback function called by
+:c:func:`wslay_event_send` to read message data from *source*.
 The implementation of :c:type:`wslay_event_fragmented_msg_callback` must
-store at most `len` bytes of data to `buf` and return the number of stored
-bytes. If all data is read (i.e., EOF), set `*eof` to 1.
+store at most *len* bytes of data to *buf* and return the number of stored
+bytes. If all data is read (i.e., EOF), set *\*eof* to 1.
 If no data can be generated at the moment, return 0.
 If there is an error, return -1 and
-set error code `WSLAY_ERR_CALLBACK_FAILURE`
+set error code *WSLAY_ERR_CALLBACK_FAILURE*
 using :c:func:`wslay_event_set_error`.
 
 This function just queues a message and does not send it.
@@ -49,7 +49,7 @@ This function just queues a message and does not send it.
 RETURN VALUE
 ------------
 
-`wslay_event_queue_fragmented_msg` returns 0 if it succeeds, or returns
+:c:func:`wslay_event_queue_fragmented_msg` returns 0 if it succeeds, or returns
 the following negative error codes:
 
 **WSLAY_ERR_NO_MORE_MSG**

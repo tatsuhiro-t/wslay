@@ -14,12 +14,12 @@ DESCRIPTION
 :c:func:`wslay_event_queue_close` queues close control frame.
 This function is provided just for convenience.
 :c:func:`wslay_event_queue_msg` can queue a close control frame as well.
-`status_code` is the status code of close control frame.
-`reason` is the close reason encoded in UTF-8.
-`reason_length` is the length of `reason` in bytes.
-`reason_length` must be less than 123 bytes.
+*status_code* is the status code of close control frame.
+*reason* is the close reason encoded in UTF-8.
+*reason_length* is the length of *reason* in bytes.
+*reason_length* must be less than 123 bytes.
 
-If `status_code` is 0, `reason` and `reason_length` is not used and
+If *status_code* is 0, *reason* and *reason_length* is not used and
 close control frame with zero-length payload will be queued.
 
 This function just queues a message and does not send it.

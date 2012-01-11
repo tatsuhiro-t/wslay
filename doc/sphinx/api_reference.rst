@@ -20,3 +20,5 @@ API Reference
 * :c:func:`wslay_event_get_close_sent`
 * :c:func:`wslay_event_get_status_code_received`
 * :c:func:`wslay_event_get_status_code_sent`
+* :c:func:`wslay_event_get_queued_msg_count`
+* :c:func:`wslay_event_get_queued_msg_length`

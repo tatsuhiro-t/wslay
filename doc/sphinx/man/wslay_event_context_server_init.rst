@@ -20,7 +20,7 @@ DESCRIPTION
 If they returns successfully, `ctx` will point to a structure which holds any
 necessary resources needed to process WebSocket protocol transfers.
 
-`callbacks` is a pointer to :c:type:`struct wslay_event_callbacks`,
+*callbacks* is a pointer to :c:type:`struct wslay_event_callbacks`,
 which is defined as follows::
 
   struct wslay_event_callbacks {
@@ -37,53 +37,53 @@ which is defined as follows::
 
    .. c:type:: typedef ssize_t (*wslay_event_recv_callback)(wslay_event_context_ptr ctx, uint8_t *buf, size_t len, void *user_data)
 
-   `recv_callback` is invoked by :c:func:`wslay_event_recv` when it
+   *recv_callback* is invoked by :c:func:`wslay_event_recv` when it
    wants to receive more data from peer.
-   The implementation of this callback function must read data at most `len`
-   bytes from peer and store them in `buf` and return the number of bytes read.
+   The implementation of this callback function must read data at most *len*
+   bytes from peer and store them in *buf* and return the number of bytes read.
    If there is an error, return -1 and
-   set error code `WSLAY_ERR_CALLBACK_FAILURE`
+   set error code *WSLAY_ERR_CALLBACK_FAILURE*
    using :c:func:`wslay_event_set_error`.
    Wslay event-based API on the whole assumes non-blocking I/O.
-   If the cause of error is `EAGAIN` or `EWOULDBLOCK`,
-   set `WSLAY_ERR_WOULDBLOCK` instead. This is important because it tells
+   If the cause of error is *EAGAIN* or *EWOULDBLOCK*,
+   set *WSLAY_ERR_WOULDBLOCK* instead. This is important because it tells
    :c:func:`wslay_event_recv` to stop receiving further data and return.
 
 **send_callback**
 
    .. c:type:: typedef ssize_t (*wslay_event_send_callback)(wslay_event_context_ptr ctx, const uint8_t *data, size_t len, void *user_data)
 
-   `send_callback` is invoked by :c:func:`wslay_event_send` when it
+   *send_callback* is invoked by :c:func:`wslay_event_send` when it
    wants to send more data to peer.
-   The implementation of this callback function must send data at most `len`
+   The implementation of this callback function must send data at most *len*
    bytes to peer and return the number of bytes sent.
    If there is an error, return -1 and
-   set error code `WSLAY_ERR_CALLBACK_FAILURE`
+   set error code *WSLAY_ERR_CALLBACK_FAILURE*
    using :c:func:`wslay_event_set_error`.
    Wslay event-based API on the whole assumes non-blocking I/O.
    If the cause of error is `EAGAIN` or `EWOULDBLOCK`,
-   set `WSLAY_ERR_WOULDBLOCK` instead. This is important because it tells
+   set *WSLAY_ERR_WOULDBLOCK* instead. This is important because it tells
    :c:func:`wslay_event_send` to stop sending data and return.
 
 **genmask_callback**
 
    .. c:type:: typedef ssize_t (*wslay_event_genmask_callback)(wslay_event_context_ptr ctx, uint8_t *buf, size_t len, void *user_data)
 
-   `genmask_callback` is invoked by :c:func:`wslay_event_send` when it
+   *genmask_callback* is invoked by :c:func:`wslay_event_send` when it
    wants new mask key. As described in RFC6455, only the traffic from
    WebSocket client is masked, so this callback function is only needed
    if an event-based API is initialized for WebSocket client use.
-   The implementation of this callback function must fill exactly `len` bytes
-   of data in `buf` and return `len`.
+   The implementation of this callback function must fill exactly *len* bytes
+   of data in *buf* and return *len*.
    If there is an error, return -1 and
-   set error code `WSLAY_ERR_CALLBACK_FAILURE`
+   set error code *WSLAY_ERR_CALLBACK_FAILURE*
    using :c:func:`wslay_event_set_error`.
 
 **on_frame_recv_start_callback**
 
    .. c:type:: typedef void (*wslay_event_on_frame_recv_start_callback)(wslay_event_context_ptr ctx, const struct wslay_event_on_frame_recv_start_arg *arg, void *user_data)
 
-   `on_frame_recv_start_callback` is invoked by :c:func:`wslay_event_recv` when
+   *on_frame_recv_start_callback* is invoked by :c:func:`wslay_event_recv` when
    a new frame starts to be received.
    This callback function is only invoked once for each
    frame. :c:type:`struct wslay_event_on_frame_recv_start_arg` is defined as
@@ -96,14 +96,14 @@ which is defined as follows::
          uint64_t payload_length;
      };
 
-   `fin`, `rsv` and `opcode` is fin bit and reserved bits and opcode of a frame.
-   `payload_length` is a payload length of a frame.
+   *fin*, *rsv* and *opcode* is fin bit and reserved bits and opcode of a frame.
+   *payload_length* is a payload length of a frame.
 
 **on_frame_recv_chunk_callback**
 
    .. c:type:: typedef void (*wslay_event_on_frame_recv_chunk_callback)(wslay_event_context_ptr ctx, const struct wslay_event_on_frame_recv_chunk_arg *arg, void *user_data)
 
-   `on_frame_recv_chunk_callback` is invoked by :c:func:`wslay_event_recv` when
+   *on_frame_recv_chunk_callback* is invoked by :c:func:`wslay_event_recv` when
    a chunk of frame payload is received.
    :c:type:`struct wslay_event_on_frame_recv_chunk_arg` is defined as follows::
 
@@ -112,21 +112,21 @@ which is defined as follows::
          size_t         data_length;
      };
 
-   `data` points to a chunk of payload data.
-   `data_length` is the length of a chunk.
+   *data* points to a chunk of payload data.
+   *data_length* is the length of a chunk.
 
 **on_frame_recv_end_callback**
 
    .. c:type:: typedef void (*wslay_event_on_frame_recv_end_callback)(wslay_event_context_ptr ctx, void *user_data)
 
-   `on_frame_recv_end_callback` is invoked by :c:func:`wslay_event_recv` when
+   *on_frame_recv_end_callback* is invoked by :c:func:`wslay_event_recv` when
    a frame is completely received.
 
 **on_msg_recv_callback**
 
    .. c:type:: typedef void (*wslay_event_on_msg_recv_callback)(wslay_event_context_ptr ctx, const struct wslay_event_on_msg_recv_arg *arg, void *user_data)
 
-   `on_msg_recv_callback` is invoked by :c:func:`wslay_event_recv`
+   *on_msg_recv_callback* is invoked by :c:func:`wslay_event_recv`
    when a message
    is completely received. :c:type:`struct wslay_event_on_msg_recv_arg` is
    defined as follows::
@@ -139,23 +139,24 @@ which is defined as follows::
          uint16_t       status_code;
      };
 
-   `rsv` and `opcode` is reserved bits and opcode of received message.
-   `rsv` is constructed as follows::
+   The *rsv* member and the *opcode* member are reserved bits and opcode of
+   received message respectively.
+   The *rsv* member is constructed as follows::
 
       rsv = (RSV1 << 2) | (RSV2 << 1) | RSV3
 
-   `msg` points to the message of the received message.
-   `msg_length` is the length of message.
+   The *msg* member points to the message of the received message.
+   The *msg_length* member is the length of message.
    If a message is close control frame, in other words,
-   `opcode` == `WSLAY_CONNECTION_CLOSE`, status code is set to `status_code`.
-   If no status code is included in close control frame, `statsu_code` set to 0.
+   *opcode* == *WSLAY_CONNECTION_CLOSE*, status code is set to *status_code*.
+   If no status code is included in close control frame, *statsu_code* set to 0.
 
-`user_data` is an arbitrary pointer, which is directly
-passed to each callback functions as `user_data` argument.
+*user_data* is an arbitrary pointer, which is directly
+passed to each callback functions as *user_data* argument.
 
-When initialized event-based API context `ctx` is no longer used,
+When initialized event-based API context *ctx* is no longer used,
 use :c:func:`wslay_event_context_free` to free any
-resources allocated for `ctx`.
+resources allocated for *ctx*.
 
 RETURN VALUE
 ------------

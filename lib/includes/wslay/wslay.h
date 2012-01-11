@@ -473,7 +473,8 @@ size_t wslay_event_get_queued_msg_count(wslay_event_context_ptr ctx);
 
 /*
  * Returns the sum of queued message length. It only counts the
- * message length queued using wslay_event_queue_msg().
+ * message length queued using wslay_event_queue_msg() or
+ * wslay_event_queue_close().
  */
 size_t wslay_event_get_queued_msg_length(wslay_event_context_ptr ctx);
 

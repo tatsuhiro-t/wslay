@@ -1,3 +1,5 @@
+.. highlight:: c
+
 wslay_event_queue_msg
 =====================
 
@@ -11,8 +13,8 @@ SYNOPSIS
 DESCRIPTION
 -----------
 
-:c:func:`wslay_event_queue_msg` queues message specified in `arg`.
-The `struct wslay_event_msg` is defined as::
+:c:func:`wslay_event_queue_msg` queues message specified in *arg*.
+The *struct wslay_event_msg* is defined as::
 
   struct wslay_event_msg {
       uint8_t        opcode;
@@ -20,9 +22,9 @@ The `struct wslay_event_msg` is defined as::
       size_t         msg_length;
   };
 
-The `opcode` member is opcode of the message.
-The `msg` member is the pointer to the message data.
-The `msg_length` member is the length of message data.
+The *opcode* member is opcode of the message.
+The *msg* member is the pointer to the message data.
+The *msg_length* member is the length of message data.
 
 This function supports both control and non-control messages and
 the given message is sent without fragmentation.
