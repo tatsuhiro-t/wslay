@@ -25,6 +25,10 @@
 #ifndef WSLAY_FRAME_H
 #define WSLAY_FRAME_H
 
+#ifdef HAVE_CONFIG_H
+#  include "config.h"
+#endif /* HAVE_CONFIG_H */
+
 #include <wslay/wslay.h>
 
 enum wslay_frame_state {
