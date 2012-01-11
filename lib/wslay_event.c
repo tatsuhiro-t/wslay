@@ -456,6 +456,7 @@ void wslay_event_context_free(wslay_event_context_ptr ctx)
     wslay_queue_free(ctx->send_ctrl_queue);
   }
   wslay_frame_context_free(ctx->frame_ctx);
+  wslay_event_omsg_free(ctx->omsg);
   free(ctx);
 }
 
