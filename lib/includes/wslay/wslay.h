@@ -121,6 +121,15 @@ enum wslay_opcode {
  */
 #define wslay_is_ctrl_frame(opcode) ((opcode >> 3) & 1)
 
+/*
+ * Macros that returns reserved bits: RSV1, RSV2, RSV3.  These macros
+ * assumes that rsv is constructed by ((RSV1 << 2) | (RSV2 << 1) |
+ * RSV3)
+ */
+#define wslay_get_rsv1(rsv) ((rsv >> 2) & 1)
+#define wslay_get_rsv2(rsv) ((rsv >> 1) & 1)
+#define wslay_get_rsv3(rsv) (rsv & 1)
+
 struct wslay_frame_iocb {
   uint8_t fin; /* 1 for fragmented final frame, 0 for otherwise */
   uint8_t rsv; /* reserved 3 bits. RFC6455 requires 0 unless extensions are
