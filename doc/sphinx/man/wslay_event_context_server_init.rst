@@ -67,14 +67,14 @@ which is defined as follows::
 
 **genmask_callback**
 
-   .. c:type:: typedef ssize_t (*wslay_event_genmask_callback)(wslay_event_context_ptr ctx, uint8_t *buf, size_t len, void *user_data)
+   .. c:type:: typedef int (*wslay_event_genmask_callback)(wslay_event_context_ptr ctx, uint8_t *buf, size_t len, void *user_data)
 
    *genmask_callback* is invoked by :c:func:`wslay_event_send` when it
    wants new mask key. As described in RFC6455, only the traffic from
    WebSocket client is masked, so this callback function is only needed
    if an event-based API is initialized for WebSocket client use.
    The implementation of this callback function must fill exactly *len* bytes
-   of data in *buf* and return *len*.
+   of data in *buf* and return 0 on success.
    If there is an error, return -1 and
    set error code *WSLAY_ERR_CALLBACK_FAILURE*
    using :c:func:`wslay_event_set_error`.
