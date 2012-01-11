@@ -105,7 +105,7 @@ ssize_t wslay_frame_send(wslay_frame_context_ptr ctx,
     }
     if(iocb->mask) {
       if(ctx->callbacks.genmask_callback(ctx->omaskkey, 4,
-                                         ctx->user_data) != 4) {
+                                         ctx->user_data) != 0) {
         return WSLAY_ERR_INVALID_CALLBACK;
       } else {
         ctx->omask = 1;

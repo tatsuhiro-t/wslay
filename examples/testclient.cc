@@ -218,12 +218,12 @@ ssize_t feed_body_callback
   return ws->feed_body(data, len);
 }
 
-ssize_t genmask_callback(wslay_event_context_ptr ctx, uint8_t *buf, size_t len,
-                         void *user_data)
+int genmask_callback(wslay_event_context_ptr ctx, uint8_t *buf, size_t len,
+                     void *user_data)
 {
   WebSocketClient *ws = (WebSocketClient*)user_data;
   ws->get_random(buf, len);
-  return len;
+  return 0;
 }
 
 void on_msg_recv_callback(wslay_event_context_ptr ctx,

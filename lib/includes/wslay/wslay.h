@@ -90,11 +90,10 @@ typedef ssize_t (*wslay_frame_recv_callback)(uint8_t *buf, size_t len,
  * new mask key. The implementation of this function must write len
  * bytes of mask key to buf. user_data is one given in
  * wslay_frame_context_init function. The implementation of this
- * function return the number of bytes written. If the return value is
- * not len, then the library treats it as an error.
+ * function return 0 on success. If there is an error, return -1.
  */
-typedef ssize_t (*wslay_frame_genmask_callback)(uint8_t *buf, size_t len,
-                                                void *user_data);
+typedef int (*wslay_frame_genmask_callback)(uint8_t *buf, size_t len,
+                                            void *user_data);
 
 struct wslay_frame_callbacks {
   wslay_frame_send_callback send_callback;
@@ -283,9 +282,9 @@ typedef ssize_t (*wslay_event_send_callback)(wslay_event_context_ptr ctx,
  * Callback function invoked by wslay_event_send() when the library
  * wants new mask key.
  */
-typedef ssize_t (*wslay_event_genmask_callback)(wslay_event_context_ptr ctx,
-                                                uint8_t *buf, size_t len,
-                                                void *user_data);
+typedef int (*wslay_event_genmask_callback)(wslay_event_context_ptr ctx,
+                                            uint8_t *buf, size_t len,
+                                            void *user_data);
 
 struct wslay_event_callbacks {
   wslay_event_recv_callback recv_callback;

@@ -344,12 +344,12 @@ static ssize_t accumulator_send_callback(const uint8_t *buf, size_t len,
   return len;
 }
 
-static ssize_t static_genmask_callback(uint8_t *buf, size_t len,
-                                       void* user_data)
+static int static_genmask_callback(uint8_t *buf, size_t len,
+                                   void* user_data)
 {
   const static uint8_t makskey[] = { 0x37u, 0xfau, 0x21u, 0x3du };
   memcpy(buf, makskey, 4);
-  return 4;
+  return 0;
 }
 
 void test_wslay_frame_send()
