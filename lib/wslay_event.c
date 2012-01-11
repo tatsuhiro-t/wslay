@@ -750,7 +750,7 @@ int wslay_event_send(wslay_event_context_ptr ctx)
       memset(&iocb, 0, sizeof(iocb));
       iocb.fin = 1;
       iocb.opcode = ctx->omsg->opcode;
-      iocb.mask = ctx->server ? 0 : 1;
+      iocb.mask = ctx->server^1;
       iocb.data = ctx->omsg->data+ctx->opayloadoff;
       iocb.data_length = ctx->opayloadlen-ctx->opayloadoff;
       iocb.payload_length = ctx->opayloadlen;

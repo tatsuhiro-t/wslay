@@ -119,7 +119,7 @@ enum wslay_opcode {
  * Macro that returns 1 if opcode is control frame opcode, otherwise
  * returns 0.
  */
-#define wslay_is_ctrl_frame(opcode) (opcode & (1 << 3)) > 0
+#define wslay_is_ctrl_frame(opcode) ((opcode >> 3) & 1)
 
 struct wslay_frame_iocb {
   uint8_t fin; /* 1 for fragmented final frame, 0 for otherwise */
