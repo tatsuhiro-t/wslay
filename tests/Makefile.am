@@ -25,13 +25,13 @@ if HAVE_CUNIT
 
 check_PROGRAMS = main
 
-OBJECTS = main.c wslay_session_test.c wslay_frame_test.c\
+OBJECTS = main.c wslay_frame_test.c\
 	wslay_event_test.c\
-	wslay_stack_test.c wslay_queue_test.c
+	wslay_queue_test.c
 
 HFILES = wslay_session_test.h wslay_frame_test.h\
 	wslay_event_test.h\
-	wslay_stack_test.h wslay_queue_test.h
+	wslay_queue_test.h
 
 main_SOURCES = $(HFILES) $(OBJECTS)
 

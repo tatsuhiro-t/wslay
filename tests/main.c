@@ -28,7 +28,6 @@
 /* include test cases' include files here */
 #include "wslay_frame_test.h"
 #include "wslay_event_test.h"
-#include "wslay_stack_test.h"
 #include "wslay_queue_test.h"
 
 int init_suite1(void)
@@ -114,7 +113,6 @@ int main()
                    test_wslay_event_frame_too_big) ||
       !CU_add_test(pSuite, "wslay_event_message_too_big",
                    test_wslay_event_message_too_big) ||
-      !CU_add_test(pSuite, "wslay_stack", test_wslay_stack) ||
       !CU_add_test(pSuite, "wslay_queue", test_wslay_queue)) {
      CU_cleanup_registry();
      return CU_get_error();
