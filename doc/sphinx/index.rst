@@ -21,7 +21,7 @@ Wslay supports:
 Wslay does not perform any I/O operations for its own. Instead, it
 offers callbacks for them. This makes Wslay independent on any I/O
 frameworks, SSL, sockets, etc.  This makes Wslay protable across
-various platforms and the application authors can choose freely IO
+various platforms and the application authors can choose freely I/O
 frameworks.
 
 See Autobahn test reports:
