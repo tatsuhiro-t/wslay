@@ -345,6 +345,8 @@ int wslay_event_queue_msg(wslay_event_context_ptr ctx,
       return r;
     }
   }
+  ++ctx->queued_msg_count;
+  ctx->queued_msg_length += arg->msg_length;
   return 0;
 }
 
@@ -366,6 +368,7 @@ int wslay_event_queue_fragmented_msg
   if((r = wslay_queue_push(ctx->send_queue, omsg)) != 0) {
     return r;
   }
+  ++ctx->queued_msg_count;
   return 0;
 }
 
@@ -411,6 +414,8 @@ static int wslay_event_context_init
     wslay_event_context_free(*ctx);
     return WSLAY_ERR_NOMEM;
   }
+  (*ctx)->queued_msg_count = 0;
+  (*ctx)->queued_msg_length = 0;
   for(i = 0; i < 2; ++i) {
     wslay_event_imsg_reset(&(*ctx)->imsgs[i]);
     (*ctx)->imsgs[i].chunks = wslay_queue_new();
@@ -781,6 +786,8 @@ int wslay_event_send(wslay_event_context_ptr ctx)
       if(r >= 0) {
         ctx->opayloadoff += r;
         if(ctx->opayloadoff == ctx->opayloadlen) {
+          --ctx->queued_msg_count;
+          ctx->queued_msg_length -= ctx->omsg->data_length;
           if(ctx->omsg->opcode == WSLAY_CONNECTION_CLOSE) {
             ctx->write_enabled = 0;
             ctx->close_status |= WSLAY_CLOSE_SENT;
@@ -839,6 +846,7 @@ int wslay_event_send(wslay_event_context_ptr ctx)
         if(ctx->obufmark == ctx->obuflimit) {
           ctx->obufmark = ctx->obuflimit = ctx->obuf;
           if(ctx->omsg->fin) {
+            --ctx->queued_msg_count;
             wslay_event_omsg_free(ctx->omsg);
             ctx->omsg = NULL;
           } else {
@@ -931,4 +939,14 @@ uint16_t wslay_event_get_status_code_received(wslay_event_context_ptr ctx)
 uint16_t wslay_event_get_status_code_sent(wslay_event_context_ptr ctx)
 {
   return ctx->status_code_sent;
+}
+
+size_t wslay_event_get_queued_msg_count(wslay_event_context_ptr ctx)
+{
+  return ctx->queued_msg_count;
+}
+
+size_t wslay_event_get_queued_msg_length(wslay_event_context_ptr ctx)
+{
+  return ctx->queued_msg_length;
 }

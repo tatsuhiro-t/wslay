@@ -212,15 +212,19 @@ void test_wslay_event_send_fragmented_msg_with_ctrl()
   arg.source.data = &df;
   arg.read_callback = scripted_read_callback;
   CU_ASSERT(0 == wslay_event_queue_fragmented_msg(ctx, &arg));
+  CU_ASSERT(1 == wslay_event_get_queued_msg_count(ctx));
+  CU_ASSERT(0 == wslay_event_get_queued_msg_length(ctx));
   CU_ASSERT(0 == wslay_event_send(ctx));
 
   memset(&ctrl_arg, 0, sizeof(ctrl_arg));
   ctrl_arg.opcode = WSLAY_PING;
   ctrl_arg.msg_length = 0;
   CU_ASSERT(0 == wslay_event_queue_msg(ctx, &ctrl_arg));
+  CU_ASSERT(2 == wslay_event_get_queued_msg_count(ctx));
   for(i = 0; i < 10; ++i) {
     CU_ASSERT(0 == wslay_event_send(ctx));
   }
+  CU_ASSERT(0 == wslay_event_get_queued_msg_count(ctx));
   CU_ASSERT(11 == acc.length);
   CU_ASSERT(0 == memcmp(ans, acc.buf, acc.length));
   wslay_event_context_free(ctx);
@@ -348,12 +352,17 @@ void test_wslay_event_reply_close()
   ud.acc = &acc;
   wslay_event_context_server_init(&ctx, &callbacks, &ud);
   CU_ASSERT(0 == wslay_event_recv(ctx));
+  CU_ASSERT(1 == wslay_event_get_queued_msg_count(ctx));
+  /* 7 bytes = 2 bytes status code + "Hello" */
+  CU_ASSERT(7 == wslay_event_get_queued_msg_length(ctx));
   CU_ASSERT(1 == wslay_event_get_close_received(ctx));
   CU_ASSERT(WSLAY_CODE_MESSAGE_TOO_BIG ==
             wslay_event_get_status_code_received(ctx));
   CU_ASSERT(WSLAY_CODE_ABNORMAL_CLOSURE ==
             wslay_event_get_status_code_sent(ctx));
   CU_ASSERT(0 == wslay_event_send(ctx));
+  CU_ASSERT(0 == wslay_event_get_queued_msg_count(ctx));
+  CU_ASSERT(0 == wslay_event_get_queued_msg_length(ctx));
   CU_ASSERT(9 == acc.length);
   CU_ASSERT(0 == memcmp(ans, acc.buf, acc.length));
   CU_ASSERT(1 == wslay_event_get_close_sent(ctx));

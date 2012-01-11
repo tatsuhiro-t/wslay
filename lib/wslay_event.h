@@ -120,6 +120,10 @@ struct wslay_event_context {
   struct wslay_queue/*<wslay_omsg*>*/ *send_queue;
   /* Queue for control frames */
   struct wslay_queue/*<wslay_omsg*>*/ *send_ctrl_queue;
+  /* Size of send_queue + size of send_ctrl_queue */
+  size_t queued_msg_count;
+  /* The sum of message length in send_queue */
+  size_t queued_msg_length;
   /* Buffer used for fragmented messages */
   uint8_t obuf[4096];
   uint8_t *obuflimit;
