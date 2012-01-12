@@ -4,6 +4,9 @@ API Reference
 * :c:func:`wslay_event_context_server_init`
 * :c:func:`wslay_event_context_client_init`
 * :c:func:`wslay_event_context_free`
+* :c:func:`wslay_event_config_set_no_buffering`
+* :c:func:`wslay_event_config_set_max_recv_msg_length`
+* :c:func:`wslay_event_config_set_callbacks`
 * :c:func:`wslay_event_queue_close`
 * :c:func:`wslay_event_queue_fragmented_msg`
 * :c:func:`wslay_event_queue_msg`
