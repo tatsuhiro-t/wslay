@@ -344,7 +344,7 @@ void wslay_event_config_set_no_buffering(wslay_event_context_ptr ctx, int val);
  * non-control frames is disabled, the library only checks frame
  * payload length and does not check length of entire message.
  *
- * The default value is (1 << 32)-1.
+ * The default value is (1 << 31)-1.
  */
 void wslay_event_config_set_max_recv_msg_length(wslay_event_context_ptr ctx,
                                                 uint64_t val);
