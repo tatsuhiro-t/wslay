@@ -11,8 +11,8 @@ SYNOPSIS
 DESCRIPTION
 -----------
 
-:c:func:`wslay_event_config_set_no_buffering` tells the library whether to
-buffer entire message of non-control frames.
+:c:func:`wslay_event_config_set_no_buffering`
+enables or disables buffering of an entire message for non-control frames.
 If *val* is 0, buffering is enabled.
 Otherwise, buffering is disabled.
 If :c:type:`wslay_event_on_msg_recv_callback` is invoked when buffering is

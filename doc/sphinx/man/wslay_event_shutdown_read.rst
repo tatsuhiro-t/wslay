@@ -11,7 +11,7 @@ SYNOPSIS
 DESCRIPTION
 -----------
 
-:c:func:`wslay_event_shutdown_read` prevents the library context from
+:c:func:`wslay_event_shutdown_read` prevents the event-based API context from
 reading any further data from peer.
 
 This function may be used with :c:func:`wslay_event_queue_close` if

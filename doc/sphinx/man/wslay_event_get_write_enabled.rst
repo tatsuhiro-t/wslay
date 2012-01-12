@@ -11,7 +11,7 @@ SYNOPSIS
 DESCRIPTION
 -----------
 
-:c:func:`wslay_event_get_write_enabled` returns 1 if the library
+:c:func:`wslay_event_get_write_enabled` returns 1 if the event-based API
 context allows write operation, or return 0.
 
 After :c:func:`wslay_event_shutdown_write` is called,

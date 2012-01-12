@@ -11,7 +11,7 @@ SYNOPSIS
 DESCRIPTION
 -----------
 
-:c:func:`wslay_event_shutdown_write` prevents the library context from
+:c:func:`wslay_event_shutdown_write` prevents the event-based API context from
 sending any further data to peer.
 
 SEE ALSO

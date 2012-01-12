@@ -11,7 +11,7 @@ SYNOPSIS
 DESCRIPTION
 -----------
 
-:c:func:`wslay_event_get_read_enabled` returns 1 if the library
+:c:func:`wslay_event_get_read_enabled` returns 1 if the event-based API
 context allows read operation, or return 0.
 
 After :c:func:`wslay_event_shutdown_read` is called,
