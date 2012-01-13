@@ -226,6 +226,7 @@ ssize_t recv_callback(wslay_event_context_ptr ctx, uint8_t *data, size_t len,
     }
   } else if(r == 0) {
     wslay_event_set_error(ctx, WSLAY_ERR_CALLBACK_FAILURE);
+    r = -1;
   }
   return r;
 }
