@@ -29,7 +29,6 @@
 #include <stdio.h>
 #include <arpa/inet.h>
 
-#include "wslay_stack.h"
 #include "wslay_queue.h"
 #include "wslay_frame.h"
 
