@@ -35,6 +35,9 @@ AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
 
+AC_PATH_PROG([SPHINX_BUILD], [sphinx-build])
+AC_SUBST([SPHINX_BUILD])
+
 # Checks for libraries.
 AC_CHECK_LIB([cunit], [CU_initialize_registry],
              [have_cunit=yes], [have_cunit=no])
@@ -79,6 +82,7 @@ AC_CONFIG_FILES([
   lib/libwslay.pc
   lib/includes/Makefile
   tests/Makefile
+  doc/Makefile
 ])
 AC_OUTPUT
 
