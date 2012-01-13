@@ -788,9 +788,9 @@ int wslay_event_send(wslay_event_context_ptr ctx)
           --ctx->queued_msg_count;
           ctx->queued_msg_length -= ctx->omsg->data_length;
           if(ctx->omsg->opcode == WSLAY_CONNECTION_CLOSE) {
+            uint16_t status_code = 0;
             ctx->write_enabled = 0;
             ctx->close_status |= WSLAY_CLOSE_SENT;
-            uint16_t status_code = 0;
             if(ctx->omsg->data_length >= 2) {
               memcpy(&status_code, ctx->omsg->data, 2);
               status_code = ntohs(status_code);
