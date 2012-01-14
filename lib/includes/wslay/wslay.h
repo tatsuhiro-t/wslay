@@ -62,29 +62,42 @@ enum wslay_status_code {
   WSLAY_CODE_TLS_HANDSHAKE = 1015
 };
 
+enum {
+  /*
+   * There is more data to send.
+   */
+  WSLAY_MSG_MORE = 1
+};
+
 /*
  * Callback function used by wslay_frame_send function when it needs
  * to send data. The implementation of this function must send at most
- * len bytes of data in buf. user_data is one given in
- * wslay_frame_context_init function. The implementation of this
- * function must return the number of bytes sent. If there is an
- * error, return -1. The return value 0 is also treated an error by
- * the library.
+ * *len* bytes of data in *data*. *flags* is the bitwise OR of zero or
+ * more of the following flag:
+ *
+ *   WSLAY_MSG_MORE - There is more data to send
+ *
+ * It provides some hints to tune performance and
+ * behaviour. *user_data* is one given in wslay_frame_context_init
+ * function. The implementation of this function must return the
+ * number of bytes sent. If there is an error, return -1. The return
+ * value 0 is also treated an error by the library.
  */
-typedef ssize_t (*wslay_frame_send_callback)(const uint8_t *buf, size_t len,
-                                             void *user_data);
+typedef ssize_t (*wslay_frame_send_callback)(const uint8_t *data, size_t len,
+                                             int flags, void *user_data);
 /*
  * Callback function used by wslay_frame_recv function when it needs
  * more data. The implementation of this function must fill at most
- * len bytes of data into buf. The memory area of buf is allocated by
- * library and not be freed by the application code.  user_data is one
+ * *len* bytes of data into *buf*. The memory area of *buf* is
+ * allocated by library and not be freed by the application
+ * code. *flags* is always 0 in this version.  *user_data* is one
  * given in wslay_frame_context_init function. The implementation of
- * this function must return the number of bytes filled into buf.  If
- * there is an error, return -1. The return value 0 is also treated an
- * error by the library.
+ * this function must return the number of bytes filled.  If there is
+ * an error, return -1. The return value 0 is also treated an error by
+ * the library.
  */
 typedef ssize_t (*wslay_frame_recv_callback)(uint8_t *buf, size_t len,
-                                             void *user_data);
+                                             int flags, void *user_data);
 /*
  * Callback function used by wslay_frame_send function when it needs
  * new mask key. The implementation of this function must write len
@@ -268,7 +281,7 @@ typedef void (*wslay_event_on_frame_recv_end_callback)
  */
 typedef ssize_t (*wslay_event_recv_callback)(wslay_event_context_ptr ctx,
                                              uint8_t *buf, size_t len,
-                                             void *user_data);
+                                             int flags, void *user_data);
 
 /*
  * Callback function invoked by wslay_event_send() when the library
@@ -276,7 +289,7 @@ typedef ssize_t (*wslay_event_recv_callback)(wslay_event_context_ptr ctx,
  */
 typedef ssize_t (*wslay_event_send_callback)(wslay_event_context_ptr ctx,
                                              const uint8_t *data, size_t len,
-                                             void *user_data);
+                                             int flags, void *user_data);
 
 /*
  * Callback function invoked by wslay_event_send() when the library

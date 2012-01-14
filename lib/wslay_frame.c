@@ -122,7 +122,11 @@ ssize_t wslay_frame_send(wslay_frame_context_ptr ctx,
   if(ctx->ostate == SEND_HEADER) {
     ptrdiff_t len = ctx->oheaderlimit-ctx->oheadermark;
     ssize_t r;
-    r = ctx->callbacks.send_callback(ctx->oheadermark, len,
+    int flags = 0;
+    if(iocb->data_length > 0) {
+      flags |= WSLAY_MSG_MORE;
+    };
+    r = ctx->callbacks.send_callback(ctx->oheadermark, len, flags,
                                      ctx->user_data);
     if(r > 0) {
       if(r > len) {
@@ -155,8 +159,7 @@ ssize_t wslay_frame_send(wslay_frame_context_ptr ctx,
           for(i = 0; i < writelen; ++i) {
             temp[i] = datamark[i]^ctx->omaskkey[(ctx->opayloadoff+i)%4];
           }
-          r = ctx->callbacks.send_callback(temp, writelen,
-                                           ctx->user_data);
+          r = ctx->callbacks.send_callback(temp, writelen, 0, ctx->user_data);
           if(r > 0) {
             if(r > writelen) {
               return WSLAY_ERR_INVALID_CALLBACK;
@@ -175,7 +178,7 @@ ssize_t wslay_frame_send(wslay_frame_context_ptr ctx,
         }
       } else {
         ssize_t r;
-        r = ctx->callbacks.send_callback(iocb->data, iocb->data_length,
+        r = ctx->callbacks.send_callback(iocb->data, iocb->data_length, 0,
                                          ctx->user_data);
         if(r > 0) {
           if(r > iocb->data_length) {
@@ -212,9 +215,8 @@ static ssize_t wslay_recv(wslay_frame_context_ptr ctx)
     wslay_shift_ibuf(ctx);
   }
   r = ctx->callbacks.recv_callback
-    (ctx->ibuflimit,
-     ctx->ibuf+sizeof(ctx->ibuf)-ctx->ibuflimit,
-     ctx->user_data);
+    (ctx->ibuflimit, ctx->ibuf+sizeof(ctx->ibuf)-ctx->ibuflimit,
+     0, ctx->user_data);
   if(r > 0) {
     ctx->ibuflimit += r;
   } else {

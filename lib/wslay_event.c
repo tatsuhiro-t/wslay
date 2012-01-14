@@ -97,19 +97,20 @@ decode(uint32_t* state, uint32_t* codep, uint32_t byte) {
 /* End of utf8 dfa */
 
 static ssize_t wslay_event_frame_recv_callback(uint8_t *buf, size_t len,
-                                               void *user_data)
+                                               int flags, void *user_data)
 {
   struct wslay_event_frame_user_data *e =
     (struct wslay_event_frame_user_data*)user_data;
-  return e->ctx->callbacks.recv_callback(e->ctx, buf, len, e->user_data);
+  return e->ctx->callbacks.recv_callback(e->ctx, buf, len, flags, e->user_data);
 }
 
 static ssize_t wslay_event_frame_send_callback(const uint8_t *data, size_t len,
-                                               void *user_data)
+                                               int flags, void *user_data)
 {
   struct wslay_event_frame_user_data *e =
     (struct wslay_event_frame_user_data*)user_data;
-  return e->ctx->callbacks.send_callback(e->ctx, data, len, e->user_data);
+  return e->ctx->callbacks.send_callback(e->ctx, data, len, flags,
+                                         e->user_data);
 }
 
 static int wslay_event_frame_genmask_callback(uint8_t *buf, size_t len,
