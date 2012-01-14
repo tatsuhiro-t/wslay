@@ -23,3 +23,8 @@
 SUBDIRS = lib tests doc
 
 ACLOCAL_AMFLAGS = -I m4
+
+EXTRA_DIST = examples/Makefile \
+	examples/fork-echoserv.c \
+	examples/echoserv.cc \
+	examples/testclient.cc
