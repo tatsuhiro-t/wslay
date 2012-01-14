@@ -55,6 +55,10 @@
 #include <nettle/sha.h>
 #include <wslay/wslay.h>
 
+/*
+ * Create server socket, listen on *service*.  This function returns
+ * file descriptor of server socket if it succeeds, or returns -1.
+ */
 int create_listen_socket(const char *service)
 {
   struct addrinfo hints, *res, *rp;
@@ -93,6 +97,10 @@ int create_listen_socket(const char *service)
   return sfd;
 }
 
+/*
+ * Makes file descriptor *fd* non-blocking mode.
+ * This function returns 0, or returns -1.
+ */
 int make_non_block(int fd)
 {
   int flags, r;
@@ -151,14 +159,18 @@ void create_accept_key(char *dst, const char *client_key)
   dst[BASE64_ENCODE_RAW_LENGTH(20)] = '\0';
 }
 
+/*
+ * Performs HTTP handshake. *fd* is the file descriptor of the
+ * connection to the client. This function returns 0 if it succeeds,
+ * or returns -1.
+ */
 int http_handshake(int fd)
 {
   /*
    * Note: The implementation of HTTP handshake in this function is
-   * written for just a example use of wslay library and it is good
-   * enough to get it working for some benchmarks such as Autobahn
-   * test. Thus it is not strictly conform to the requirement
-   * described in RFC 6455.
+   * written for just a example of how to use of wslay library and is
+   * not meant to be used in production code.  In practice, you need
+   * to do more strict verification of the client's handshake.
    */
   char header[16384], accept_key[29], *keyhdstart, *keyhdend, res_header[256];
   size_t header_length = 0, res_header_sent = 0, res_header_length;
@@ -221,7 +233,8 @@ int http_handshake(int fd)
 }
 
 /*
- * This struct is passed as *user_data* in callback function.
+ * This struct is passed as *user_data* in callback function.  The
+ * *fd* member is the file descriptor of the connection to the client.
  */
 struct Session {
   int fd;
@@ -279,7 +292,8 @@ void on_msg_recv_callback(wslay_event_context_ptr ctx,
 /*
  * Communicate with the client. This function performs HTTP handshake
  * and WebSocket data transfer until close handshake is done or an
- * error occurs. *fd* is the endpoint of the connection to the client.
+ * error occurs. *fd* is the file descriptor of the connection to the
+ * client. This function returns 0 if it succeeds, or returns 0.
  */
 int communicate(int fd)
 {
@@ -297,6 +311,7 @@ int communicate(int fd)
   int val = 1;
   struct pollfd event;
   int res = 0;
+
   if(http_handshake(fd) == -1) {
     return -1;
   }
@@ -347,6 +362,13 @@ int communicate(int fd)
   return res;
 }
 
+/*
+ * Serves echo back service forever.  *sfd* is the file descriptor of
+ * the server socket.  when the incoming connection from the client is
+ * accepted, this function forks another process and the forked
+ * process communicates with client. The parent process goes back to
+ * the loop and can accept another client.
+ */
 void serve(int sfd)
 {
   while(1) {
