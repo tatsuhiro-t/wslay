@@ -35,12 +35,14 @@ which is defined as follows::
 
 **recv_callback**
 
-   .. c:type:: typedef ssize_t (*wslay_event_recv_callback)(wslay_event_context_ptr ctx, uint8_t *buf, size_t len, void *user_data)
+   .. c:type:: typedef ssize_t (*wslay_event_recv_callback)(wslay_event_context_ptr ctx, uint8_t *buf, size_t len, int flags, void *user_data)
 
    *recv_callback* is invoked by :c:func:`wslay_event_recv` when it
    wants to receive more data from peer.
    The implementation of this callback function must read data at most *len*
    bytes from peer and store them in *buf* and return the number of bytes read.
+   *flags* is always 0 in this version.
+
    If there is an error, return -1 and
    set error code ``WSLAY_ERR_CALLBACK_FAILURE``
    using :c:func:`wslay_event_set_error`.
@@ -51,12 +53,19 @@ which is defined as follows::
 
 **send_callback**
 
-   .. c:type:: typedef ssize_t (*wslay_event_send_callback)(wslay_event_context_ptr ctx, const uint8_t *data, size_t len, void *user_data)
+   .. c:type:: typedef ssize_t (*wslay_event_send_callback)(wslay_event_context_ptr ctx, const uint8_t *data, size_t len, int flags, void *user_data)
 
    *send_callback* is invoked by :c:func:`wslay_event_send` when it
    wants to send more data to peer.
    The implementation of this callback function must send data at most *len*
    bytes to peer and return the number of bytes sent.
+   *flags* is the bitwise OR of zero or more of the following flag:
+
+   ``WSLAY_MSG_MORE``
+     There is more data to send
+
+   It provides some hints to tune performance and behaviour.
+
    If there is an error, return -1 and
    set error code ``WSLAY_ERR_CALLBACK_FAILURE``
    using :c:func:`wslay_event_set_error`.
