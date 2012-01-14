@@ -94,22 +94,6 @@ static ssize_t scripted_recv_callback(wslay_event_context_ptr ctx,
   return wlen;
 }
 
-static ssize_t scripted_send_callback(wslay_event_context_ptr ctx,
-                                      const uint8_t* data, size_t len,
-                                      void *user_data)
-{
-  struct scripted_data_feed *df = ((struct my_user_data*)user_data)->df;
-  size_t wlen = df->feedseq[df->seqidx] > len ? len : df->feedseq[df->seqidx];
-  memcpy(df->datamark, data, wlen);
-  df->datamark += wlen;
-  if(wlen <= len) {
-    ++df->seqidx;
-  } else {
-    df->feedseq[df->seqidx] -= wlen;
-  }
-  return wlen;
-}
-
 static ssize_t accumulator_send_callback(wslay_event_context_ptr ctx,
                                          const uint8_t *buf, size_t len,
                                          void* user_data)

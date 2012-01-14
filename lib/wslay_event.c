@@ -427,7 +427,7 @@ static int wslay_event_context_init
   (*ctx)->obufmark = (*ctx)->obuflimit = (*ctx)->obuf;
   (*ctx)->status_code_sent = WSLAY_CODE_ABNORMAL_CLOSURE;
   (*ctx)->status_code_recv = WSLAY_CODE_ABNORMAL_CLOSURE;
-  (*ctx)->max_recv_msg_length = (1 << 31)-1;
+  (*ctx)->max_recv_msg_length = (1u << 31)-1;
   return 0;
 }
 
