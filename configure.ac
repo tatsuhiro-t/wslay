@@ -37,6 +37,7 @@ AC_PROG_MAKE_SET
 
 AC_PATH_PROG([SPHINX_BUILD], [sphinx-build])
 AC_SUBST([SPHINX_BUILD])
+AM_CONDITIONAL([HAVE_SPHINX_BUILD], [ test "x$SPHINX_BUILD" != "x" ])
 
 # Checks for libraries.
 AC_CHECK_LIB([cunit], [CU_initialize_registry],
