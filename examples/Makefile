@@ -32,14 +32,14 @@ PROGRAMS = fork-echoserv echoserv testclient
 .PHONY: all
 all: $(PROGRAMS)
 
-fork-echoserv: fork-echoserv.o
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ fork-echoserv.o $(LIBS)
+fork-echoserv: fork-echoserv.c
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ fork-echoserv.c $(LIBS)
 
-echoserv: echoserv.o
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $@ echoserv.o $(LIBS)
+echoserv: echoserv.cc
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $@ echoserv.cc $(LIBS)
 
-testclient: testclient.o
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $@ testclient.o $(LIBS)
+testclient: testclient.cc
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $@ testclient.cc $(LIBS)
 
 .PHONY: clean
 clean:
