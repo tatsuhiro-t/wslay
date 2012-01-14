@@ -148,9 +148,10 @@ public:
 };
 
 ssize_t send_callback(wslay_event_context_ptr ctx,
-                      const uint8_t *data, size_t len, void *user_data);
-ssize_t recv_callback(wslay_event_context_ptr ctx, uint8_t *data, size_t len,
+                      const uint8_t *data, size_t len, int flags,
                       void *user_data);
+ssize_t recv_callback(wslay_event_context_ptr ctx, uint8_t *data, size_t len,
+                      int flags, void *user_data);
 void on_msg_recv_callback(wslay_event_context_ptr ctx,
                           const struct wslay_event_on_msg_recv_arg *arg,
                           void *user_data);
@@ -185,16 +186,22 @@ public:
   {
     return wslay_event_send(ctx_);
   }
-  ssize_t send_data(const uint8_t *data, size_t len)
+  ssize_t send_data(const uint8_t *data, size_t len, int flags)
   {
     ssize_t r;
-    while((r = write(fd_, data, len)) == -1 && errno == EINTR);
+    int sflags = 0;
+#ifdef MSG_MORE
+    if(flags & WSLAY_MSG_MORE) {
+      sflags |= MSG_MORE;
+    }
+#endif // MSG_MORE
+    while((r = send(fd_, data, len, sflags)) == -1 && errno == EINTR);
     return r;
   }
-  ssize_t recv_data(uint8_t *data, size_t len)
+  ssize_t recv_data(uint8_t *data, size_t len, int flags)
   {
     ssize_t r;
-    while((r = read(fd_, data, len)) == -1 && errno == EINTR);
+    while((r = recv(fd_, data, len, 0)) == -1 && errno == EINTR);
     return r;
   }
   virtual bool want_read()
@@ -223,10 +230,11 @@ private:
 };
 
 ssize_t send_callback(wslay_event_context_ptr ctx,
-                      const uint8_t *data, size_t len, void *user_data)
+                      const uint8_t *data, size_t len, int flags,
+                      void *user_data)
 {
   EchoWebSocketHandler *sv = (EchoWebSocketHandler*)user_data;
-  ssize_t r = sv->send_data(data, len);
+  ssize_t r = sv->send_data(data, len, flags);
   if(r == -1) {
     if(errno == EAGAIN || errno == EWOULDBLOCK) {
       wslay_event_set_error(ctx, WSLAY_ERR_WOULDBLOCK);
@@ -238,10 +246,10 @@ ssize_t send_callback(wslay_event_context_ptr ctx,
 }
 
 ssize_t recv_callback(wslay_event_context_ptr ctx, uint8_t *data, size_t len,
-                      void *user_data)
+                      int flags, void *user_data)
 {
   EchoWebSocketHandler *sv = (EchoWebSocketHandler*)user_data;
-  ssize_t r = sv->recv_data(data, len);
+  ssize_t r = sv->recv_data(data, len, flags);
   if(r == -1) {
     if(errno == EAGAIN || errno == EWOULDBLOCK) {
       wslay_event_set_error(ctx, WSLAY_ERR_WOULDBLOCK);

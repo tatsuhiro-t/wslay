@@ -152,10 +152,16 @@ public:
   {
     return wslay_event_send(ctx_);
   }
-  ssize_t send_data(const uint8_t *data, size_t len)
+  ssize_t send_data(const uint8_t *data, size_t len, int flags)
   {
     ssize_t r;
-    while((r = write(fd_, data, len)) == -1 && errno == EINTR);
+    int sflags = 0;
+#ifdef MSG_MORE
+    if(flags & WSLAY_MSG_MORE) {
+      sflags |= MSG_MORE;
+    }
+#endif // MSG_MORE
+    while((r = send(fd_, data, len, sflags)) == -1 && errno == EINTR);
     return r;
   }
   ssize_t feed_body(uint8_t *data, size_t len)
@@ -169,10 +175,10 @@ public:
       return 0;
     }
   }
-  ssize_t recv_data(uint8_t *data, size_t len)
+  ssize_t recv_data(uint8_t *data, size_t len, int flags)
   {
     ssize_t r;
-    while((r = read(fd_, data, len)) == -1 && errno == EINTR);
+    while((r = recv(fd_, data, len, 0)) == -1 && errno == EINTR);
     return r;
   }
   bool want_read()
@@ -204,10 +210,11 @@ private:
 };
 
 ssize_t send_callback(wslay_event_context_ptr ctx,
-                      const uint8_t *data, size_t len, void *user_data)
+                      const uint8_t *data, size_t len, int flags,
+                      void *user_data)
 {
   WebSocketClient *ws = (WebSocketClient*)user_data;
-  ssize_t r = ws->send_data(data, len);
+  ssize_t r = ws->send_data(data, len, flags);
   if(r == -1) {
     if(errno == EAGAIN || errno == EWOULDBLOCK) {
       wslay_event_set_error(ctx, WSLAY_ERR_WOULDBLOCK);
@@ -219,10 +226,10 @@ ssize_t send_callback(wslay_event_context_ptr ctx,
 }
 
 ssize_t recv_callback(wslay_event_context_ptr ctx, uint8_t *data, size_t len,
-                      void *user_data)
+                      int flags, void *user_data)
 {
   WebSocketClient *ws = (WebSocketClient*)user_data;
-  ssize_t r = ws->recv_data(data, len);
+  ssize_t r = ws->recv_data(data, len, flags);
   if(r == -1) {
     if(errno == EAGAIN || errno == EWOULDBLOCK) {
       wslay_event_set_error(ctx, WSLAY_ERR_WOULDBLOCK);
@@ -237,7 +244,8 @@ ssize_t recv_callback(wslay_event_context_ptr ctx, uint8_t *data, size_t len,
 }
 
 ssize_t feed_body_callback
-(wslay_event_context_ptr ctx, uint8_t *data, size_t len, void *user_data)
+(wslay_event_context_ptr ctx, uint8_t *data, size_t len, int flags,
+ void *user_data)
 {
   WebSocketClient *ws = (WebSocketClient*)user_data;
   return ws->feed_body(data, len);

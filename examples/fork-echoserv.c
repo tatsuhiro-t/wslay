@@ -241,11 +241,18 @@ struct Session {
 };
 
 ssize_t send_callback(wslay_event_context_ptr ctx,
-                      const uint8_t *data, size_t len, void *user_data)
+                      const uint8_t *data, size_t len, int flags,
+                      void *user_data)
 {
   struct Session *session = (struct Session*)user_data;
   ssize_t r;
-  while((r = write(session->fd, data, len)) == -1 && errno == EINTR);
+  int sflags = 0;
+#ifdef MSG_MORE
+  if(flags & WSLAY_MSG_MORE) {
+    sflags |= MSG_MORE;
+  }
+#endif // MSG_MORE
+  while((r = send(session->fd, data, len, sflags)) == -1 && errno == EINTR);
   if(r == -1) {
     if(errno == EAGAIN || errno == EWOULDBLOCK) {
       wslay_event_set_error(ctx, WSLAY_ERR_WOULDBLOCK);
@@ -257,11 +264,11 @@ ssize_t send_callback(wslay_event_context_ptr ctx,
 }
 
 ssize_t recv_callback(wslay_event_context_ptr ctx, uint8_t *buf, size_t len,
-                      void *user_data)
+                      int flags, void *user_data)
 {
   struct Session *session = (struct Session*)user_data;
   ssize_t r;
-  while((r = read(session->fd, buf, len)) == -1 && errno == EINTR);
+  while((r = recv(session->fd, buf, len, 0)) == -1 && errno == EINTR);
   if(r == -1) {
     if(errno == EAGAIN || errno == EWOULDBLOCK) {
       wslay_event_set_error(ctx, WSLAY_ERR_WOULDBLOCK);
