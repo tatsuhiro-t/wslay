@@ -40,7 +40,7 @@ store at most *len* bytes of data to *buf* and return the number of stored
 bytes. If all data is read (i.e., EOF), set *\*eof* to 1.
 If no data can be generated at the moment, return 0.
 If there is an error, return -1 and
-set error code *WSLAY_ERR_CALLBACK_FAILURE*
+set error code ``WSLAY_ERR_CALLBACK_FAILURE``
 using :c:func:`wslay_event_set_error`.
 
 This function just queues a message and does not send it.

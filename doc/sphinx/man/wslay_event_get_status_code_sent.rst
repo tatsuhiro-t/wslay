@@ -14,9 +14,9 @@ DESCRIPTION
 :c:func:`wslay_event_get_status_code_sent` returns status code sent
 in close control frame.
 If no close control frame has not been sent, returns
-*WSLAY_CODE_ABNORMAL_CLOSURE*.
+``WSLAY_CODE_ABNORMAL_CLOSURE``.
 If sent close control frame has no status code,
-returns *WSLAY_CODE_NO_STATUS_RCVD*.
+returns ``WSLAY_CODE_NO_STATUS_RCVD``.
 
 SEE ALSO
 --------

@@ -15,7 +15,7 @@ DESCRIPTION
 When receiving messages, it uses :c:type:`wslay_event_recv_callback`
 function. Single call of this function receives multiple messages
 until :c:type:`wslay_event_recv_callback` function
-sets error code *WSLAY_ERR_WOULDBLOCK*.
+sets error code ``WSLAY_ERR_WOULDBLOCK``.
 
 :c:func:`wslay_event_recv` calls following callback functions for
 their own event (See :c:func:`wslay_event_context_server_init` or

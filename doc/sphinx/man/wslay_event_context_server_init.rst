@@ -1,7 +1,7 @@
 .. highlight:: c
 
-wslay_event_context_server_init, wslay_event_context_client_init
-================================================================
+wslay_event_context_server_init, wslay_event_context_client_init, wslay_event_context_free
+==========================================================================================
 
 SYNOPSIS
 --------
@@ -42,11 +42,11 @@ which is defined as follows::
    The implementation of this callback function must read data at most *len*
    bytes from peer and store them in *buf* and return the number of bytes read.
    If there is an error, return -1 and
-   set error code *WSLAY_ERR_CALLBACK_FAILURE*
+   set error code ``WSLAY_ERR_CALLBACK_FAILURE``
    using :c:func:`wslay_event_set_error`.
    Wslay event-based API on the whole assumes non-blocking I/O.
-   If the cause of error is *EAGAIN* or *EWOULDBLOCK*,
-   set *WSLAY_ERR_WOULDBLOCK* instead. This is important because it tells
+   If the cause of error is ``EAGAIN`` or ``EWOULDBLOCK``,
+   set ``WSLAY_ERR_WOULDBLOCK`` instead. This is important because it tells
    :c:func:`wslay_event_recv` to stop receiving further data and return.
 
 **send_callback**
@@ -58,11 +58,11 @@ which is defined as follows::
    The implementation of this callback function must send data at most *len*
    bytes to peer and return the number of bytes sent.
    If there is an error, return -1 and
-   set error code *WSLAY_ERR_CALLBACK_FAILURE*
+   set error code ``WSLAY_ERR_CALLBACK_FAILURE``
    using :c:func:`wslay_event_set_error`.
    Wslay event-based API on the whole assumes non-blocking I/O.
-   If the cause of error is `EAGAIN` or `EWOULDBLOCK`,
-   set *WSLAY_ERR_WOULDBLOCK* instead. This is important because it tells
+   If the cause of error is ``EAGAIN`` or ``EWOULDBLOCK``,
+   set ``WSLAY_ERR_WOULDBLOCK`` instead. This is important because it tells
    :c:func:`wslay_event_send` to stop sending data and return.
 
 **genmask_callback**
@@ -76,7 +76,7 @@ which is defined as follows::
    The implementation of this callback function must fill exactly *len* bytes
    of data in *buf* and return 0 on success.
    If there is an error, return -1 and
-   set error code *WSLAY_ERR_CALLBACK_FAILURE*
+   set error code ``WSLAY_ERR_CALLBACK_FAILURE``
    using :c:func:`wslay_event_set_error`.
 
 **on_frame_recv_start_callback**
@@ -148,8 +148,10 @@ which is defined as follows::
    The *msg* member points to the message of the received message.
    The *msg_length* member is the length of message.
    If a message is close control frame, in other words,
-   *opcode* == *WSLAY_CONNECTION_CLOSE*, status code is set to *status_code*.
-   If no status code is included in close control frame, *statsu_code* set to 0.
+   ``opcode == WSLAY_CONNECTION_CLOSE``, *status_code* is set to
+   the status code in the close control frame.
+   If no status code is included in the close control frame,
+   *status_code* set to 0.
 
 *user_data* is an arbitrary pointer, which is directly
 passed to each callback functions as *user_data* argument.
