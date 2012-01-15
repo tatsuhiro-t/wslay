@@ -50,4 +50,4 @@ void* wslay_queue_top(struct wslay_queue *queue);
 void* wslay_queue_tail(struct wslay_queue *queue);
 int wslay_queue_empty(struct wslay_queue *queue);
 
-#endif // WSLAY_QUEUE_H
+#endif /* WSLAY_QUEUE_H */

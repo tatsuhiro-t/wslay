@@ -47,4 +47,4 @@ void wslay_stack_pop(struct wslay_stack *stack);
 void* wslay_stack_top(struct wslay_stack *stack);
 int wslay_stack_empty(struct wslay_stack *stack);
 
-#endif // WSLAY_STACK_H
+#endif /* WSLAY_STACK_H */

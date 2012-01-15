@@ -26,7 +26,7 @@
 #define WSLAY_EVENT_H
 
 #ifdef HAVE_CONFIG_H
-#  include "config.h"
+#  include <config.h>
 #endif /* HAVE_CONFIG_H */
 
 #include <wslay/wslay.h>
@@ -137,4 +137,4 @@ struct wslay_event_context {
   void *user_data;
 };
 
-#endif // WSLAY_EVENT_H
+#endif /* WSLAY_EVENT_H */
