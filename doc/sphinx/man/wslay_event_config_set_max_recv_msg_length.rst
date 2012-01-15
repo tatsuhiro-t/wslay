@@ -21,7 +21,7 @@ and close control frame with ``WSLAY_CODE_MESSAGE_TOO_BIG`` is queued.
 If buffering for non-control frames is disabled, the library checks
 each frame payload length and does not check length of entire message.
 
-The default value is ``(1 << 31)-1``.
+The default value is ``(1u << 31)-1``.
 
 SEE ALSO
 --------

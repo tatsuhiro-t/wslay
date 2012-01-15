@@ -43,6 +43,9 @@ If there is an error, return -1 and
 set error code ``WSLAY_ERR_CALLBACK_FAILURE``
 using :c:func:`wslay_event_set_error`.
 
+This function supports non-control messages only. For control frames,
+use :c:func:`wslay_event_queue_msg` or :c:func:`wslay_event_queue_close`.
+
 This function just queues a message and does not send it.
 :c:func:`wslay_event_send` function call sends these queued messages.
 
