@@ -77,11 +77,14 @@ AC_CHECK_FUNCS([ \
   memset \
 ])
 
+AC_PACKAGE_VERSION
+
 AC_CONFIG_FILES([
   Makefile
   lib/Makefile
   lib/libwslay.pc
   lib/includes/Makefile
+  lib/includes/wslay/wslayver.h
   tests/Makefile
   doc/Makefile
 ])

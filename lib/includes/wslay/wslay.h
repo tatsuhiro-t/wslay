@@ -32,6 +32,8 @@ extern "C" {
 #include <stdint.h>
 #include <stdlib.h>
 
+#include <wslay/wslayver.h>
+
 enum wslay_error {
   WSLAY_ERR_WANT_READ = -100,
   WSLAY_ERR_WANT_WRITE = -101,
@@ -730,4 +732,4 @@ size_t wslay_event_get_queued_msg_length(wslay_event_context_ptr ctx);
 }
 #endif
 
-#endif // WSLAY_H
+#endif /* WSLAY_H */
