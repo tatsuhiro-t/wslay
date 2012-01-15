@@ -50,6 +50,7 @@ SPHINX_FILES = $(SPHINX_DIR)/Makefile \
 	$(SPHINX_DIR)/api_reference.rst \
 	$(SPHINX_DIR)/conf.py \
 	$(SPHINX_DIR)/index.rst \
+	$(SPHINX_DIR)/tutorial.rst \
 	$(SPHINX_MANPAGES_SRC)
 
 MANPAGES_DST = $(MANPAGES_SRC:${SPHINX_DIR}/%.rst=%.3)
