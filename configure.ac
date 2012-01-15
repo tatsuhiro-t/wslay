@@ -77,8 +77,6 @@ AC_CHECK_FUNCS([ \
   memset \
 ])
 
-AC_PACKAGE_VERSION
-
 AC_CONFIG_FILES([
   Makefile
   lib/Makefile
