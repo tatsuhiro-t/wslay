@@ -23,6 +23,12 @@ dnl WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 AC_PREREQ(2.61)
 LT_PREREQ([2.2.6])
 AC_INIT([wslay], [0.1.0], [t-tujikawa@users.sourceforge.net])
+dnl See versioning rule:
+dnl  http://www.gnu.org/software/libtool/manual/html_node/Updating-version-info.html
+AC_SUBST(LT_CURRENT, 0)
+AC_SUBST(LT_REVISION, 0)
+AC_SUBST(LT_AGE, 0)
+
 AC_CONFIG_MACRO_DIR([m4])
 
 AM_INIT_AUTOMAKE()
@@ -70,12 +76,6 @@ AC_CHECK_FUNCS([ \
   memmove \
   memset \
 ])
-
-dnl See versioning rule:
-dnl  http://www.gnu.org/software/libtool/manual/html_node/Updating-version-info.html
-AC_SUBST(LT_CURRENT, 0)
-AC_SUBST(LT_REVISION, 0)
-AC_SUBST(LT_AGE, 0)
 
 AC_CONFIG_FILES([
   Makefile
