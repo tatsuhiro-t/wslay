@@ -79,7 +79,7 @@ static ssize_t scripted_read_callback
 }
 
 static ssize_t scripted_recv_callback(wslay_event_context_ptr ctx,
-                                      uint8_t* data, size_t len,
+                                      uint8_t* data, size_t len, int flags,
                                       void *user_data)
 {
   struct scripted_data_feed *df = ((struct my_user_data*)user_data)->df;
@@ -96,7 +96,7 @@ static ssize_t scripted_recv_callback(wslay_event_context_ptr ctx,
 
 static ssize_t accumulator_send_callback(wslay_event_context_ptr ctx,
                                          const uint8_t *buf, size_t len,
-                                         void* user_data)
+                                         int flags, void* user_data)
 {
   struct accumulator *acc = ((struct my_user_data*)user_data)->acc;
   assert(acc->length+len < sizeof(acc->buf));
@@ -107,7 +107,7 @@ static ssize_t accumulator_send_callback(wslay_event_context_ptr ctx,
 
 static ssize_t one_accumulator_send_callback(wslay_event_context_ptr ctx,
                                              const uint8_t *buf, size_t len,
-                                             void* user_data)
+                                             int flags, void* user_data)
 {
   struct accumulator *acc = ((struct my_user_data*)user_data)->acc;
   assert(len > 0);
@@ -117,7 +117,7 @@ static ssize_t one_accumulator_send_callback(wslay_event_context_ptr ctx,
 }
 
 static ssize_t fail_recv_callback(wslay_event_context_ptr ctx,
-                                  uint8_t* data, size_t len,
+                                  uint8_t* data, size_t len, int flags,
                                   void *user_data)
 {
   wslay_event_set_error(ctx, WSLAY_ERR_CALLBACK_FAILURE);
@@ -125,7 +125,7 @@ static ssize_t fail_recv_callback(wslay_event_context_ptr ctx,
 }
 
 static ssize_t fail_send_callback(wslay_event_context_ptr ctx,
-                                  const uint8_t *buf, size_t len,
+                                  const uint8_t *buf, size_t len, int flags,
                                   void* user_data)
 {
   wslay_event_set_error(ctx, WSLAY_ERR_CALLBACK_FAILURE);

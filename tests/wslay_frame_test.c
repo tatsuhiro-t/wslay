@@ -58,7 +58,7 @@ static void scripted_data_feed_init(struct scripted_data_feed *df,
   df->feedseq[0] = data_length;
 }
 
-static ssize_t scripted_recv_callback(uint8_t* data, size_t len,
+static ssize_t scripted_recv_callback(uint8_t* data, size_t len, int flags,
                                       void *user_data)
 {
   struct scripted_data_feed *df = (struct scripted_data_feed*)user_data;
@@ -74,7 +74,7 @@ static ssize_t scripted_recv_callback(uint8_t* data, size_t len,
 }
 
 static ssize_t scripted_send_callback(const uint8_t* data, size_t len,
-                                      void *user_data)
+                                      int flags, void *user_data)
 {
   struct scripted_data_feed *df = (struct scripted_data_feed*)user_data;
   size_t wlen = df->feedseq[df->seqidx] > len ? len : df->feedseq[df->seqidx];
@@ -335,7 +335,7 @@ struct accumulator {
 };
 
 static ssize_t accumulator_send_callback(const uint8_t *buf, size_t len,
-                                         void* user_data)
+                                         int flags, void* user_data)
 {
   struct accumulator *acc = (struct accumulator*)user_data;
   assert(acc->length+len < sizeof(acc->buf));
