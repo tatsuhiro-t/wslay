@@ -1,3 +1,20 @@
+wslay 0.1.1
+===========
+
+Release Note
+------------
+
+This release fixes the example programs and tutorial.  It does not
+change library code at all, so the library version has not been
+changed.
+
+Changes
+-------
+
+* Fixed example source code and tutorial.
+
+
+
 wslay 0.1.0
 ===========
 
