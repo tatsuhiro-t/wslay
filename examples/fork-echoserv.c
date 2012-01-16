@@ -346,14 +346,14 @@ int communicate(int fd)
       res = -1;
       break;
     }
-    if(((event.revents & POLLIN) && wslay_event_recv(ctx) == -1) ||
-       ((event.revents & POLLOUT) && wslay_event_send(ctx) == -1) ||
+    if(((event.revents & POLLIN) && wslay_event_recv(ctx) != 0) ||
+       ((event.revents & POLLOUT) && wslay_event_send(ctx) != 0) ||
        (event.revents & (POLLERR | POLLHUP | POLLNVAL))) {
       /*
-       * If either wslay_event_recv() or wslay_event_send() return -1,
-       * it means serious error which prevents wslay library from
-       * processing further data, so WebSocket connection must be
-       * closed.
+       * If either wslay_event_recv() or wslay_event_send() return
+       * non-zero value, it means serious error which prevents wslay
+       * library from processing further data, so WebSocket connection
+       * must be closed.
        */
       res = -1;
       break;

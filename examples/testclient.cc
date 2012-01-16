@@ -428,8 +428,8 @@ int communicate(const char *host, const char *service, const char *path,
       return -1;
     }
     for(int n = 0; n < nfds; ++n) {
-      if(((events[n].events & EPOLLIN) && ws.on_read_event() == -1) ||
-         ((events[n].events & EPOLLOUT) && ws.on_write_event() == -1)) {
+      if(((events[n].events & EPOLLIN) && ws.on_read_event() != 0) ||
+         ((events[n].events & EPOLLOUT) && ws.on_write_event() != 0)) {
         ok = false;
         break;
       }

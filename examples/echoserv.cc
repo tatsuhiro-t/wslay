@@ -180,11 +180,19 @@ public:
   }
   virtual int on_read_event()
   {
-    return wslay_event_recv(ctx_);
+    if(wslay_event_recv(ctx_) == 0) {
+      return 0;
+    } else {
+      return -1;
+    }
   }
   virtual int on_write_event()
   {
-    return wslay_event_send(ctx_);
+    if(wslay_event_send(ctx_) == 0) {
+      return 0;
+    } else {
+      return -1;
+    }
   }
   ssize_t send_data(const uint8_t *data, size_t len, int flags)
   {
