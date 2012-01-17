@@ -748,6 +748,31 @@ static void wslay_event_on_non_fragmented_msg_popped
   ctx->opayloadoff = 0;
 }
 
+static struct wslay_event_omsg* wslay_event_send_ctrl_queue_pop
+(wslay_event_context_ptr ctx)
+{
+  /*
+   * If Close control frame is queued, we don't send any control frame
+   * other than Close.
+   */
+  if(ctx->close_status & WSLAY_CLOSE_QUEUED) {
+    while(!wslay_queue_empty(ctx->send_ctrl_queue)) {
+      struct wslay_event_omsg *msg = wslay_queue_top(ctx->send_ctrl_queue);
+      wslay_queue_pop(ctx->send_ctrl_queue);
+      if(msg->opcode == WSLAY_CONNECTION_CLOSE) {
+        return msg;
+      } else {
+        wslay_event_omsg_free(msg);
+      }
+    }
+    return NULL;
+  } else {
+    struct wslay_event_omsg *msg = wslay_queue_top(ctx->send_ctrl_queue);
+    wslay_queue_pop(ctx->send_ctrl_queue);
+    return msg;
+  }
+}
+
 int wslay_event_send(wslay_event_context_ptr ctx)
 {
   struct wslay_frame_iocb iocb;
@@ -760,8 +785,10 @@ int wslay_event_send(wslay_event_context_ptr ctx)
         ctx->omsg = wslay_queue_top(ctx->send_queue);
         wslay_queue_pop(ctx->send_queue);
       } else {
-        ctx->omsg = wslay_queue_top(ctx->send_ctrl_queue);
-        wslay_queue_pop(ctx->send_ctrl_queue);
+        ctx->omsg = wslay_event_send_ctrl_queue_pop(ctx);
+        if(ctx->omsg == NULL) {
+          break;
+        }
       }
       if(ctx->omsg->type == WSLAY_NON_FRAGMENTED) {
         wslay_event_on_non_fragmented_msg_popped(ctx);
@@ -773,8 +800,10 @@ int wslay_event_send(wslay_event_context_ptr ctx)
         ctx->write_enabled = 0;
         return r;
       }
-      ctx->omsg = wslay_queue_top(ctx->send_ctrl_queue);
-      wslay_queue_pop(ctx->send_ctrl_queue);
+      ctx->omsg = wslay_event_send_ctrl_queue_pop(ctx);
+      if(ctx->omsg == NULL) {
+        break;
+      }
       /* ctrl message has WSLAY_NON_FRAGMENTED */
       wslay_event_on_non_fragmented_msg_popped(ctx);
     }

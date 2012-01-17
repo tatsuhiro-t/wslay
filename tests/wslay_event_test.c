@@ -277,11 +277,14 @@ void test_wslay_event_queue_close_without_code()
   struct my_user_data ud;
   struct accumulator acc;
   const uint8_t ans[] = { 0x88, 0x00 };
+  struct wslay_event_msg ping = { WSLAY_PING, NULL, 0 };
   memset(&callbacks, 0, sizeof(callbacks));
   callbacks.send_callback = accumulator_send_callback;
   memset(&acc, 0, sizeof(acc));
   ud.acc = &acc;
   wslay_event_context_server_init(&ctx, &callbacks, &ud);
+  CU_ASSERT(0 == wslay_event_queue_msg(ctx, &ping));
+  // See that ping is not sent because close frame is queued
   CU_ASSERT(0 == wslay_event_queue_close(ctx, 0, NULL, 0));
   CU_ASSERT(0 == wslay_event_send(ctx));
   CU_ASSERT(2 == acc.length);
