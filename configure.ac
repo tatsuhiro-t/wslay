@@ -23,6 +23,8 @@ dnl WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 AC_PREREQ(2.61)
 LT_PREREQ([2.2.6])
 AC_INIT([wslay], [0.1.1], [t-tujikawa@users.sourceforge.net])
+LT_INIT()
+AC_CONFIG_AUX_DIR([.])
 dnl See versioning rule:
 dnl  http://www.gnu.org/software/libtool/manual/html_node/Updating-version-info.html
 AC_SUBST(LT_CURRENT, 0)
@@ -36,7 +38,6 @@ AC_CONFIG_HEADERS([config.h])
 
 dnl Checks for programs
 AC_PROG_CC
-AM_PROG_LIBTOOL
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
