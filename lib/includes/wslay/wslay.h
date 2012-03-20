@@ -31,6 +31,7 @@ extern "C" {
 
 #include <stdint.h>
 #include <stdlib.h>
+#include <sys/types.h>
 
 #include <wslay/wslayver.h>
 
@@ -64,7 +65,7 @@ enum wslay_status_code {
   WSLAY_CODE_TLS_HANDSHAKE = 1015
 };
 
-enum {
+enum wslay_io_flags {
   /*
    * There is more data to send.
    */

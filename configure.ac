@@ -54,6 +54,7 @@ AM_CONDITIONAL([HAVE_CUNIT], [ test "x${have_cunit}" = "xyes" ])
 # Checks for header files.
 AC_CHECK_HEADERS([ \
   arpa/inet.h \
+  netinet/in.h \
   stddef.h \
   stdint.h \
   stdlib.h \
@@ -76,6 +77,9 @@ AC_FUNC_MALLOC
 AC_CHECK_FUNCS([ \
   memmove \
   memset \
+  ntohl \
+  ntohs \
+  htons
 ])
 
 AC_CONFIG_FILES([
