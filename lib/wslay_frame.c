@@ -26,9 +26,6 @@
 
 #include <stddef.h>
 #include <string.h>
-#ifdef HAVE_ARPA_INET_H
-#  include <arpa/inet.h>
-#endif // HAVE_ARPA_INET_H
 #include <assert.h>
 
 #include "wslay_net.h"
