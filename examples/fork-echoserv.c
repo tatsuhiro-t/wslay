@@ -355,7 +355,7 @@ ssize_t recv_callback(wslay_event_context_ptr ctx, uint8_t *buf, size_t len,
     r = -1;
   }
   return r;
-}    
+}
 
 void on_msg_recv_callback(wslay_event_context_ptr ctx,
                           const struct wslay_event_on_msg_recv_arg *arg,
