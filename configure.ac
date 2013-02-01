@@ -42,15 +42,22 @@ AC_CONFIG_HEADERS([config.h])
 
 dnl Checks for programs
 AC_PROG_CC
+AC_PROG_CXX
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
+PKG_PROG_PKG_CONFIG([0.20])
 
 AC_PATH_PROG([SPHINX_BUILD], [sphinx-build])
 AC_SUBST([SPHINX_BUILD])
 AM_CONDITIONAL([HAVE_SPHINX_BUILD], [ test "x$SPHINX_BUILD" != "x" ])
 
 # Checks for libraries.
+
+# Nettle used in examples
+have_nettle=no
+PKG_CHECK_MODULES([NETTLE], [nettle >= 2.4], [have_nettle=yes])
+
 AC_CHECK_LIB([cunit], [CU_initialize_registry],
              [have_cunit=yes], [have_cunit=no])
 AM_CONDITIONAL([HAVE_CUNIT], [ test "x${have_cunit}" = "xyes" ])
@@ -102,6 +109,12 @@ AC_CHECK_FUNCS([ \
   htons
 ])
 
+build_examples=no
+if test "x${have_nettle}" = "xyes"; then
+  build_examples=yes
+fi
+AM_CONDITIONAL([ENABLE_EXAMPLES], [ test "x${build_examples}" = "xyes" ])
+
 AC_CONFIG_FILES([
   Makefile
   lib/Makefile
@@ -109,6 +122,7 @@ AC_CONFIG_FILES([
   lib/includes/Makefile
   lib/includes/wslay/wslayver.h
   tests/Makefile
+  examples/Makefile
   doc/Makefile
 ])
 AC_OUTPUT
@@ -122,4 +136,6 @@ AC_MSG_NOTICE([summary of build options:
     CFlags:         ${CFLAGS}
     Library types:  Shared=${enable_shared}, Static=${enable_static}
     CUnit:          ${have_cunit}
+    Nettle:         ${have_nettle}
+    Build examples: ${build_examples}
 ])

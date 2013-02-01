@@ -1,6 +1,6 @@
 # Wslay - The WebSocket Library
 
-# Copyright (c) 2011, 2012 Tatsuhiro Tsujikawa
+# Copyright (c) 2011, 2013 Tatsuhiro Tsujikawa
 
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -20,27 +20,18 @@
 # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-CC = gcc
-CXX = g++
-CFLAGS = -g -O2 -I../lib/includes
-CXXFLAGS = $(CFLAGS)
-LDFLAGS = -L../lib/.libs
-LIBS = -lwslay -lnettle
 
-PROGRAMS = fork-echoserv echoserv testclient
+if ENABLE_EXAMPLES
 
-.PHONY: all
-all: $(PROGRAMS)
+AM_CPPFLAGS = -Wall -I$(top_srcdir)/lib/includes \
+	-I$(top_builddir)/lib/includes @NETTLE_CFLAGS@ @DEFS@
+AM_LDFLAGS = @NETTLE_LIBS@
+LDADD = $(top_builddir)/lib/libwslay.la
 
-fork-echoserv: fork-echoserv.c
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ fork-echoserv.c $(LIBS)
+bin_PROGRAMS = fork-echoserv echoserv testclient
 
-echoserv: echoserv.cc
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $@ echoserv.cc $(LIBS)
+fork_echoserv_SOURCES = fork-echoserv.c
+echoserv_SOURCES = echoserv.cc
+testclient_SOURCES = testclient.cc
 
-testclient: testclient.cc
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $@ testclient.cc $(LIBS)
-
-.PHONY: clean
-clean:
-	rm -f *.o $(PROGRAMS)
+endif # ENABLE_EXAMPLES

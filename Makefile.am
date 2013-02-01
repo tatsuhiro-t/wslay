@@ -20,11 +20,6 @@
 # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-SUBDIRS = lib tests doc
+SUBDIRS = lib tests examples doc
 
 ACLOCAL_AMFLAGS = -I m4
-
-EXTRA_DIST = examples/Makefile \
-	examples/fork-echoserv.c \
-	examples/echoserv.cc \
-	examples/testclient.cc
