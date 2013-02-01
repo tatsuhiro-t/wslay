@@ -50,6 +50,7 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 #include <nettle/base64.h>
 #include <nettle/sha.h>
