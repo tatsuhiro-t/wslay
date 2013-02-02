@@ -33,7 +33,9 @@ extern "C" {
 #include <stdlib.h>
 #include <sys/types.h>
 
-#include <wslay/wslayver.h>
+#ifndef WSLAY_VERSION
+#  include <wslay/wslayver.h>
+#endif /* WSLAY_VERSION */
 
 enum wslay_error {
   WSLAY_ERR_WANT_READ = -100,
