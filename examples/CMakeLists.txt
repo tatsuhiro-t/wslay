@@ -1,7 +1,7 @@
 # Source code for examples
 
 set (echoserv_src echoserv.cc)
-set (fork-echoserv_src fork-echoserv.cc)
+set (fork-echoserv_src fork-echoserv.c)
 set (testclient_src testclient.cc)
 
 include_directories (../lib/includes)

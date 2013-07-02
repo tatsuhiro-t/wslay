@@ -22,19 +22,11 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+
 /*
- * WebSocket Echo Server
- * This is suitable for Autobahn server test.
- *
- * Dependency: nettle-dev
- *
- * To compile:
- * $ gcc -Wall -O2 -g -o fork-echoserv fork-echoserv.c -L../lib/.libs -I../lib/includes -lwslay -lnettle
- *
- * To run:
- * $ export LD_LIBRARY_PATH=../lib/.libs
- * $ ./a.out 9000
+ * WebSocket Echo Server. This is suitable for Autobahn server test.
  */
+
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
@@ -49,6 +41,7 @@
 #include <stdio.h>
 #include <errno.h>
 #include <stdlib.h>
+#include <stddef.h>
 #include <string.h>
 #include <ctype.h>
 
@@ -326,7 +319,7 @@ ssize_t send_callback(wslay_event_context_ptr ctx,
   if(flags & WSLAY_MSG_MORE) {
     sflags |= MSG_MORE;
   }
-#endif // MSG_MORE
+#endif
   while((r = send(session->fd, data, len, sflags)) == -1 && errno == EINTR);
   if(r == -1) {
     if(errno == EAGAIN || errno == EWOULDBLOCK) {
@@ -343,6 +336,7 @@ ssize_t recv_callback(wslay_event_context_ptr ctx, uint8_t *buf, size_t len,
 {
   struct Session *session = (struct Session*)user_data;
   ssize_t r;
+  (void)flags;
   while((r = recv(session->fd, buf, len, 0)) == -1 && errno == EINTR);
   if(r == -1) {
     if(errno == EAGAIN || errno == EWOULDBLOCK) {
@@ -362,11 +356,13 @@ void on_msg_recv_callback(wslay_event_context_ptr ctx,
                           const struct wslay_event_on_msg_recv_arg *arg,
                           void *user_data)
 {
+  (void)user_data;
   /* Echo back non-control message */
   if(!wslay_is_ctrl_frame(arg->opcode)) {
-    struct wslay_event_msg msgarg = {
-      arg->opcode, arg->msg, arg->msg_length
-    };
+    struct wslay_event_msg msgarg;
+    msgarg.opcode = arg->opcode;
+    msgarg.msg = arg->msg;
+    msgarg.msg_length = arg->msg_length;
     wslay_event_queue_msg(ctx, &msgarg);
   }
 }
@@ -389,10 +385,12 @@ int communicate(int fd)
     NULL,
     on_msg_recv_callback
   };
-  struct Session session = { fd };
+  struct Session session;
   int val = 1;
   struct pollfd event;
   int res = 0;
+
+  session.fd = fd;
 
   if(http_handshake(fd) == -1) {
     return -1;
