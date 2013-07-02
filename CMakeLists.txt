@@ -65,7 +65,7 @@ if (WSLAY_NETTLE)
 endif (WSLAY_NETTLE)
 
 # Set up required subdirectories
-add_subdirectory (lib)
+add_subdirectory (src)
 
 message ("")
 message ("* WSLay Configuration *")

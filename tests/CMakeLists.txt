@@ -7,7 +7,7 @@ set (tests_src
         wslay_session_test.c
         wslay_stack_test.c)
 
-include_directories (../lib ../lib/includes)
+include_directories (../src ../src/includes)
 
 # Make build flags compiler specific
 if (CMAKE_COMPILER_IS_GNUCC)
