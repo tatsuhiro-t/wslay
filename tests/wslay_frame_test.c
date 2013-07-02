@@ -63,6 +63,7 @@ static ssize_t scripted_recv_callback(uint8_t* data, size_t len, int flags,
 {
   struct scripted_data_feed *df = (struct scripted_data_feed*)user_data;
   size_t wlen = df->feedseq[df->seqidx] > len ? len : df->feedseq[df->seqidx];
+  (void)flags;
   memcpy(data, df->datamark, wlen);
   df->datamark += wlen;
   if(wlen <= len) {
@@ -78,6 +79,7 @@ static ssize_t scripted_send_callback(const uint8_t* data, size_t len,
 {
   struct scripted_data_feed *df = (struct scripted_data_feed*)user_data;
   size_t wlen = df->feedseq[df->seqidx] > len ? len : df->feedseq[df->seqidx];
+  (void)flags;
   memcpy(df->datamark, data, wlen);
   df->datamark += wlen;
   if(wlen <= len) {
@@ -338,6 +340,7 @@ static ssize_t accumulator_send_callback(const uint8_t *buf, size_t len,
                                          int flags, void* user_data)
 {
   struct accumulator *acc = (struct accumulator*)user_data;
+  (void)flags;
   assert(acc->length+len < sizeof(acc->buf));
   memcpy(acc->buf+acc->length, buf, len);
   acc->length += len;
@@ -348,6 +351,8 @@ static int static_genmask_callback(uint8_t *buf, size_t len,
                                    void* user_data)
 {
   static const uint8_t makskey[] = { 0x37u, 0xfau, 0x21u, 0x3du };
+  (void)len;
+  (void)user_data;
   memcpy(buf, makskey, 4);
   return 0;
 }
