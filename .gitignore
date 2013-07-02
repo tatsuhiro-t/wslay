@@ -27,3 +27,7 @@ stamp-h1
 INSTALL
 .DS_STORE
 tests/main
+/.cproject
+/.project
+/.pydevproject
+/.settings
