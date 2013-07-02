@@ -45,7 +45,7 @@ set (EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin/)
 
 # Try to find optional package CUnit
 if (WSLAY_CUNIT)
-    find_package (CUnit)
+    find_package (CUnit 2.1)
     
     if (CUNIT_FOUND)
         add_subdirectory (tests)
@@ -55,14 +55,34 @@ if (WSLAY_CUNIT)
     endif (CUNIT_FOUND)
 endif (WSLAY_CUNIT)
 
-#find_package (Nettle)
+# Try to find optional package Nettle
+if (WSLAY_NETTLE)
+    find_package (Nettle)
+    
+    if (NETTLE_FOUND)
+        add_subdirectory (examples)
+    endif (NETTLE_FOUND)
+endif (WSLAY_NETTLE)
 
 # Set up required subdirectories
 add_subdirectory (lib)
-#add_subdirectory (example)
+
+message ("")
+message ("* WSLay Configuration *")
+message ("")
+
+message (" * Configuration: ${CMAKE_BUILD_TYPE}")
 
 if (CUNIT_FOUND)
 	message (" * CUnit:         ON")
 else ()
 	message (" * CUnit:         OFF")
 endif (CUNIT_FOUND)
+
+if (NETTLE_FOUND)
+	message (" * Nettle:        ON")
+else ()
+	message (" * Nettle:        OFF")
+endif (NETTLE_FOUND)
+
+message ("")

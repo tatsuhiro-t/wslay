@@ -588,11 +588,11 @@ void reactor(int sfd)
 
 int main(int argc, char **argv)
 {
+  struct sigaction act;
   if(argc < 2) {
     std::cerr << "Usage: " << argv[0] << " PORT" << std::endl;
     exit(EXIT_FAILURE);
   }
-  struct sigaction act;
   memset(&act, 0, sizeof(struct sigaction));
   act.sa_handler = SIG_IGN;
   sigaction(SIGPIPE, &act, 0);
