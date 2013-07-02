@@ -5,7 +5,7 @@ Project Web: http://wslay.sourceforge.net/
 
 Wslay is a WebSocket library written in C.
 It implements the protocol version 13 described in
-`RFC 6455 <http://tools.ietf.org/html/rfc6455>`_.
+RFC 6455 http://tools.ietf.org/html/rfc6455.
 This library offers 2 levels of API:
 event-based API and frame-based low-level API. For event-based API, it
 is suitable for non-blocking reactor pattern style. You can set
@@ -27,25 +27,21 @@ various platforms and the application authors can choose freely I/O
 frameworks.
 
 See Autobahn test reports:
-`server <http://wslay.sourceforge.net/autobahn/reports/servers/index.html>`_
-and
-`client <http://wslay.sourceforge.net/autobahn/reports/clients/index.html>`_.
 
-Requirements
-------------
+* Server: http://wslay.sourceforge.net/autobahn/reports/servers/index.html
+* Client: http://wslay.sourceforge.net/autobahn/reports/clients/index.html
 
-`Sphinx <http://sphinx.pocoo.org/>`_ is used to generate man pages.
+Optional Requirements
+---------------------
 
-To build and run the unit test programs, the following packages are
-needed:
-
-* cunit >= 2.1
+* Sphinx http://sphinx.pocoo.org/ is used to generate man pages.
+* CUnit http://cunit.sourceforge.net/ is used to build and run the unit tests
 
 
-Build from git
---------------
+Building
+--------
 
-Building from git is easy:
+Building is easy:
 
     $ mkdir ./build
     $ cd ./build
