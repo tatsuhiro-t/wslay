@@ -41,20 +41,13 @@ needed:
 
 * cunit >= 2.1
 
-To build and run the example programs, the following packages are
-needed:
-
-* nettle >= 2.4
-
 
 Build from git
 --------------
 
-Building from git is easy, but please be sure that at least autoconf 2.68 is
-used.::
+Building from git is easy:
 
-    $ autoreconf -i
-    $ automake
-    $ autoconf
-    $ ./configure
+    $ mkdir ./build
+    $ cd ./build
+    $ cmake ../
     $ make
