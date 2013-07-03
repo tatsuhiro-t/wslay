@@ -26,6 +26,7 @@ set (${PROJECT_NAME}_VERSION
 option(WSLAY_CLANG "Use Clang Compiler" OFF)
 option(WSLAY_CUNIT "CUnit Tests" ON)
 option(WSLAY_NETTLE "Nettle Security" ON)
+option(WSLAY_SPHINX "Sphinx documentation" ON)
 
 # Clang compiler
 if (VERSE_CLANG)
@@ -64,6 +65,15 @@ if (WSLAY_NETTLE)
     endif (NETTLE_FOUND)
 endif (WSLAY_NETTLE)
 
+# TRy to find sphinx documentation generator
+if (WSLAY_SPHINX)
+    find_package (Sphinx)
+    
+    if (SPHINX_EXECUTABLE)
+        add_subdirectory (doc/sphinx)
+    endif (SPHINX_EXECUTABLE)
+endif (WSLAY_SPHINX)
+
 # Set up required subdirectories
 add_subdirectory (src)
 
@@ -88,5 +98,11 @@ if (NETTLE_FOUND)
 else ()
 	message (" * Nettle:        OFF")
 endif (NETTLE_FOUND)
+
+if (SPHINX_EXECUTABLE)
+	message (" * Sphinx:        ON")
+else ()
+	message (" * Sphinx:        OFF")
+endif (SPHINX_EXECUTABLE)
 
 message ("")
