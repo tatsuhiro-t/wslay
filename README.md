@@ -47,3 +47,15 @@ Building is easy:
     $ cd ./build
     $ cmake ../
     $ make
+
+Testing
+-------
+
+To execute all unit tests you have to type:
+
+    $ make test
+
+Documentation
+-------------
+
+The documentation including simple tutorial could be found at: http://wslay.sourceforge.net/
