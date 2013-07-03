@@ -6,7 +6,7 @@ wslay_event_queue_fragmented_msg
 SYNOPSIS
 --------
 
-#include <wslay/wslay.h>
+#include <wslay.h>
 
 .. c:function:: int wslay_event_queue_fragmented_msg(wslay_event_context_ptr ctx, const struct wslay_event_fragmented_msg *arg)
 

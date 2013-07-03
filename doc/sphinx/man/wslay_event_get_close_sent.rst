@@ -4,7 +4,7 @@ wslay_event_get_close_sent
 SYNOPSIS
 --------
 
-#include <wslay/wslay.h>
+#include <wslay.h>
 
 .. c:function:: int wslay_event_get_close_sent(wslay_event_context_ptr ctx)
 

@@ -4,7 +4,7 @@ wslay_event_get_status_code_received
 SYNOPSIS
 --------
 
-#include <wslay/wslay.h>
+#include <wslay.h>
 
 .. c:function:: uint16_t wslay_event_get_status_code_received(wslay_event_context_ptr ctx)
 

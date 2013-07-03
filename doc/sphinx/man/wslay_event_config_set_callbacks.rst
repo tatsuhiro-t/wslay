@@ -4,7 +4,7 @@ wslay_event_config_set_callbacks
 SYNOPSIS
 --------
 
-#include <wslay/wslay.h>
+#include <wslay.h>
 
 .. c:function:: void wslay_event_config_set_callbacks(wslay_event_context_ptr ctx, const struct wslay_event_callbacks *callbacks)
 

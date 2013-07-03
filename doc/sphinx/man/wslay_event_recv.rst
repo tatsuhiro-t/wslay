@@ -4,7 +4,7 @@ wslay_event_recv
 SYNOPSIS
 --------
 
-#include <wslay/wslay.h>
+#include <wslay.h>
 
 .. c:function:: int wslay_event_recv(wslay_event_context_ptr ctx)
 

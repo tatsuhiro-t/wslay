@@ -4,7 +4,7 @@ wslay_event_shutdown_write
 SYNOPSIS
 --------
 
-#include <wslay/wslay.h>
+#include <wslay.h>
 
 .. c:function:: void wslay_event_shutdown_write(wslay_event_context_ptr ctx)
 
