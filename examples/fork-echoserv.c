@@ -47,7 +47,7 @@
 
 #include <nettle/base64.h>
 #include <nettle/sha.h>
-#include <wslay/wslay.h>
+#include <wslay.h>
 
 /*
  * Create server socket, listen on *service*.  This function returns

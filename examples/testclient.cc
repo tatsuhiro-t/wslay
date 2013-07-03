@@ -50,7 +50,7 @@
 
 #include <nettle/base64.h>
 #include <nettle/sha.h>
-#include <wslay/wslay.h>
+#include <wslay.h>
 
 int connect_to(const char *host, const char *service)
 {

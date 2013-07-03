@@ -6,7 +6,7 @@ set (libwslay_src
         wslay_queue.c
         wslay_stack.c)
 
-include_directories (./includes)
+include_directories (./include)
 
 # Make build flags compiler specific
 if (CMAKE_COMPILER_IS_GNUCC)
