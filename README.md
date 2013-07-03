@@ -36,7 +36,7 @@ Optional Requirements
 
 * Sphinx http://sphinx.pocoo.org/ is used to generate man pages.
 * CUnit http://cunit.sourceforge.net/ is used to build and run the unit tests
-
+* Nettle http://www.lysator.liu.se/~nisse/nettle/ is used in examples of Wslay
 
 Building
 --------
@@ -58,4 +58,6 @@ To execute all unit tests you have to type:
 Documentation
 -------------
 
-The documentation including simple tutorial could be found at: http://wslay.sourceforge.net/
+The documentation is generated during build, when Sphinx is installed. You
+can also find documentation including simple tutorial at:
+http://wslay.sourceforge.net/
