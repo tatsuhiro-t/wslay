@@ -25,3 +25,8 @@ set_target_properties (wslay_shared_lib PROPERTIES
 		SOVERSION "${${PROJECT_NAME}_VERSION}.${${PROJECT_NAME}_PATCH_LEVEL}"
 		OUTPUT_NAME "wslay"
 		clean_direct_output 1)
+
+# The rule to install shared library
+install (TARGETS wslay_shared_lib
+	LIBRARY
+	DESTINATION lib)

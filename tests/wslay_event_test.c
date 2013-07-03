@@ -120,6 +120,7 @@ static ssize_t one_accumulator_send_callback(wslay_event_context_ptr ctx,
   struct accumulator *acc = ((struct my_user_data*)user_data)->acc;
   (void)ctx;
   (void)flags;
+  (void)len;
   assert(len > 0);
   memcpy(acc->buf+acc->length, buf, 1);
   acc->length += 1;
