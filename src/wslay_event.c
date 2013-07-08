@@ -106,7 +106,11 @@ static ssize_t wslay_event_frame_recv_callback(uint8_t *buf, size_t len,
 {
   struct wslay_event_frame_user_data *e =
     (struct wslay_event_frame_user_data*)user_data;
-  return e->ctx->callbacks.recv_callback(e->ctx, buf, len, flags, e->user_data);
+  if(!e->ctx->callbacks.recv_callback) {
+    return WSLAY_ERR_INVALID_CALLBACK;
+  }
+  return e->ctx->callbacks.recv_callback(e->ctx, buf, len, flags,
+      e->user_data);
 }
 
 static ssize_t wslay_event_frame_send_callback(const uint8_t *data, size_t len,
@@ -114,6 +118,9 @@ static ssize_t wslay_event_frame_send_callback(const uint8_t *data, size_t len,
 {
   struct wslay_event_frame_user_data *e =
     (struct wslay_event_frame_user_data*)user_data;
+  if(!e->ctx->callbacks.send_callback) {
+    return WSLAY_ERR_INVALID_CALLBACK;
+  }
   return e->ctx->callbacks.send_callback(e->ctx, data, len, flags,
                                          e->user_data);
 }
@@ -123,6 +130,9 @@ static int wslay_event_frame_genmask_callback(uint8_t *buf, size_t len,
 {
   struct wslay_event_frame_user_data *e =
     (struct wslay_event_frame_user_data*)user_data;
+  if(!e->ctx->callbacks.genmask_callback) {
+    return WSLAY_ERR_INVALID_CALLBACK;
+  }
   return e->ctx->callbacks.genmask_callback(e->ctx, buf, len, e->user_data);
 }
 
