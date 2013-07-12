@@ -65,7 +65,7 @@ if (WSLAY_NETTLE)
     endif (NETTLE_FOUND)
 endif (WSLAY_NETTLE)
 
-# TRy to find sphinx documentation generator
+# Try to find sphinx documentation generator
 if (WSLAY_SPHINX)
     find_package (Sphinx)
     
@@ -74,11 +74,18 @@ if (WSLAY_SPHINX)
     endif (SPHINX_EXECUTABLE)
 endif (WSLAY_SPHINX)
 
-# Set up required subdirectories
-add_subdirectory (src)
+# Generate .h file with current version from template.
+# Generating wslayver.h to directory in ${PROJECT_SOURCE_DIR}
+# is possible, because wslayver.h is added to .gitignore 
+configure_file (
+    "${PROJECT_SOURCE_DIR}/lib/include/wslay/wslayver.h.in"
+    "${PROJECT_SOURCE_DIR}/lib/include/wslay/wslayver.h" )
 
-# Install wslay.h file
-install (FILES "${PROJECT_SOURCE_DIR}/src/include/wslay.h"
+# Set up required subdirectories
+add_subdirectory (lib)
+
+# Install wslay.h and wslayver.h file
+install (DIRECTORY "${PROJECT_SOURCE_DIR}/lib/include/wslay"
 	DESTINATION include)
 
 message ("")

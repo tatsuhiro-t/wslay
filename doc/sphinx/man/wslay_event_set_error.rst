@@ -4,7 +4,7 @@ wslay_event_set_error
 SYNOPSIS
 --------
 
-#include <wslay.h>
+#include <wslay/wslay.h>
 
 .. c:function:: void wslay_event_set_error(wslay_event_context_ptr ctx, int val)
 

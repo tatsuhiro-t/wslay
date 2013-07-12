@@ -29,7 +29,7 @@
 #  include <config.h>
 #endif /* HAVE_CONFIG_H */
 
-#include <wslay.h>
+#include <wslay/wslay.h>
 
 struct wslay_stack;
 struct wslay_queue;

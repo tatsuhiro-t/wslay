@@ -47,7 +47,7 @@
 
 #include <nettle/base64.h>
 #include <nettle/sha.h>
-#include <wslay.h>
+#include <wslay/wslay.h>
 
 #define DBG_PRINT 0
 

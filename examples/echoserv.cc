@@ -51,7 +51,7 @@
 
 #include <nettle/base64.h>
 #include <nettle/sha.h>
-#include <wslay.h>
+#include <wslay/wslay.h>
 
 int create_listen_socket(const char *service)
 {

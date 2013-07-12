@@ -4,7 +4,7 @@ wslay_event_config_set_max_recv_msg_length
 SYNOPSIS
 --------
 
-#include <wslay.h>
+#include <wslay/wslay.h>
 
 .. c:function:: void wslay_event_config_set_max_recv_msg_length(wslay_event_context_ptr ctx, uint64_t val)
 

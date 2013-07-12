@@ -4,7 +4,7 @@ wslay_event_want_read
 SYNOPSIS
 --------
 
-#include <wslay.h>
+#include <wslay/wslay.h>
 
 .. c:function:: int wslay_event_want_read(wslay_event_context_ptr ctx)
 

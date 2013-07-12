@@ -6,7 +6,7 @@ wslay_event_context_server_init, wslay_event_context_client_init, wslay_event_co
 SYNOPSIS
 --------
 
-#include <wslay.h>
+#include <wslay/wslay.h>
 
 .. c:function:: int wslay_event_context_server_init(wslay_event_context_ptr *ctx, const struct wslay_event_callbacks *callbacks, void *user_data)
 .. c:function:: int wslay_event_context_client_init(wslay_event_context_ptr *ctx, const struct wslay_event_callbacks *callbacks, void *user_data)

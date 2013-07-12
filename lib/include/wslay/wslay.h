@@ -33,7 +33,14 @@ extern "C" {
 #include <stdlib.h>
 #include <sys/types.h>
 
-#define WSLAY_VERSION "0.1.1"
+/*
+ * wslay/wslayver.h is generated from wslay/wslayver.h.in by
+ * CMake. The projects which do not use CMake can set
+ * WSLAY_VERSION macro from outside to avoid to generating wslayver.h
+ */
+#ifndef WSLAY_VERSION
+#  include <wslay/wslayver.h>
+#endif /* WSLAY_VERSION */
 
 enum wslay_error {
   WSLAY_ERR_WANT_READ = -100,

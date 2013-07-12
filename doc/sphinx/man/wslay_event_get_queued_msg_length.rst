@@ -4,7 +4,7 @@ wslay_event_get_queued_msg_length
 SYNOPSIS
 --------
 
-#include <wslay.h>
+#include <wslay/wslay.h>
 
 .. c:function:: size_t wslay_event_get_queued_msg_length(wslay_event_context_ptr ctx)
 

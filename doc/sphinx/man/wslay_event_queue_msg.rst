@@ -6,7 +6,7 @@ wslay_event_queue_msg
 SYNOPSIS
 --------
 
-#include <wslay.h>
+#include <wslay/wslay.h>
 
 .. c:function:: int wslay_event_queue_msg(wslay_event_context_ptr ctx, const struct wslay_event_msg *arg)
 
