@@ -323,7 +323,13 @@ ssize_t wslay_frame_recv(wslay_frame_context_ptr ctx,
       ctx->ibufmark = readlimit;
       ctx->ipayloadoff += readlimit-readmark;
     }
-    iocb->fin = ctx->iom.fin;
+
+    if ((ctx->ibuflimit - ctx->ibufmark) ==
+	(ctx->ipayloadlen - ctx->ipayloadoff)) {
+	    iocb->fin = ctx->iom.fin;
+    } else {
+	    iocb->fin = 0;
+    }
     iocb->rsv = ctx->iom.rsv;
     iocb->opcode = ctx->iom.opcode;
     iocb->payload_length = ctx->ipayloadlen;
