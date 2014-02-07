@@ -327,7 +327,7 @@ ssize_t wslay_frame_recv(wslay_frame_context_ptr ctx,
       ctx->ipayloadoff += readlimit-readmark;
     }
 
-    if ((ctx->ibuflimit - ctx->ibufmark) ==
+    if ((uint64_t)(ctx->ibuflimit - ctx->ibufmark) ==
 	(ctx->ipayloadlen - ctx->ipayloadoff)) {
 	    iocb->fin = ctx->iom.fin;
     } else {
