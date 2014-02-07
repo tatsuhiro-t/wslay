@@ -4,7 +4,7 @@ set (echoserv_src echoserv.cc)
 set (fork-echoserv_src fork-echoserv.c)
 set (testclient_src testclient.cc)
 
-include_directories (../lib/include)
+include_directories (../../lib/include)
 
 # Make build flags compiler specific
 if (CMAKE_COMPILER_IS_GNUCC)

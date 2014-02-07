@@ -26,6 +26,7 @@ set (${PROJECT_NAME}_VERSION
 option(WSLAY_CLANG "Use Clang Compiler" OFF)
 option(WSLAY_CUNIT "CUnit Tests" ON)
 option(WSLAY_NETTLE "Nettle Security" ON)
+option(WSLAY_OPENSSL "OpenSSL Security" ON)
 option(WSLAY_SPHINX "Sphinx documentation" ON)
 
 # Clang compiler
@@ -61,9 +62,18 @@ if (WSLAY_NETTLE)
     find_package (Nettle)
     
     if (NETTLE_FOUND)
-        add_subdirectory (examples)
+        add_subdirectory (examples/nettle)
     endif (NETTLE_FOUND)
 endif (WSLAY_NETTLE)
+
+# Try to find optional package OpenSSL
+if (WSLAY_OPENSSL)
+    find_package (OpenSSL)
+    
+    if (OPENSSL_FOUND)
+        add_subdirectory (examples/openssl)
+    endif (OPENSSL_FOUND)
+endif (WSLAY_OPENSSL)
 
 # Try to find sphinx documentation generator
 if (WSLAY_SPHINX)
@@ -105,6 +115,12 @@ if (NETTLE_FOUND)
 else ()
 	message (" * Nettle:        OFF")
 endif (NETTLE_FOUND)
+
+if (OPENSSL_FOUND)
+	message (" * OpenSSL:       ON")
+else ()
+	message (" * OpenSSL:       OFF")
+endif (OPENSSL_FOUND)
 
 if (SPHINX_EXECUTABLE)
 	message (" * Sphinx:        ON")
