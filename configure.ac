@@ -55,8 +55,7 @@ AM_CONDITIONAL([HAVE_SPHINX_BUILD], [ test "x$SPHINX_BUILD" != "x" ])
 # Checks for libraries.
 
 # Nettle used in examples
-have_nettle=no
-PKG_CHECK_MODULES([NETTLE], [nettle >= 2.4], [have_nettle=yes])
+PKG_CHECK_MODULES([NETTLE], [nettle >= 2.4], [have_nettle=yes], [have_nettle=no])
 
 AC_CHECK_LIB([cunit], [CU_initialize_registry],
              [have_cunit=yes], [have_cunit=no])
