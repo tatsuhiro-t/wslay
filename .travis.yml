@@ -1,6 +1,9 @@
 branches:
   only:
     - master
+before_install:
+  - sudo apt-get install -qq libcunit1 libcunit1-dev
+  - sudo pip install cpp-coveralls --use-mirrors
 language: c
 compiler:
   - gcc
