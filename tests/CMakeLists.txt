@@ -12,7 +12,7 @@ include_directories (../lib ../lib/include)
 # Make build flags compiler specific
 if (CMAKE_COMPILER_IS_GNUCC)
 	if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-		set (CMAKE_C_FLAGS "-ggdb -Wall -Wextra -pedantic -O0 -std=c99")
+		set (CMAKE_C_FLAGS "-ggdb -Wall -Wextra -pedantic -O0 -std=c99 --coverage")
 	elseif( CMAKE_BUILD_TYPE STREQUAL "Release" )
 		set (CMAKE_C_FLAGS "-DNDEBUG -Wall -Wextra -pedantic -O3 -std=c99")
 	endif ()
