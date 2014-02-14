@@ -340,6 +340,7 @@ int http_handshake(int fd, const char *host, const char *service,
            "Connection: Upgrade\r\n"
            "Sec-WebSocket-Key: %s\r\n"
            "Sec-WebSocket-Version: 13\r\n"
+           "Sec-WebSocket-Protocol: example\r\n"
            "\r\n",
            path, host, service, client_key.c_str());
   std::string reqheader = buf;
