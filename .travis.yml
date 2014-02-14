@@ -16,3 +16,5 @@ script:
   - make
 after_script:
   - make test
+  - cd ../
+  - if [ ${CC} = "gcc" ]; then coveralls --build-root "./build" --repo_token nSEL0A2T0xsWclTaM1TXmpl3aSALBJ0DK --exclude examples --exclude build_files --exclude doc --exclude tests; fi
