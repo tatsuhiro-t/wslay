@@ -37,6 +37,7 @@ Optional Requirements
 * Sphinx http://sphinx.pocoo.org/ is used to generate man pages.
 * CUnit http://cunit.sourceforge.net/ is used to build and run the unit tests
 * Nettle http://www.lysator.liu.se/~nisse/nettle/ is used in examples of Wslay
+* OpenSSL http://www.openssl.org/ is sed in example of Wslay
 
 Building
 --------
