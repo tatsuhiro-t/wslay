@@ -512,3 +512,14 @@ void test_wslay_event_message_too_big(void)
             wslay_event_get_status_code_sent(ctx));
   wslay_event_context_free(ctx);
 }
+
+void test_wslay_event_no_callbacks(void)
+{
+  wslay_event_context_ptr ctx;
+  struct wslay_event_callbacks callbacks;
+  memset(&callbacks, 0, sizeof(callbacks));
+  CU_ASSERT(0 == wslay_event_context_server_init(&ctx, &callbacks, NULL));
+  CU_ASSERT(0 == wslay_event_recv(ctx));
+  CU_ASSERT(0 == wslay_event_send(ctx));
+  wslay_event_context_free(ctx);
+}

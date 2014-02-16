@@ -37,5 +37,6 @@ void test_wslay_event_callback_failure(void);
 void test_wslay_event_no_buffering(void);
 void test_wslay_event_frame_too_big(void);
 void test_wslay_event_message_too_big(void);
+void test_wslay_event_no_callbacks(void);
 
 #endif /* WSLAY_EVENT_TEST_H */

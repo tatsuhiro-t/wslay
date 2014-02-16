@@ -114,6 +114,8 @@ int main(void)
                    test_wslay_event_frame_too_big) ||
       !CU_add_test(pSuite, "wslay_event_message_too_big",
                    test_wslay_event_message_too_big) ||
+      !CU_add_test(pSuite, "test_wslay_event_no_callbacks",
+                   test_wslay_event_no_callbacks) ||
       !CU_add_test(pSuite, "wslay_queue",
                    test_wslay_queue) ||
       !CU_add_test(pSuite, "wslay_stack",
