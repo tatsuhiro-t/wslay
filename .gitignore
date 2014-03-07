@@ -27,3 +27,5 @@ stamp-h1
 INSTALL
 .DS_STORE
 tests/main
+/compile
+/test-driver
