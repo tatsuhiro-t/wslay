@@ -3,6 +3,7 @@ Wslay - The WebSocket library
 
 [![Build Status](https://travis-ci.org/jirihnidek/wslay.png?branch=master)](https://travis-ci.org/jirihnidek/wslay)
 [![Coverage Status](https://coveralls.io/repos/jirihnidek/wslay/badge.png?branch=master)](https://coveralls.io/r/jirihnidek/wslay?branch=master)
+[![Coverity Status](https://scan.coverity.com/projects/2126/badge.svg)](https://scan.coverity.com/projects/2126)
 
 Project Web: http://wslay.sourceforge.net/
 
