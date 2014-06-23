@@ -110,7 +110,12 @@ AC_CHECK_FUNCS([ \
 
 build_examples=no
 if test "x${have_nettle}" = "xyes"; then
-  build_examples=yes
+  case $host_os in
+    linux*)
+      # the examples uses epoll
+      build_examples=yes
+      ;;
+  esac
 fi
 AM_CONDITIONAL([ENABLE_EXAMPLES], [ test "x${build_examples}" = "xyes" ])
 
