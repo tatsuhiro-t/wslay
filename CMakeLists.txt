@@ -39,6 +39,14 @@ endif (VERSE_CLANG)
 set (CMAKE_MODULE_PATH
 	${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/build_files/cmake_modules/")
 
+# Try to get information about using /lib/ or /lib64/
+get_property(LIB64 GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS)
+if (${LIB64} STREQUAL "TRUE")
+	set(LIBSUFFIX 64)
+else()
+	set(LIBSUFFIX "")
+endif()
+
 # Set output directory for libraries
 set (LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib/)
 

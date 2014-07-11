@@ -29,4 +29,4 @@ set_target_properties (wslay_shared_lib PROPERTIES
 # The rule to install shared library
 install (TARGETS wslay_shared_lib
 	LIBRARY
-	DESTINATION lib)
+	DESTINATION lib${LIBSUFFIX})
