@@ -128,6 +128,7 @@ AC_CONFIG_FILES([
   tests/Makefile
   examples/Makefile
   doc/Makefile
+  doc/sphinx/conf.py
 ])
 AC_OUTPUT
 
