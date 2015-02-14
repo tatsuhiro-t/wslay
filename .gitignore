@@ -27,5 +27,10 @@ stamp-h1
 INSTALL
 .DS_STORE
 tests/main
+tests/main.log
+tests/main.trs
+tests/test-suite.log
 /compile
 /test-driver
+doc/man
+doc/sphinx/_build
