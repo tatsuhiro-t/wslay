@@ -19,7 +19,8 @@ set(HEADERS
 	wslay_net.h
 	wslay_queue.h
 	wslay_stack.h
-	${INCLUDE_DIR}/wslay/wslay.h)
+	${INCLUDE_DIR}/wslay/wslay.h
+	${GEN_INCLUDE_DIR}/wslay/wslayver.h)
 set(SOURCES
 	wslay_event.c
 	wslay_frame.c
