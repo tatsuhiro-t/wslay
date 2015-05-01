@@ -27,6 +27,7 @@
 #include <string.h>
 #include <assert.h>
 #include <stdio.h>
+#include <arpa/inet.h>
 
 #include "wslay_queue.h"
 #include "wslay_frame.h"
