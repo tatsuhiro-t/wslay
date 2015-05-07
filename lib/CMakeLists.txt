@@ -10,8 +10,16 @@ set(GEN_INCLUDE_DIR ${CMAKE_CURRENT_BINARY_DIR}/includes)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Werror -pedantic-errors")
 
+include(CheckIncludeFile)
+include(TestBigEndian)
+check_include_file("arpa/inet.h" HAVE_ARPA_INET_H)
+check_include_file("netinet/in.h" HAVE_NETINET_IN_H)
+check_include_file("winsock2.h" HAVE_WINSOCK2_H)
+test_big_endian(WORDS_BIGENDIAN)
+
 configure_file(${INCLUDE_DIR}/wslay/wslayver.h.in
 	${GEN_INCLUDE_DIR}/wslay/wslayver.h @ONLY)
+configure_file(config.h.in config.h @ONLY)
 
 set(HEADERS
 	wslay_event.h
@@ -42,7 +50,9 @@ foreach(target ${WSLAY_TARGETS})
 	set_property(TARGET ${target} PROPERTY C_STANDARD 99)
 	target_include_directories(${target} PUBLIC
 		$<BUILD_INTERFACE:${INCLUDE_DIR}>
-		$<BUILD_INTERFACE:${GEN_INCLUDE_DIR}>)
+		$<BUILD_INTERFACE:${GEN_INCLUDE_DIR}>
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>)
+	target_compile_definitions(${target} PRIVATE "HAVE_CONFIG_H")
 endforeach()
 
 # install
