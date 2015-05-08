@@ -32,5 +32,6 @@ tests/main.trs
 tests/test-suite.log
 /compile
 /test-driver
+/build.*
 doc/man
 doc/sphinx/_build
