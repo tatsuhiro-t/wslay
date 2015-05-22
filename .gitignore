@@ -35,3 +35,9 @@ tests/test-suite.log
 /build.*
 doc/man
 doc/sphinx/_build
+/CMakeFiles/
+/cmake_install.cmake
+/lib/cmake_install.cmake
+/lib/libwslay.a
+/wslay-config.cmake
+/wslay.cmake
