@@ -12,7 +12,7 @@ DESCRIPTION
 -----------
 
 :c:func:`wslay_event_config_set_callbacks` sets callbacks to *ctx*.
-The callbacks previouly set by this function or
+The callbacks previously set by this function or
 :c:func:`wslay_event_context_server_init` or
 :c:func:`wslay_event_context_client_init` are replaced with *callbacks*.
 

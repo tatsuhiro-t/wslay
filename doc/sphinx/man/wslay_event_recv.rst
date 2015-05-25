@@ -45,7 +45,7 @@ with second argument 0 to disable further read from peer.
 When ping control frame is received, this function automatically queues
 pong control frame.
 
-In case of a fatal errror which leads to negative return code,
+In case of a fatal error which leads to negative return code,
 this function calls :c:func:`wslay_event_set_read_enabled` with second argument
 0 to disable further read from peer.
 
