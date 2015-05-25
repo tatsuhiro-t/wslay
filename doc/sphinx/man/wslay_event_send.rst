@@ -33,7 +33,7 @@ calls :c:func:`wslay_event_set_write_enabled` with second argument
 If there are any pending messages, :c:func:`wslay_event_want_write`
 returns 1, otherwise returns 0.
 
-In case of a fatal errror which leads to negative return code,
+In case of a fatal error which leads to negative return code,
 this function calls :c:func:`wslay_event_set_write_enabled` with second argument
 0 to disable further transmission to peer.
 

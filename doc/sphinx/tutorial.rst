@@ -28,7 +28,7 @@ and WebSocket data transfer until close handshake is done or an
 error occurs. *fd* is the file descriptor of the connection to the
 client. This function returns 0 if it succeeds, or returns 0.
 
-Let's look into this fucntion. First we perform HTTP handshake.
+Let's look into this function. First we perform HTTP handshake.
 It will be done with :c:func:`http_handshake` function.
 When it succeeds, we make the file descriptor of the connection non-block.
 You may set other socket options like ``TCP_NODELAY``.
@@ -189,4 +189,4 @@ If there is data to write and writing will not block, call
 :c:func:`wslay_event_send`.
 
 After exiting the event loop, we just close the connection,
-most likey, using ``shutdown(fd, SHUT_WR)`` and ``close(fd)``.
+most likely, using ``shutdown(fd, SHUT_WR)`` and ``close(fd)``.

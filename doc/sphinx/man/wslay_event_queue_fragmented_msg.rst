@@ -31,7 +31,7 @@ The *struct wslay_event_fragmented_msg* is defined as::
 .. c:type:: typedef ssize_t (*wslay_event_fragmented_msg_callback)(wslay_event_context_ptr ctx, uint8_t *buf, size_t len, const union wslay_event_msg_source *source, int *eof, void *user_data)
 
 The *opcode* member is the opcode of the message.
-The *source* member is an union and nomally it contains a "source" to
+The *source* member is an union and normally it contains a "source" to
 generate message data.
 The *read_callback* is a callback function called by
 :c:func:`wslay_event_send` to read message data from *source*.
