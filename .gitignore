@@ -2,6 +2,7 @@
 *.o
 *.lo
 *.la
+*.a
 depcomp
 *.m4
 Makefile
@@ -35,3 +36,8 @@ tests/test-suite.log
 /build.*
 doc/man
 doc/sphinx/_build
+CMakeFiles/
+cmake_install.cmake
+lib/cmake_install.cmake
+wslay-config.cmake
+wslay.cmake
