@@ -97,9 +97,6 @@ AC_CHECK_TYPES([ptrdiff_t])
 AC_C_BIGENDIAN
 
 # Checks for library functions.
-if test "x$cross_compiling" != "xyes"; then
-  AC_FUNC_MALLOC
-fi
 AC_CHECK_FUNCS([ \
   memmove \
   memset \
