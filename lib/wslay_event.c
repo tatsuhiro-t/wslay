@@ -280,7 +280,7 @@ static uint8_t* wslay_event_flatten_queue(struct wslay_queue *queue, size_t len)
 
 static int wslay_event_is_msg_queueable(wslay_event_context_ptr ctx)
 {
-  return ctx->write_enabled && (ctx->close_status & WSLAY_CLOSE_QUEUED) == 0;
+  return (ctx->close_status & WSLAY_CLOSE_QUEUED) == 0;
 }
 
 int wslay_event_queue_close(wslay_event_context_ptr ctx, uint16_t status_code,
