@@ -387,7 +387,8 @@ int wslay_event_queue_fragmented_msg_ex(wslay_event_context_ptr ctx,
   if(!wslay_event_is_msg_queueable(ctx)) {
     return WSLAY_ERR_NO_MORE_MSG;
   }
-  if(wslay_is_ctrl_frame(arg->opcode)) {
+  if(wslay_is_ctrl_frame(arg->opcode) ||
+     !wslay_event_verify_rsv_bits(ctx, rsv)) {
     return WSLAY_ERR_INVALID_ARGUMENT;
   }
   if((r = wslay_event_omsg_fragmented_init
