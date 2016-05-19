@@ -10,6 +10,7 @@ Contents:
    man/wslay_event_config_set_no_buffering
    man/wslay_event_config_set_max_recv_msg_length
    man/wslay_event_config_set_callbacks
+   man/wslay_event_config_set_allowed_rsv_bits
    man/wslay_event_queue_close
    man/wslay_event_queue_fragmented_msg
    man/wslay_event_queue_msg
