@@ -419,8 +419,8 @@ void wslay_event_context_free(wslay_event_context_ptr ctx);
  *
  * Default: WSLAY_RSV_NONE
  */
-void wslay_event_set_allowed_rsv_bits(wslay_event_context_ptr ctx,
-                                      uint8_t rsv);
+void wslay_event_config_set_allowed_rsv_bits(wslay_event_context_ptr ctx,
+                                             uint8_t rsv);
 
 /*
  * Enables or disables buffering of an entire message for non-control

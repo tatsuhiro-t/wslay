@@ -980,8 +980,8 @@ int wslay_event_get_close_sent(wslay_event_context_ptr ctx)
   return (ctx->close_status & WSLAY_CLOSE_SENT) > 0;
 }
 
-void wslay_event_set_allowed_rsv_bits(wslay_event_context_ptr ctx,
-                                      uint8_t rsv)
+void wslay_event_config_set_allowed_rsv_bits(wslay_event_context_ptr ctx,
+                                             uint8_t rsv)
 {
   /* We currently only allow WSLAY_RSV1_BIT or WSLAY_RSV_NONE */
   if((rsv & ~WSLAY_RSV1_BIT) == 0)
