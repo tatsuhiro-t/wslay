@@ -985,8 +985,7 @@ void wslay_event_config_set_allowed_rsv_bits(wslay_event_context_ptr ctx,
                                              uint8_t rsv)
 {
   /* We currently only allow WSLAY_RSV1_BIT or WSLAY_RSV_NONE */
-  if((rsv & ~WSLAY_RSV1_BIT) == 0)
-    ctx->allowed_rsv_bits = rsv;
+  ctx->allowed_rsv_bits = rsv & WSLAY_RSV1_BIT;
 }
 
 void wslay_event_config_set_no_buffering(wslay_event_context_ptr ctx, int val)
