@@ -15,10 +15,12 @@ SYNOPSIS
 DESCRIPTION
 -----------
 
-:c:func:`wslay_event_context_server_init` function initializes an event-based API context for WebSocket server use.
-:c:func:`wslay_event_context_client_init` function initializes an event-based API context for WebSocket client use.
-If they returns successfully, `ctx` will point to a structure which holds any
-necessary resources needed to process WebSocket protocol transfers.
+:c:func:`wslay_event_context_server_init` function initializes an
+:c:event-based API context for WebSocket server use.
+:c:func:`wslay_event_context_client_init` function initializes an
+:c:event-based API context for WebSocket client use.  If they return
+:c:successfully, `ctx` will point to a structure which holds any
+:c:necessary resources needed to process WebSocket protocol transfers.
 
 *callbacks* is a pointer to :c:type:`struct wslay_event_callbacks`,
 which is defined as follows::
