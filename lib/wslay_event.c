@@ -634,8 +634,9 @@ int wslay_event_recv(wslay_event_context_ptr ctx)
         }
       }
       /* If RSV1 bit is set then it is too early for utf-8 validation */
-      if((!wslay_get_rsv1(iocb.rsv) && ctx->imsg->opcode == WSLAY_TEXT_FRAME)
-          || ctx->imsg->opcode == WSLAY_CONNECTION_CLOSE) {
+      if((!wslay_get_rsv1(ctx->imsg->rsv) &&
+          ctx->imsg->opcode == WSLAY_TEXT_FRAME) ||
+            ctx->imsg->opcode == WSLAY_CONNECTION_CLOSE) {
         size_t i;
         if(ctx->imsg->opcode == WSLAY_CONNECTION_CLOSE) {
           i = 2;
