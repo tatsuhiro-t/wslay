@@ -522,18 +522,36 @@ void test_wslay_event_recv_text_frame_with_rsv1(void)
   struct wslay_event_callbacks callbacks;
   struct my_user_data ud;
   const uint8_t msg[] = {
-    0xc1, 0x05, 0x48, 0x65, 0x6c, 0x6c, 0x6f
+    0xc1, 0x07, 0xf2, 0x48, 0xcd, 0xc9, 0xc9, 0x07, 0x00 // "Hello" pm-deflate
   };
-  const uint8_t contmsg[] = {
-    0x41, 0x03, 0x48, 0x65, 0x6c, /* "Hel" */
-    0xc0, 0x02, 0x6c, 0x6f, /* "lo" */
+  const uint8_t fragmented[] = {
+    0x41, 0x03, 0xf2, 0x48, 0xcd, // First fragment
+    0x80, 0x04, 0xc9, 0xc9, 0x07, 0x00 // Second fragment, RSV1 bit off
+  };
+  const uint8_t bad_fragment[] = {
+    0x41, 0x03, 0xf2, 0x48, 0xcd,
+    0xc0, 0x04, 0xc9, 0xc9, 0x07, 0x00 // RSV1 bit on
   };
   const uint8_t pingmsg[] = {
-    0xc9, 0x03, 0x46, 0x6f, 0x6f, /* ping with "Foo" */
+    0xc9, 0x03, 0x46, 0x6f, 0x6f /* ping with "Foo" */
   };
   struct scripted_data_feed df;
 
+  /* Message marked with RSV1 should skip UTF-8 validation */
   scripted_data_feed_init(&df, (const uint8_t*)msg, sizeof(msg));
+  memset(&callbacks, 0, sizeof(callbacks));
+  ud.df = &df;
+  callbacks.recv_callback = scripted_recv_callback;
+  callbacks.on_msg_recv_callback = text_rsv1_on_msg_recv_callback;
+  wslay_event_context_client_init(&ctx, &callbacks, &ud);
+  wslay_event_config_set_allowed_rsv_bits(ctx, WSLAY_RSV1_BIT);
+  CU_ASSERT(0 == wslay_event_recv(ctx));
+  CU_ASSERT(0 == wslay_event_want_write(ctx));
+  wslay_event_context_free(ctx);
+
+  /* UTF-8 validation is skipped for continuation frames if the
+   * initial frame was marked with RSV1 bit */
+  scripted_data_feed_init(&df, (const uint8_t*)fragmented, sizeof(fragmented));
   memset(&callbacks, 0, sizeof(callbacks));
   ud.df = &df;
   callbacks.recv_callback = scripted_recv_callback;
@@ -553,7 +571,8 @@ void test_wslay_event_recv_text_frame_with_rsv1(void)
   wslay_event_context_free(ctx);
 
   /* RSV1 is not allowed in continuation frame */
-  scripted_data_feed_init(&df, (const uint8_t*)contmsg, sizeof(contmsg));
+  scripted_data_feed_init(&df, (const uint8_t*)bad_fragment,
+                                sizeof(bad_fragment));
   wslay_event_context_client_init(&ctx, &callbacks, &ud);
   wslay_event_config_set_allowed_rsv_bits(ctx, WSLAY_RSV1_BIT);
   CU_ASSERT(0 == wslay_event_recv(ctx));

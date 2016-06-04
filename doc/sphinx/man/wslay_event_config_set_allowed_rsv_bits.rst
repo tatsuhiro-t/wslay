@@ -14,7 +14,7 @@ DESCRIPTION
 -----------
 
 :c:func:`wslay_event_config_set_allowed_rsv_bits` sets a bit mask of
-allowed reserved bits (RSVs).  Currently only permited values are
+allowed reserved bits (RSVs).  Currently only permitted values are
 ``WSLAY_RSV1_BIT`` to allow PMCE extension (see :rfc:`7692`) or
 ``WSLAY_RSV_NONE`` to disable.
 

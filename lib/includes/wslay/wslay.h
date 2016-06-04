@@ -414,7 +414,7 @@ void wslay_event_context_free(wslay_event_context_ptr ctx);
 
 /*
  * Sets a bit mask of allowed reserved bits.
- * Currently only permited values are WSLAY_RSV1_BIT to allow PMCE
+ * Currently only permitted values are WSLAY_RSV1_BIT to allow PMCE
  * extension (see RFC-7692) or WSLAY_RSV_NONE to disable.
  *
  * Default: WSLAY_RSV_NONE
