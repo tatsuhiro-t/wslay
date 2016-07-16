@@ -33,6 +33,8 @@ the given message is sent without fragmentation.
 If fragmentation is needed, use :c:func:`wslay_event_queue_fragmented_msg`
 function instead.
 
+This function makes a copy of *msg* of length *msg_length*.
+
 This function just queues a message and does not send it.
 :c:func:`wslay_event_send` function call sends these queued messages.
 
