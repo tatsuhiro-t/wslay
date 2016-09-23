@@ -18,6 +18,10 @@ option(WSLAY_SHARED "Build shared version of the library" OFF)
 option(WSLAY_EXAMPLES "Build examples" OFF)
 option(WSLAY_TESTS "Build tests" OFF)
 
+if(WSLAY_SHARED)
+    set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+endif()
+
 add_subdirectory(lib)
 if(WSLAY_EXAMPLES)
 	add_subdirectory(examples)
