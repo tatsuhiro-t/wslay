@@ -303,7 +303,8 @@ int wslay_event_queue_close(wslay_event_context_ptr ctx, uint16_t status_code,
     } else {
       ncode = htons(status_code);
       memcpy(msg, &ncode, 2);
-      memcpy(msg+2, reason, reason_length);
+      if(reason_length)
+        memcpy(msg+2, reason, reason_length);
       msg_length = reason_length+2;
     }
     arg.opcode = WSLAY_CONNECTION_CLOSE;
