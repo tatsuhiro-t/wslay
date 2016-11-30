@@ -11,7 +11,7 @@ SYNOPSIS
 DESCRIPTION
 -----------
 
-:c:func:`wslay_event_want_read` is used to know whehter the library want to
+:c:func:`wslay_event_want_read` is used to know whether the library want to
 read more data from peer.
 
 This is useful to decide whether to wait for read event in

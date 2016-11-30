@@ -11,7 +11,7 @@ SYNOPSIS
 DESCRIPTION
 -----------
 
-:c:func:`wslay_event_want_write` is used to know whehter the library want to
+:c:func:`wslay_event_want_write` is used to know whether the library want to
 send more data to peer.
 
 This is useful to decide whether to wait for write event in

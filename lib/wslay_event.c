@@ -147,6 +147,10 @@ static int wslay_event_byte_chunk_init
   memset(*chunk, 0, sizeof(struct wslay_event_byte_chunk));
   if(len) {
     (*chunk)->data = (uint8_t*)malloc(len);
+    if((*chunk)->data == NULL) {
+      free(*chunk);
+      return WSLAY_ERR_NOMEM;
+    }
     (*chunk)->data_length = len;
   }
   return 0;
@@ -216,7 +220,7 @@ static int wslay_event_imsg_append_chunk(struct wslay_event_imsg *m, size_t len)
 }
 
 static int wslay_event_omsg_non_fragmented_init
-(struct wslay_event_omsg **m, uint8_t opcode,
+(struct wslay_event_omsg **m, uint8_t opcode, uint8_t rsv,
  const uint8_t *msg, size_t msg_length)
 {
   *m = (struct wslay_event_omsg*)malloc(sizeof(struct wslay_event_omsg));
@@ -226,6 +230,7 @@ static int wslay_event_omsg_non_fragmented_init
   memset(*m, 0, sizeof(struct wslay_event_omsg));
   (*m)->fin = 1;
   (*m)->opcode = opcode;
+  (*m)->rsv = rsv;
   (*m)->type = WSLAY_NON_FRAGMENTED;
   if(msg_length) {
     (*m)->data = (uint8_t*)malloc(msg_length);
@@ -240,7 +245,7 @@ static int wslay_event_omsg_non_fragmented_init
 }
 
 static int wslay_event_omsg_fragmented_init
-(struct wslay_event_omsg **m, uint8_t opcode,
+(struct wslay_event_omsg **m, uint8_t opcode, uint8_t rsv,
  const union wslay_event_msg_source source,
  wslay_event_fragmented_msg_callback read_callback)
 {
@@ -250,6 +255,7 @@ static int wslay_event_omsg_fragmented_init
   }
   memset(*m, 0, sizeof(struct wslay_event_omsg));
   (*m)->opcode = opcode;
+  (*m)->rsv = rsv;
   (*m)->type = WSLAY_FRAGMENTED;
   (*m)->source = source;
   (*m)->read_callback = read_callback;
@@ -312,7 +318,9 @@ int wslay_event_queue_close(wslay_event_context_ptr ctx, uint16_t status_code,
     } else {
       ncode = htons(status_code);
       memcpy(msg, &ncode, 2);
-      memcpy(msg+2, reason, reason_length);
+      if(reason_length) {
+        memcpy(msg+2, reason, reason_length);
+      }
       msg_length = reason_length+2;
     }
     arg.opcode = WSLAY_CONNECTION_CLOSE;
@@ -339,19 +347,33 @@ static int wslay_event_queue_close_wrapper
   return 0;
 }
 
+static int wslay_event_verify_rsv_bits(wslay_event_context_ptr ctx, uint8_t rsv)
+{
+  return ((rsv & ~ctx->allowed_rsv_bits) == 0);
+}
+
 int wslay_event_queue_msg(wslay_event_context_ptr ctx,
                           const struct wslay_event_msg *arg)
+{
+  return wslay_event_queue_msg_ex(ctx, arg, WSLAY_RSV_NONE);
+}
+
+int wslay_event_queue_msg_ex(wslay_event_context_ptr ctx,
+                              const struct wslay_event_msg *arg, uint8_t rsv)
 {
   int r;
   struct wslay_event_omsg *omsg;
   if(!wslay_event_is_msg_queueable(ctx)) {
     return WSLAY_ERR_NO_MORE_MSG;
   }
-  if(wslay_is_ctrl_frame(arg->opcode) && arg->msg_length > 125) {
+  /* RSV1 is not allowed for control frames */
+  if((wslay_is_ctrl_frame(arg->opcode) &&
+      (arg->msg_length > 125 || wslay_get_rsv1(rsv)))
+        || !wslay_event_verify_rsv_bits(ctx, rsv)) {
     return WSLAY_ERR_INVALID_ARGUMENT;
   }
   if((r = wslay_event_omsg_non_fragmented_init
-      (&omsg, arg->opcode, arg->msg, arg->msg_length)) != 0) {
+      (&omsg, arg->opcode, rsv, arg->msg, arg->msg_length)) != 0) {
     return r;
   }
   if(wslay_is_ctrl_frame(arg->opcode)) {
@@ -371,16 +393,23 @@ int wslay_event_queue_msg(wslay_event_context_ptr ctx,
 int wslay_event_queue_fragmented_msg
 (wslay_event_context_ptr ctx, const struct wslay_event_fragmented_msg *arg)
 {
+  return wslay_event_queue_fragmented_msg_ex(ctx, arg, WSLAY_RSV_NONE);
+}
+
+int wslay_event_queue_fragmented_msg_ex(wslay_event_context_ptr ctx,
+    const struct wslay_event_fragmented_msg *arg, uint8_t rsv)
+{
   int r;
   struct wslay_event_omsg *omsg;
   if(!wslay_event_is_msg_queueable(ctx)) {
     return WSLAY_ERR_NO_MORE_MSG;
   }
-  if(wslay_is_ctrl_frame(arg->opcode)) {
+  if(wslay_is_ctrl_frame(arg->opcode) ||
+     !wslay_event_verify_rsv_bits(ctx, rsv)) {
     return WSLAY_ERR_INVALID_ARGUMENT;
   }
   if((r = wslay_event_omsg_fragmented_init
-      (&omsg, arg->opcode, arg->source, arg->read_callback)) != 0) {
+      (&omsg, arg->opcode, rsv, arg->source, arg->read_callback)) != 0) {
     return r;
   }
   if((r = wslay_queue_push(ctx->send_queue, omsg)) != 0) {
@@ -562,9 +591,11 @@ int wslay_event_recv(wslay_event_context_ptr ctx)
     r = wslay_frame_recv(ctx->frame_ctx, &iocb);
     if(r >= 0) {
       int new_frame = 0;
-      /* We only allow rsv == 0 ATM. */
-      if(iocb.rsv != 0 ||
-         ((ctx->server && !iocb.mask) || (!ctx->server && iocb.mask))) {
+      /* RSV1 is not allowed on control and continuation frames */
+      if((!wslay_event_verify_rsv_bits(ctx, iocb.rsv)) ||
+          (wslay_get_rsv1(iocb.rsv) && (wslay_is_ctrl_frame(iocb.opcode) ||
+             iocb.opcode == WSLAY_CONTINUATION_FRAME)) ||
+               (ctx->server && !iocb.mask) || (!ctx->server && iocb.mask)) {
         if((r = wslay_event_queue_close_wrapper
             (ctx, WSLAY_CODE_PROTOCOL_ERROR, NULL, 0)) != 0) {
           return r;
@@ -623,8 +654,10 @@ int wslay_event_recv(wslay_event_context_ptr ctx)
           }
         }
       }
-      if(ctx->imsg->opcode == WSLAY_TEXT_FRAME ||
-         ctx->imsg->opcode == WSLAY_CONNECTION_CLOSE) {
+      /* If RSV1 bit is set then it is too early for utf-8 validation */
+      if((!wslay_get_rsv1(ctx->imsg->rsv) &&
+          ctx->imsg->opcode == WSLAY_TEXT_FRAME) ||
+            ctx->imsg->opcode == WSLAY_CONNECTION_CLOSE) {
         size_t i;
         if(ctx->imsg->opcode == WSLAY_CONNECTION_CLOSE) {
           i = 2;
@@ -834,6 +867,7 @@ int wslay_event_send(wslay_event_context_ptr ctx)
       memset(&iocb, 0, sizeof(iocb));
       iocb.fin = 1;
       iocb.opcode = ctx->omsg->opcode;
+      iocb.rsv = ctx->omsg->rsv;
       iocb.mask = ctx->server^1;
       iocb.data = ctx->omsg->data+ctx->opayloadoff;
       iocb.data_length = ctx->opayloadlen-ctx->opayloadoff;
@@ -890,6 +924,7 @@ int wslay_event_send(wslay_event_context_ptr ctx)
       memset(&iocb, 0, sizeof(iocb));
       iocb.fin = ctx->omsg->fin;
       iocb.opcode = ctx->omsg->opcode;
+      iocb.rsv = ctx->omsg->rsv;
       iocb.mask = ctx->server ? 0 : 1;
       iocb.data = ctx->obufmark;
       iocb.data_length = ctx->obuflimit-ctx->obufmark;
@@ -905,6 +940,8 @@ int wslay_event_send(wslay_event_context_ptr ctx)
             ctx->omsg = NULL;
           } else {
             ctx->omsg->opcode = WSLAY_CONTINUATION_FRAME;
+            /* RSV1 is not set on continuation frames */
+            ctx->omsg->rsv = ctx->omsg->rsv & ~WSLAY_RSV1_BIT;
           }
         } else {
           break;
@@ -968,6 +1005,13 @@ int wslay_event_get_close_received(wslay_event_context_ptr ctx)
 int wslay_event_get_close_sent(wslay_event_context_ptr ctx)
 {
   return (ctx->close_status & WSLAY_CLOSE_SENT) > 0;
+}
+
+void wslay_event_config_set_allowed_rsv_bits(wslay_event_context_ptr ctx,
+                                             uint8_t rsv)
+{
+  /* We currently only allow WSLAY_RSV1_BIT or WSLAY_RSV_NONE */
+  ctx->allowed_rsv_bits = rsv & WSLAY_RSV1_BIT;
 }
 
 void wslay_event_config_set_no_buffering(wslay_event_context_ptr ctx, int val)
