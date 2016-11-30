@@ -1,68 +1,32 @@
-cmake_minimum_required(VERSION 2.8)
+# Source code for verse library
+set (libwslay_src
+        wslay_event.c
+        wslay_frame.c
+        wslay_net.c
+        wslay_queue.c
+        wslay_stack.c)
 
-# This CMakeLists.txt file intended for:
-# - include by master ../CMakeLists.txt
-# - embedding wslay library into other projects
+include_directories (./include)
 
-set(PACKAGE_VERSION "1.0.1-DEV")
-set(INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/includes)
-set(GEN_INCLUDE_DIR ${CMAKE_CURRENT_BINARY_DIR}/includes)
+# Make build flags compiler specific
+if (CMAKE_COMPILER_IS_GNUCC)
+	if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+		set (CMAKE_C_FLAGS "-D_REETRANT -ggdb -fPIC -Wall -Wextra -pedantic -O0 -std=c99 --coverage")
+	elseif( CMAKE_BUILD_TYPE STREQUAL "Release" )
+		set (CMAKE_C_FLAGS "-D_REETRANT -DNDEBUG -fPIC -Wall -Wextra -pedantic -O3 -std=c99")
+	endif ()
+endif (CMAKE_COMPILER_IS_GNUCC)
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Werror -pedantic-errors -Wno-long-long")
 
-include(CheckIncludeFile)
-include(TestBigEndian)
-check_include_file("arpa/inet.h" HAVE_ARPA_INET_H)
-check_include_file("netinet/in.h" HAVE_NETINET_IN_H)
-check_include_file("winsock2.h" HAVE_WINSOCK2_H)
-test_big_endian(WORDS_BIGENDIAN)
+# Set up shared verse library (libwslay.so)
+add_library (wslay_shared_lib SHARED ${libwslay_src})
+set_target_properties (wslay_shared_lib PROPERTIES
+		VERSION "${${PROJECT_NAME}_VERSION}"
+		SOVERSION "${${PROJECT_NAME}_VERSION}.${${PROJECT_NAME}_PATCH_LEVEL}"
+		OUTPUT_NAME "wslay"
+		clean_direct_output 1)
 
-configure_file(${INCLUDE_DIR}/wslay/wslayver.h.in
-	${GEN_INCLUDE_DIR}/wslay/wslayver.h @ONLY)
-configure_file(config.h.in config.h @ONLY)
-
-set(HEADERS
-	wslay_event.h
-	wslay_frame.h
-	wslay_net.h
-	wslay_queue.h
-	wslay_stack.h
-	${INCLUDE_DIR}/wslay/wslay.h
-	${GEN_INCLUDE_DIR}/wslay/wslayver.h)
-set(SOURCES
-	wslay_event.c
-	wslay_frame.c
-	wslay_net.c
-	wslay_queue.c
-	wslay_stack.c)
-
-set(WSLAY_TARGETS)
-if(WSLAY_STATIC)
-	add_library(wslay STATIC ${SOURCES} ${HEADERS})
-	list(APPEND WSLAY_TARGETS wslay)
-endif()
-if(WSLAY_SHARED)
-	add_library(wslay_shared SHARED ${SOURCES} ${HEADERS})
-	list(APPEND WSLAY_TARGETS wslay_shared)
-endif()
-
-foreach(target ${WSLAY_TARGETS})
-	set_property(TARGET ${target} PROPERTY C_STANDARD 99)
-	target_include_directories(${target} PUBLIC
-		$<BUILD_INTERFACE:${INCLUDE_DIR}>
-		$<BUILD_INTERFACE:${GEN_INCLUDE_DIR}>
-		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>)
-	target_compile_definitions(${target} PRIVATE "HAVE_CONFIG_H")
-endforeach()
-
-# install
-if(WSLAY_CONFIGURE_INSTALL)
-	include(GNUInstallDirs)
-	install(TARGETS ${WSLAY_TARGETS} EXPORT wslay
-		INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-		ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-		LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
-	install(DIRECTORY ${INCLUDE_DIR}/ ${GEN_INCLUDE_DIR}/
-		DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-		FILES_MATCHING PATTERN "*.h")
-endif()
+# The rule to install shared library
+install (TARGETS wslay_shared_lib
+	LIBRARY
+	DESTINATION lib${LIBSUFFIX})

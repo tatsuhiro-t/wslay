@@ -1,0 +1,20 @@
+branches:
+  only:
+    - master
+before_install:
+  - sudo apt-get install -qq libcunit1 libcunit1-dev
+  - sudo pip install cpp-coveralls
+language: c
+compiler:
+  - gcc
+  - clang
+before_script:
+  - mkdir build
+  - cd build
+  - cmake ../ -DCMAKE_BUILD_TYPE=Debug
+script:
+  - make
+after_script:
+  - make test
+  - cd ../
+  - if [ ${CC} = "gcc" ]; then coveralls --build-root "./build" --repo_token nSEL0A2T0xsWclTaM1TXmpl3aSALBJ0DK --exclude examples --exclude build_files --exclude doc --exclude tests; fi

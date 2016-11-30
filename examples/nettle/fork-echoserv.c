@@ -22,19 +22,11 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+
 /*
- * WebSocket Echo Server
- * This is suitable for Autobahn server test.
- *
- * Dependency: nettle-dev
- *
- * To compile:
- * $ gcc -Wall -O2 -g -o fork-echoserv fork-echoserv.c -L../lib/.libs -I../lib/includes -lwslay -lnettle
- *
- * To run:
- * $ export LD_LIBRARY_PATH=../lib/.libs
- * $ ./a.out 9000
+ * WebSocket Echo Server. This is suitable for Autobahn server test.
  */
+
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
@@ -49,12 +41,15 @@
 #include <stdio.h>
 #include <errno.h>
 #include <stdlib.h>
+#include <stddef.h>
 #include <string.h>
 #include <ctype.h>
 
 #include <nettle/base64.h>
 #include <nettle/sha.h>
 #include <wslay/wslay.h>
+
+#define DBG_PRINT 0
 
 /*
  * Create server socket, listen on *service*.  This function returns
@@ -160,6 +155,37 @@ void create_accept_key(char *dst, const char *client_key)
   dst[BASE64_ENCODE_RAW_LENGTH(20)] = '\0';
 }
 
+/**
+ * Select first proposed protocol and return new pointer at string
+ */
+char *create_accept_protocol(char *protos)
+{
+  char *proto;
+  int i, start, end, len;
+  for(i=0;;i++) {
+    if(protos[i] != ' ')
+    {
+      start = i;
+      break;
+    }
+  }
+  for(i=0;;i++) {
+    if(protos[i] == ',' ||
+          protos[i] == '\n' ||
+          protos[i] == '\r' ||
+          protos[i] == '\t')
+    {
+      end = i;
+      break;
+    }
+  }
+  len = (start<end) ? (end-start) : end;
+  proto = (char*)malloc((len+1)*sizeof(char));
+  strncpy(proto, &protos[start], len);
+  proto[len] = '\0';
+  return proto;
+}
+
 /* We parse HTTP header lines of the format
  *   \r\nfield_name: value1, value2, ... \r\n
  *
@@ -247,9 +273,12 @@ int http_handshake(int fd)
    * not meant to be used in production code.  In practice, you need
    * to do more strict verification of the client's handshake.
    */
-  char header[16384], accept_key[29], *keyhdstart, *keyhdend, res_header[256];
+  char header[16384], accept_key[29], *accept_protocol, *keyhdstart, *protostart, *keyhdend, res_header[256];
   size_t header_length = 0, res_header_sent = 0, res_header_length;
   ssize_t r;
+#if DBG_PRINT
+  printf("Wait for handshake from client ... ");
+#endif
   while(1) {
     while((r = read(fd, header+header_length,
                     sizeof(header)-header_length)) == -1 && errno == EINTR);
@@ -270,10 +299,13 @@ int http_handshake(int fd)
       }
     }
   }
-
+#if DBG_PRINT
+  printf("Received\n");
+#endif
   if(http_header_find_field_value(header, "Upgrade", "websocket") == NULL ||
      http_header_find_field_value(header, "Connection", "Upgrade") == NULL ||
-     (keyhdstart = http_header_find_field_value(header, "Sec-WebSocket-Key", NULL)) == NULL) {
+     (keyhdstart = http_header_find_field_value(header, "Sec-WebSocket-Key", NULL)) == NULL ||
+     (protostart = http_header_find_field_value(header, "Sec-WebSocket-Protocol", NULL)) == NULL) {
     fprintf(stderr, "HTTP Handshake: Missing required header fields");
     return -1;
   }
@@ -286,13 +318,22 @@ int http_handshake(int fd)
     return -1;
   }
   create_accept_key(accept_key, keyhdstart);
+  accept_protocol = create_accept_protocol(protostart);
   snprintf(res_header, sizeof(res_header),
            "HTTP/1.1 101 Switching Protocols\r\n"
            "Upgrade: websocket\r\n"
            "Connection: Upgrade\r\n"
            "Sec-WebSocket-Accept: %s\r\n"
-           "\r\n", accept_key);
+           "Sec-WebSocket-Protocol: %s\r\n"
+           "\r\n", accept_key, accept_protocol);
+#if DBG_PRINT
+  printf("Accepting protocol: %s\n", accept_protocol);
+#endif
+  if(accept_protocol) free(accept_protocol);
   res_header_length = strlen(res_header);
+#if DBG_PRINT
+  printf("Sending server handshake response ... ");
+#endif
   while(res_header_sent < res_header_length) {
     while((r = write(fd, res_header+res_header_sent,
                      res_header_length-res_header_sent)) == -1 &&
@@ -304,6 +345,9 @@ int http_handshake(int fd)
       res_header_sent += r;
     }
   }
+#if DBG_PRINT
+  printf("Sent\n");
+#endif
   return 0;
 }
 
@@ -326,7 +370,7 @@ ssize_t send_callback(wslay_event_context_ptr ctx,
   if(flags & WSLAY_MSG_MORE) {
     sflags |= MSG_MORE;
   }
-#endif // MSG_MORE
+#endif
   while((r = send(session->fd, data, len, sflags)) == -1 && errno == EINTR);
   if(r == -1) {
     if(errno == EAGAIN || errno == EWOULDBLOCK) {
@@ -343,6 +387,7 @@ ssize_t recv_callback(wslay_event_context_ptr ctx, uint8_t *buf, size_t len,
 {
   struct Session *session = (struct Session*)user_data;
   ssize_t r;
+  (void)flags;
   while((r = recv(session->fd, buf, len, 0)) == -1 && errno == EINTR);
   if(r == -1) {
     if(errno == EAGAIN || errno == EWOULDBLOCK) {
@@ -355,6 +400,9 @@ ssize_t recv_callback(wslay_event_context_ptr ctx, uint8_t *buf, size_t len,
     wslay_event_set_error(ctx, WSLAY_ERR_CALLBACK_FAILURE);
     r = -1;
   }
+#if DBG_PRINT
+  printf("Data recv callback, len: %ld, flags: %d\n", len, flags);
+#endif
   return r;
 }
 
@@ -362,13 +410,23 @@ void on_msg_recv_callback(wslay_event_context_ptr ctx,
                           const struct wslay_event_on_msg_recv_arg *arg,
                           void *user_data)
 {
+  (void)user_data;
   /* Echo back non-control message */
   if(!wslay_is_ctrl_frame(arg->opcode)) {
-    struct wslay_event_msg msgarg = {
-      arg->opcode, arg->msg, arg->msg_length
-    };
+    struct wslay_event_msg msgarg;
+    msgarg.opcode = arg->opcode;
+    msgarg.msg = arg->msg;
+    msgarg.msg_length = arg->msg_length;
     wslay_event_queue_msg(ctx, &msgarg);
   }
+#if DBG_PRINT
+  if(1) {
+    char *data = (char*)malloc((arg->msg_length+1)*sizeof(char));
+    memcpy(data, arg->msg, arg->msg_length);
+    data[arg->msg_length] = '\0';
+    printf("Msg recv callback, opcode: %d msg: %s\n", arg->opcode, data);
+  }
+#endif
 }
 
 /*
@@ -389,10 +447,12 @@ int communicate(int fd)
     NULL,
     on_msg_recv_callback
   };
-  struct Session session = { fd };
+  struct Session session;
   int val = 1;
   struct pollfd event;
   int res = 0;
+
+  session.fd = fd;
 
   if(http_handshake(fd) == -1) {
     return -1;
@@ -460,6 +520,9 @@ void serve(int sfd)
       perror("accept");
     } else {
       int r = fork();
+#if DBG_PRINT
+      printf("Connection attempt\n");
+#endif
       if(r == -1) {
         perror("fork");
         close(fd);

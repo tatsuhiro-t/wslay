@@ -26,6 +26,7 @@
 
 #include <string.h>
 #include <assert.h>
+#include <stdio.h>
 
 struct wslay_stack* wslay_stack_new()
 {

@@ -33,10 +33,9 @@ extern "C" {
 #include <stdlib.h>
 #include <sys/types.h>
 
-
 /*
  * wslay/wslayver.h is generated from wslay/wslayver.h.in by
- * configure. The projects which do not use autotools can set
+ * CMake. The projects which do not use CMake can set
  * WSLAY_VERSION macro from outside to avoid to generating wslayver.h
  */
 #ifndef WSLAY_VERSION

@@ -1,39 +1,139 @@
-cmake_minimum_required(VERSION 2.8)
+# Minimal version of CMake
+cmake_minimum_required (VERSION 2.6)
 
-# This CMakeLists.txt file intended for:
-# - development of wslay library
-# - building wslay for install purposes
-# - building wslay with ExternalProject_Add()
+# Build type
+if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+	message(STATUS "Setting build type to 'Release' as none was specified.")
+	set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build." FORCE)
+	
+	# Set the possible values of build type for cmake-gui
+	set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release"
+		"MinSizeRel" "RelWithDebInfo")
+endif ()
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
-if(NOT DEFINED CMAKE_BUILD_TYPE)
-	set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type")
+# Define project name
+project (WSLay)
+
+# The version number
+set (${PROJECT_NAME}_VERSION_MAJOR 0)
+set (${PROJECT_NAME}_VERSION_MINOR 1)
+set (${PROJECT_NAME}_PATCH_LEVEL 1)
+
+set (${PROJECT_NAME}_VERSION
+	"${${PROJECT_NAME}_VERSION_MAJOR}.${${PROJECT_NAME}_VERSION_MINOR}")
+
+# Build options
+option(WSLAY_CLANG "Use Clang Compiler" OFF)
+option(WSLAY_CUNIT "CUnit Tests" ON)
+option(WSLAY_NETTLE "Nettle Security" ON)
+option(WSLAY_OPENSSL "OpenSSL Security" ON)
+option(WSLAY_SPHINX "Sphinx documentation" ON)
+
+# Clang compiler
+if (VERSE_CLANG)
+	set (CMAKE_C_COMPILER "/usr/bin/clang")
+	set (CMAKE_CC_COMPILER "/usr/bin/clang++")
+endif (VERSE_CLANG)
+
+# Set up directory with 3rd party cmake modules
+set (CMAKE_MODULE_PATH
+	${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/build_files/cmake_modules/")
+
+# Try to get information about using /lib/ or /lib64/
+get_property(LIB64 GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS)
+if (${LIB64} STREQUAL "TRUE")
+	set(LIBSUFFIX 64)
+else()
+	set(LIBSUFFIX "")
 endif()
 
-project(wslay)
+# Set output directory for libraries
+set (LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib/)
 
-option(WSLAY_CONFIGURE_INSTALL "Generate install target" ON)
-option(WSLAY_STATIC "Build static version of the library" ON)
-option(WSLAY_SHARED "Build shared version of the library" OFF)
-option(WSLAY_EXAMPLES "Build examples" OFF)
-option(WSLAY_TESTS "Build tests" OFF)
+# Set output directory for binaries
+set (EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin/)
 
-add_subdirectory(lib)
-if(WSLAY_EXAMPLES)
-	add_subdirectory(examples)
-endif()
-if(WSLAY_TESTS)
-	enable_testing()
-	add_subdirectory(tests)
-endif()
+# Try to find optional package CUnit
+if (WSLAY_CUNIT)
+    find_package (CUnit 2.1)
+    
+    if (CUNIT_FOUND)
+        add_subdirectory (tests)
+        # Add custom target: make tests
+		add_custom_target (test COMMAND "${PROJECT_BINARY_DIR}/bin/tests"
+			DEPENDS tests)
+    endif (CUNIT_FOUND)
+endif (WSLAY_CUNIT)
 
-if (WSLAY_CONFIGURE_INSTALL)
-	include(GNUInstallDirs)
-	set(INSTALL_CMAKE_DIR ${CMAKE_INSTALL_LIBDIR}/cmake/wslay)
-	export(EXPORT wslay)
-	install(EXPORT wslay
-		DESTINATION ${INSTALL_CMAKE_DIR})
-	configure_file(wslay-config.cmake.in wslay-config.cmake @ONLY)
-	install(FILES ${CMAKE_CURRENT_BINARY_DIR}/wslay-config.cmake
-		DESTINATION ${INSTALL_CMAKE_DIR})
-endif()
+# Try to find optional package Nettle
+if (WSLAY_NETTLE)
+    find_package (Nettle)
+    
+    if (NETTLE_FOUND)
+        add_subdirectory (examples/nettle)
+    endif (NETTLE_FOUND)
+endif (WSLAY_NETTLE)
+
+# Try to find optional package OpenSSL
+if (WSLAY_OPENSSL)
+    find_package (OpenSSL)
+    
+    if (OPENSSL_FOUND)
+        add_subdirectory (examples/openssl)
+    endif (OPENSSL_FOUND)
+endif (WSLAY_OPENSSL)
+
+# Try to find sphinx documentation generator
+if (WSLAY_SPHINX)
+    find_package (Sphinx)
+    
+    if (SPHINX_EXECUTABLE)
+        add_subdirectory (doc/sphinx)
+    endif (SPHINX_EXECUTABLE)
+endif (WSLAY_SPHINX)
+
+# Generate .h file with current version from template.
+# Generating wslayver.h to directory in ${PROJECT_SOURCE_DIR}
+# is possible, because wslayver.h is added to .gitignore 
+configure_file (
+    "${PROJECT_SOURCE_DIR}/lib/include/wslay/wslayver.h.in"
+    "${PROJECT_SOURCE_DIR}/lib/include/wslay/wslayver.h" )
+
+# Set up required subdirectories
+add_subdirectory (lib)
+
+# Install wslay.h and wslayver.h file
+install (DIRECTORY "${PROJECT_SOURCE_DIR}/lib/include/wslay"
+	DESTINATION include)
+
+message ("")
+message ("* WSLay Configuration *")
+message ("")
+
+message (" * Configuration: ${CMAKE_BUILD_TYPE}")
+
+if (CUNIT_FOUND)
+	message (" * CUnit:         ON")
+else ()
+	message (" * CUnit:         OFF")
+endif (CUNIT_FOUND)
+
+if (NETTLE_FOUND)
+	message (" * Nettle:        ON")
+else ()
+	message (" * Nettle:        OFF")
+endif (NETTLE_FOUND)
+
+if (OPENSSL_FOUND)
+	message (" * OpenSSL:       ON")
+else ()
+	message (" * OpenSSL:       OFF")
+endif (OPENSSL_FOUND)
+
+if (SPHINX_EXECUTABLE)
+	message (" * Sphinx:        ON")
+else ()
+	message (" * Sphinx:        OFF")
+endif (SPHINX_EXECUTABLE)
+
+message ("")

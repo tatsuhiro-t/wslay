@@ -58,13 +58,17 @@ static void scripted_data_feed_init(struct scripted_data_feed *df,
   df->feedseq[0] = data_length;
 }
 
-static ssize_t scripted_read_callback
-(wslay_event_context_ptr ctx,
- uint8_t *data, size_t len, const union wslay_event_msg_source *source,
- int *eof, void *user_data)
+static ssize_t scripted_read_callback(wslay_event_context_ptr ctx,
+    uint8_t *data,
+    size_t len,
+    const union wslay_event_msg_source *source,
+    int *eof,
+    void *user_data)
 {
   struct scripted_data_feed *df = (struct scripted_data_feed*)source->data;
   size_t wlen = df->feedseq[df->seqidx] > len ? len : df->feedseq[df->seqidx];
+  (void)ctx;
+  (void)user_data;
   memcpy(data, df->datamark, wlen);
   df->datamark += wlen;
   if(wlen <= len) {
@@ -84,6 +88,8 @@ static ssize_t scripted_recv_callback(wslay_event_context_ptr ctx,
 {
   struct scripted_data_feed *df = ((struct my_user_data*)user_data)->df;
   size_t wlen = df->feedseq[df->seqidx] > len ? len : df->feedseq[df->seqidx];
+  (void)ctx;
+  (void)flags;
   memcpy(data, df->datamark, wlen);
   df->datamark += wlen;
   if(wlen <= len) {
@@ -99,6 +105,8 @@ static ssize_t accumulator_send_callback(wslay_event_context_ptr ctx,
                                          int flags, void* user_data)
 {
   struct accumulator *acc = ((struct my_user_data*)user_data)->acc;
+  (void)ctx;
+  (void)flags;
   assert(acc->length+len < sizeof(acc->buf));
   memcpy(acc->buf+acc->length, buf, len);
   acc->length += len;
@@ -110,6 +118,9 @@ static ssize_t one_accumulator_send_callback(wslay_event_context_ptr ctx,
                                              int flags, void* user_data)
 {
   struct accumulator *acc = ((struct my_user_data*)user_data)->acc;
+  (void)ctx;
+  (void)flags;
+  (void)len;
   assert(len > 0);
   memcpy(acc->buf+acc->length, buf, 1);
   acc->length += 1;
@@ -117,9 +128,15 @@ static ssize_t one_accumulator_send_callback(wslay_event_context_ptr ctx,
 }
 
 static ssize_t fail_recv_callback(wslay_event_context_ptr ctx,
-                                  uint8_t* data, size_t len, int flags,
+                                  uint8_t* data,
+                                  size_t len,
+                                  int flags,
                                   void *user_data)
 {
+  (void)data;
+  (void)len;
+  (void)flags;
+  (void)user_data;
   wslay_event_set_error(ctx, WSLAY_ERR_CALLBACK_FAILURE);
   return -1;
 }
@@ -128,6 +145,10 @@ static ssize_t fail_send_callback(wslay_event_context_ptr ctx,
                                   const uint8_t *buf, size_t len, int flags,
                                   void* user_data)
 {
+  (void)buf;
+  (void)len;
+  (void)flags;
+  (void)user_data;
   wslay_event_set_error(ctx, WSLAY_ERR_CALLBACK_FAILURE);
   return -1;
 }
@@ -474,6 +495,8 @@ static void no_buffering_callback(wslay_event_context_ptr ctx,
                                   const struct wslay_event_on_msg_recv_arg *arg,
                                   void *user_data)
 {
+  (void)ctx;
+  (void)user_data;
   if(arg->opcode == WSLAY_PING) {
     CU_ASSERT(3 == arg->msg_length);
     CU_ASSERT(0 == memcmp("Foo", arg->msg, arg->msg_length));
@@ -512,6 +535,8 @@ text_rsv1_on_msg_recv_callback(wslay_event_context_ptr ctx,
                                const struct wslay_event_on_msg_recv_arg *arg,
                                void *user_data)
 {
+  (void)ctx;
+  (void)user_data;
   CU_ASSERT(WSLAY_TEXT_FRAME == arg->opcode);
   CU_ASSERT(WSLAY_RSV1_BIT == arg->rsv);
 }
@@ -658,6 +683,17 @@ void test_wslay_event_message_too_big(void)
   wslay_event_context_free(ctx);
 }
 
+void test_wslay_event_no_callbacks(void)
+{
+  wslay_event_context_ptr ctx;
+  struct wslay_event_callbacks callbacks;
+  memset(&callbacks, 0, sizeof(callbacks));
+  CU_ASSERT(0 == wslay_event_context_server_init(&ctx, &callbacks, NULL));
+  CU_ASSERT(0 == wslay_event_recv(ctx));
+  CU_ASSERT(0 == wslay_event_send(ctx));
+  wslay_event_context_free(ctx);
+}
+
 void test_wslay_event_config_set_allowed_rsv_bits(void)
 {
   wslay_event_context_ptr ctx;
@@ -683,3 +719,4 @@ void test_wslay_event_config_set_allowed_rsv_bits(void)
 
   wslay_event_context_free(ctx);
 }
+

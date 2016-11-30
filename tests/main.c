@@ -29,6 +29,7 @@
 #include "wslay_frame_test.h"
 #include "wslay_event_test.h"
 #include "wslay_queue_test.h"
+#include "wslay_stack_test.h"
 
 static int init_suite1(void)
 {
@@ -122,9 +123,15 @@ int main(void)
                    test_wslay_event_frame_too_big) ||
       !CU_add_test(pSuite, "wslay_event_message_too_big",
                    test_wslay_event_message_too_big) ||
+      !CU_add_test(pSuite, "test_wslay_event_no_callbacks",
+                   test_wslay_event_no_callbacks) ||
+      !CU_add_test(pSuite, "wslay_queue",
+                   test_wslay_queue) ||
+      !CU_add_test(pSuite, "wslay_stack",
+                   test_wslay_stack) ||
       !CU_add_test(pSuite, "wslay_event_config_set_allowed_rsv_bits",
                    test_wslay_event_config_set_allowed_rsv_bits) ||
-      !CU_add_test(pSuite, "wslay_queue", test_wslay_queue)) {
+      !CU_add_test(pSuite, "wslay_queue", test_wslay_queue) ) {
      CU_cleanup_registry();
      return CU_get_error();
    }
@@ -134,6 +141,7 @@ int main(void)
    CU_basic_run_tests();
    num_tests_failed = CU_get_number_of_tests_failed();
    CU_cleanup_registry();
+
    if (CU_get_error() == CUE_SUCCESS) {
      return (int)num_tests_failed;
    } else {

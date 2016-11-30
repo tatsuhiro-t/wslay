@@ -27,6 +27,7 @@
 #include <stddef.h>
 #include <string.h>
 #include <assert.h>
+#include <netinet/in.h>
 
 #include "wslay_net.h"
 
@@ -276,8 +277,8 @@ ssize_t wslay_frame_recv(wslay_frame_context_ptr ctx,
     ctx->ipayloadlen = ntoh64(ctx->ipayloadlen);
     ctx->ibufmark += ctx->ireqread;
     if(ctx->ireqread == 8) {
-      if(ctx->ipayloadlen < (1 << 16) ||
-         ctx->ipayloadlen & (1ull << 63)) {
+      if( (ctx->ipayloadlen < (1 << 16)) ||
+         (ctx->ipayloadlen & (1ull << 63)) ) {
         return WSLAY_ERR_PROTO;
       }
     } else if(ctx->ipayloadlen < 126) {
@@ -314,6 +315,7 @@ ssize_t wslay_frame_recv(wslay_frame_context_ptr ctx,
     readmark = ctx->ibufmark;
     readlimit = WSLAY_AVAIL_IBUF(ctx) < rempayloadlen ?
       ctx->ibuflimit : ctx->ibufmark+rempayloadlen;
+
     if(ctx->imask) {
       for(; ctx->ibufmark != readlimit;
           ++ctx->ibufmark, ++ctx->ipayloadoff) {
@@ -323,6 +325,7 @@ ssize_t wslay_frame_recv(wslay_frame_context_ptr ctx,
       ctx->ibufmark = readlimit;
       ctx->ipayloadoff += readlimit-readmark;
     }
+
     iocb->fin = ctx->iom.fin;
     iocb->rsv = ctx->iom.rsv;
     iocb->opcode = ctx->iom.opcode;
