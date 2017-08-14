@@ -14,7 +14,9 @@ include(CheckIncludeFile)
 include(TestBigEndian)
 check_include_file("arpa/inet.h" HAVE_ARPA_INET_H)
 check_include_file("netinet/in.h" HAVE_NETINET_IN_H)
+IF (NOT CYGWIN)
 check_include_file("winsock2.h" HAVE_WINSOCK2_H)
+ENDIF ()
 test_big_endian(WORDS_BIGENDIAN)
 
 configure_file(${INCLUDE_DIR}/wslay/wslayver.h.in
