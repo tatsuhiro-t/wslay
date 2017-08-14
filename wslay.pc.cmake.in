@@ -6,7 +6,7 @@ includedir=@INSTALL_INC_DIR@
 
 Name: wslay
 Description: The WebSocket library in C
-Version: @VERSION@
+Version: @PACKAGE_VERSION@
 
 Requires:
 Libs: -L${libdir} -L${sharedlibdir} -lwslay

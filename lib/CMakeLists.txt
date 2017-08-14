@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 2.8)
 # - include by master ../CMakeLists.txt
 # - embedding wslay library into other projects
 
-set(PACKAGE_VERSION "1.0.1-DEV")
+set(PACKAGE_VERSION "1.0.1-DEV" PARENT_SCOPE)
 set(INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/includes)
 set(GEN_INCLUDE_DIR ${CMAKE_CURRENT_BINARY_DIR}/includes)
 
