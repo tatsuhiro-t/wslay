@@ -10,7 +10,9 @@ if(NOT DEFINED CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type")
 endif()
 
-project(wslay)
+project(wslay C)
+
+set(VERSION "1.0.0") 
 
 option(WSLAY_CONFIGURE_INSTALL "Generate install target" ON)
 option(WSLAY_STATIC "Build static version of the library" ON)
@@ -35,4 +37,10 @@ if (WSLAY_CONFIGURE_INSTALL)
 	configure_file(wslay-config.cmake.in wslay-config.cmake @ONLY)
 	install(FILES ${CMAKE_CURRENT_BINARY_DIR}/wslay-config.cmake
 		DESTINATION ${INSTALL_CMAKE_DIR})
+		
+    set(INSTALL_LIB_DIR ${CMAKE_INSTALL_PREFIX}/lib)
+    set(INSTALL_INC_DIR ${CMAKE_INSTALL_PREFIX}/include)
+    configure_file( wslay.pc.cmake.in libwslay.pc @ONLY)
+    set(INSTALL_PKGCONFIG_DIR "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig" CACHE PATH "Installation directory for pkgconfig (.pc) files")
+    install(FILES ${CMAKE_BINARY_DIR}/libwslay.pc DESTINATION "${INSTALL_PKGCONFIG_DIR}")
 endif()
