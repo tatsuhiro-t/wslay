@@ -113,7 +113,7 @@ std::string base64(const std::string& src)
   base64_encode_ctx ctx;
   base64_encode_init(&ctx);
   int dstlen = BASE64_ENCODE_RAW_LENGTH(src.size());
-  uint8_t *dst = new uint8_t[dstlen];
+  char *dst = new char[dstlen];
   base64_encode_raw(dst, src.size(),
                     reinterpret_cast<const uint8_t*>(src.c_str()));
   std::string res(&dst[0], &dst[dstlen]);
