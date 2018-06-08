@@ -139,7 +139,7 @@ void base64(uint8_t *dst, const uint8_t *src, size_t src_length)
 {
   struct base64_encode_ctx ctx;
   base64_encode_init(&ctx);
-  base64_encode_raw(dst, src_length, src);
+  base64_encode_raw((char *)dst, src_length, src);
 }
 
 #define WS_GUID "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
