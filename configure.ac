@@ -21,15 +21,15 @@ dnl LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 dnl OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 dnl WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 AC_PREREQ(2.61)
-AC_INIT([wslay], [1.0.1-DEV], [t-tujikawa@users.sourceforge.net])
+AC_INIT([wslay], [1.1.0], [t-tujikawa@users.sourceforge.net])
 LT_PREREQ([2.2.6])
 LT_INIT()
 AC_CONFIG_AUX_DIR([.])
 dnl See versioning rule:
 dnl  http://www.gnu.org/software/libtool/manual/html_node/Updating-version-info.html
-AC_SUBST(LT_CURRENT, 0)
-AC_SUBST(LT_REVISION, 1)
-AC_SUBST(LT_AGE, 0)
+AC_SUBST(LT_CURRENT, 1)
+AC_SUBST(LT_REVISION, 0)
+AC_SUBST(LT_AGE, 1)
 
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
