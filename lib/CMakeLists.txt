@@ -8,14 +8,14 @@ set(PACKAGE_VERSION "1.0.1-DEV")
 set(INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/includes)
 set(GEN_INCLUDE_DIR ${CMAKE_CURRENT_BINARY_DIR}/includes)
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Werror -pedantic-errors -Wno-long-long")
-
 include(CheckIncludeFile)
 include(TestBigEndian)
 check_include_file("arpa/inet.h" HAVE_ARPA_INET_H)
 check_include_file("netinet/in.h" HAVE_NETINET_IN_H)
 check_include_file("winsock2.h" HAVE_WINSOCK2_H)
-test_big_endian(WORDS_BIGENDIAN)
+if (NOT CMAKE_C_COMPILER_ID STREQUAL MSVC)
+	test_big_endian(WORDS_BIGENDIAN)
+endif ()
 
 configure_file(${INCLUDE_DIR}/wslay/wslayver.h.in
 	${GEN_INCLUDE_DIR}/wslay/wslayver.h @ONLY)
@@ -47,6 +47,9 @@ if(WSLAY_SHARED)
 endif()
 
 foreach(target ${WSLAY_TARGETS})
+	if (CMAKE_C_COMPILER_ID STREQUAL GNU OR CMAKE_C_COMPILER_ID STREQUAL Clang)
+		target_compile_options(${target} PUBLIC -Wall -Wextra -Werror -pedantic-errors -Wno-long-long)
+	endif()
 	set_property(TARGET ${target} PROPERTY C_STANDARD 99)
 	target_include_directories(${target} PUBLIC
 		$<BUILD_INTERFACE:${INCLUDE_DIR}>

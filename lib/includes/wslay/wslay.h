@@ -95,6 +95,15 @@ enum wslay_io_flags {
  * sent. If there is an error, return -1. The return value 0 is also
  * treated an error by the library.
  */
+
+#ifdef _MSC_VER
+#ifdef  _WIN64
+typedef int64_t ssize_t;
+#else
+typedef int32_t ssize_t;
+#endif
+#endif
+
 typedef ssize_t (*wslay_frame_send_callback)(const uint8_t *data, size_t len,
                                              int flags, void *user_data);
 /*
