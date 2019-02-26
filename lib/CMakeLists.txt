@@ -46,7 +46,7 @@ endif()
 
 foreach(target ${WSLAY_TARGETS})
 	if (CMAKE_C_COMPILER_ID STREQUAL GNU OR CMAKE_C_COMPILER_ID STREQUAL Clang)
-		target_compile_options(${target} PUBLIC -Wall -Wextra -Werror -pedantic-errors -Wno-long-long)
+		target_compile_options(${target} PRIVATE -Wall -Wextra -Werror -pedantic-errors -Wno-long-long)
 	endif()
 	set_property(TARGET ${target} PROPERTY C_STANDARD 99)
 	target_include_directories(${target} PUBLIC
