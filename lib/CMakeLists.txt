@@ -13,9 +13,7 @@ include(TestBigEndian)
 check_include_file("arpa/inet.h" HAVE_ARPA_INET_H)
 check_include_file("netinet/in.h" HAVE_NETINET_IN_H)
 check_include_file("winsock2.h" HAVE_WINSOCK2_H)
-if (NOT CMAKE_C_COMPILER_ID STREQUAL MSVC)
-	test_big_endian(WORDS_BIGENDIAN)
-endif ()
+test_big_endian(WORDS_BIGENDIAN)
 
 configure_file(${INCLUDE_DIR}/wslay/wslayver.h.in
 	${GEN_INCLUDE_DIR}/wslay/wslayver.h @ONLY)
