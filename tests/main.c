@@ -92,6 +92,8 @@ int main(void)
                    test_wslay_frame_send_ctrl_frame_too_large_payload) ||
       !CU_add_test(pSuite, "wslay_event_send_fragmented_msg",
                    test_wslay_event_send_fragmented_msg) ||
+      !CU_add_test(pSuite, "wslay_event_send_fragmented_msg_empty_data",
+                   test_wslay_event_send_fragmented_msg_empty_data) ||
       !CU_add_test(pSuite, "wslay_event_send_fragmented_msg_with_ctrl",
                    test_wslay_event_send_fragmented_msg_with_ctrl) ||
       !CU_add_test(pSuite, "wslay_event_send_fragmented_msg_with_rsv1",
