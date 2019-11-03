@@ -885,7 +885,7 @@ int wslay_event_send(wslay_event_context_ptr ctx)
         r = ctx->omsg->read_callback(ctx, ctx->obuf, sizeof(ctx->obuf),
                                      &ctx->omsg->source,
                                      &eof, ctx->user_data);
-        if(r == 0) {
+        if(r == 0 && eof == 0) {
           break;
         } else if(r < 0) {
           ctx->write_enabled = 0;
