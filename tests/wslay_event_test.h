@@ -26,6 +26,7 @@
 #define WSLAY_EVENT_TEST_H
 
 void test_wslay_event_send_fragmented_msg(void);
+void test_wslay_event_send_fragmented_msg_empty_data(void);
 void test_wslay_event_send_fragmented_msg_with_ctrl(void);
 void test_wslay_event_send_fragmented_msg_with_rsv1(void);
 void test_wslay_event_send_msg_with_rsv1(void);
