@@ -4,30 +4,24 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>wslay_event_recv &#8212; wslay 1.1.0 documentation</title>
+    <title>wslay_event_recv &#8212; wslay 1.1.1 documentation</title>
     <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/default2.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../',
-        VERSION:     '1.1.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <link rel="stylesheet" type="text/css" href="../_static/default2.css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="wslay_event_send" href="wslay_event_send.html" />
     <link rel="prev" title="wslay_event_queue_msg, wslay_event_queue_msg_ex" href="wslay_event_queue_msg.html" /> 
-  </head>
-  <body>
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -40,7 +34,7 @@
         <li class="right" >
           <a href="wslay_event_queue_msg.html" title="wslay_event_queue_msg, wslay_event_queue_msg_ex"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">wslay 1.1.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">wslay 1.1.1 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../api_reference.html" accesskey="U">API Reference</a> &#187;</li> 
       </ul>
     </div>  
@@ -63,40 +57,40 @@ int <code class="descname">wslay_event_recv</code><span class="sig-paren">(</spa
 </div>
 <div class="section" id="description">
 <h2>DESCRIPTION<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
-<p><a class="reference internal" href="#c.wslay_event_recv" title="wslay_event_recv"><code class="xref c c-func docutils literal"><span class="pre">wslay_event_recv()</span></code></a> receives messages from peer.
-When receiving messages, it uses <a class="reference internal" href="wslay_event_context_server_init.html#c.wslay_event_recv_callback" title="wslay_event_recv_callback"><code class="xref c c-type docutils literal"><span class="pre">wslay_event_recv_callback</span></code></a>
+<p><a class="reference internal" href="#c.wslay_event_recv" title="wslay_event_recv"><code class="xref c c-func docutils literal notranslate"><span class="pre">wslay_event_recv()</span></code></a> receives messages from peer.
+When receiving messages, it uses <a class="reference internal" href="wslay_event_context_server_init.html#c.wslay_event_recv_callback" title="wslay_event_recv_callback"><code class="xref c c-type docutils literal notranslate"><span class="pre">wslay_event_recv_callback</span></code></a>
 function. Single call of this function receives multiple messages
-until <a class="reference internal" href="wslay_event_context_server_init.html#c.wslay_event_recv_callback" title="wslay_event_recv_callback"><code class="xref c c-type docutils literal"><span class="pre">wslay_event_recv_callback</span></code></a> function
-sets error code <code class="docutils literal"><span class="pre">WSLAY_ERR_WOULDBLOCK</span></code>.</p>
-<p><a class="reference internal" href="#c.wslay_event_recv" title="wslay_event_recv"><code class="xref c c-func docutils literal"><span class="pre">wslay_event_recv()</span></code></a> calls following callback functions for
-their own event (See <a class="reference internal" href="wslay_event_context_server_init.html#c.wslay_event_context_server_init" title="wslay_event_context_server_init"><code class="xref c c-func docutils literal"><span class="pre">wslay_event_context_server_init()</span></code></a> or
-<a class="reference internal" href="wslay_event_context_server_init.html#c.wslay_event_context_client_init" title="wslay_event_context_client_init"><code class="xref c c-func docutils literal"><span class="pre">wslay_event_context_client_init()</span></code></a> for the details of each
+until <a class="reference internal" href="wslay_event_context_server_init.html#c.wslay_event_recv_callback" title="wslay_event_recv_callback"><code class="xref c c-type docutils literal notranslate"><span class="pre">wslay_event_recv_callback</span></code></a> function
+sets error code <code class="docutils literal notranslate"><span class="pre">WSLAY_ERR_WOULDBLOCK</span></code>.</p>
+<p><a class="reference internal" href="#c.wslay_event_recv" title="wslay_event_recv"><code class="xref c c-func docutils literal notranslate"><span class="pre">wslay_event_recv()</span></code></a> calls following callback functions for
+their own event (See <a class="reference internal" href="wslay_event_context_server_init.html#c.wslay_event_context_server_init" title="wslay_event_context_server_init"><code class="xref c c-func docutils literal notranslate"><span class="pre">wslay_event_context_server_init()</span></code></a> or
+<a class="reference internal" href="wslay_event_context_server_init.html#c.wslay_event_context_client_init" title="wslay_event_context_client_init"><code class="xref c c-func docutils literal notranslate"><span class="pre">wslay_event_context_client_init()</span></code></a> for the details of each
 callbacks).</p>
 <dl class="docutils">
-<dt><a class="reference internal" href="wslay_event_context_server_init.html#c.wslay_event_on_frame_recv_start_callback" title="wslay_event_on_frame_recv_start_callback"><code class="xref c c-type docutils literal"><span class="pre">wslay_event_on_frame_recv_start_callback</span></code></a></dt>
+<dt><a class="reference internal" href="wslay_event_context_server_init.html#c.wslay_event_on_frame_recv_start_callback" title="wslay_event_on_frame_recv_start_callback"><code class="xref c c-type docutils literal notranslate"><span class="pre">wslay_event_on_frame_recv_start_callback</span></code></a></dt>
 <dd>Called when a new frame starts to be received.</dd>
-<dt><a class="reference internal" href="wslay_event_context_server_init.html#c.wslay_event_on_frame_recv_start_callback" title="wslay_event_on_frame_recv_start_callback"><code class="xref c c-type docutils literal"><span class="pre">wslay_event_on_frame_recv_start_callback</span></code></a></dt>
+<dt><a class="reference internal" href="wslay_event_context_server_init.html#c.wslay_event_on_frame_recv_start_callback" title="wslay_event_on_frame_recv_start_callback"><code class="xref c c-type docutils literal notranslate"><span class="pre">wslay_event_on_frame_recv_start_callback</span></code></a></dt>
 <dd>Called when a new frame starts to be received.</dd>
-<dt><a class="reference internal" href="wslay_event_context_server_init.html#c.wslay_event_on_frame_recv_chunk_callback" title="wslay_event_on_frame_recv_chunk_callback"><code class="xref c c-type docutils literal"><span class="pre">wslay_event_on_frame_recv_chunk_callback</span></code></a></dt>
+<dt><a class="reference internal" href="wslay_event_context_server_init.html#c.wslay_event_on_frame_recv_chunk_callback" title="wslay_event_on_frame_recv_chunk_callback"><code class="xref c c-type docutils literal notranslate"><span class="pre">wslay_event_on_frame_recv_chunk_callback</span></code></a></dt>
 <dd>Called when a chunk of frame payload is received.</dd>
-<dt><a class="reference internal" href="wslay_event_context_server_init.html#c.wslay_event_on_frame_recv_end_callback" title="wslay_event_on_frame_recv_end_callback"><code class="xref c c-type docutils literal"><span class="pre">wslay_event_on_frame_recv_end_callback</span></code></a></dt>
+<dt><a class="reference internal" href="wslay_event_context_server_init.html#c.wslay_event_on_frame_recv_end_callback" title="wslay_event_on_frame_recv_end_callback"><code class="xref c c-type docutils literal notranslate"><span class="pre">wslay_event_on_frame_recv_end_callback</span></code></a></dt>
 <dd>Called when a frame is completely received.</dd>
-<dt><a class="reference internal" href="wslay_event_context_server_init.html#c.wslay_event_on_msg_recv_callback" title="wslay_event_on_msg_recv_callback"><code class="xref c c-type docutils literal"><span class="pre">wslay_event_on_msg_recv_callback</span></code></a></dt>
+<dt><a class="reference internal" href="wslay_event_context_server_init.html#c.wslay_event_on_msg_recv_callback" title="wslay_event_on_msg_recv_callback"><code class="xref c c-type docutils literal notranslate"><span class="pre">wslay_event_on_msg_recv_callback</span></code></a></dt>
 <dd>Called when a message is completely received.</dd>
 </dl>
 <p>When close control frame is received, this function automatically queues
 close control frame.
-Also this function calls <code class="xref c c-func docutils literal"><span class="pre">wslay_event_set_read_enabled()</span></code>
+Also this function calls <code class="xref c c-func docutils literal notranslate"><span class="pre">wslay_event_set_read_enabled()</span></code>
 with second argument 0 to disable further read from peer.</p>
 <p>When ping control frame is received, this function automatically queues
 pong control frame.</p>
 <p>In case of a fatal error which leads to negative return code,
-this function calls <code class="xref c c-func docutils literal"><span class="pre">wslay_event_set_read_enabled()</span></code> with second argument
+this function calls <code class="xref c c-func docutils literal notranslate"><span class="pre">wslay_event_set_read_enabled()</span></code> with second argument
 0 to disable further read from peer.</p>
 </div>
 <div class="section" id="return-value">
 <h2>RETURN VALUE<a class="headerlink" href="#return-value" title="Permalink to this headline">¶</a></h2>
-<p><a class="reference internal" href="#c.wslay_event_recv" title="wslay_event_recv"><code class="xref c c-func docutils literal"><span class="pre">wslay_event_recv()</span></code></a> returns 0 if it succeeds, or one of the following
+<p><a class="reference internal" href="#c.wslay_event_recv" title="wslay_event_recv"><code class="xref c c-func docutils literal notranslate"><span class="pre">wslay_event_recv()</span></code></a> returns 0 if it succeeds, or one of the following
 negative error codes:</p>
 <dl class="docutils">
 <dt><strong>WSLAY_ERR_CALLBACK_FAILURE</strong></dt>
@@ -105,11 +99,11 @@ negative error codes:</p>
 <dd>Out of memory.</dd>
 </dl>
 <p>When negative error code is returned, application must not make any further
-call of <a class="reference internal" href="#c.wslay_event_recv" title="wslay_event_recv"><code class="xref c c-func docutils literal"><span class="pre">wslay_event_recv()</span></code></a> and must close WebSocket connection.</p>
+call of <a class="reference internal" href="#c.wslay_event_recv" title="wslay_event_recv"><code class="xref c c-func docutils literal notranslate"><span class="pre">wslay_event_recv()</span></code></a> and must close WebSocket connection.</p>
 </div>
 <div class="section" id="see-also">
 <h2>SEE ALSO<a class="headerlink" href="#see-also" title="Permalink to this headline">¶</a></h2>
-<p><code class="xref c c-func docutils literal"><span class="pre">wslay_event_set_read_enabled()</span></code></p>
+<p><code class="xref c c-func docutils literal notranslate"><span class="pre">wslay_event_set_read_enabled()</span></code></p>
 </div>
 </div>
 
@@ -119,7 +113,7 @@ call of <a class="reference internal" href="#c.wslay_event_recv" title="wslay_ev
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <h3><a href="../index.html">Table of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">wslay_event_recv</a><ul>
 <li><a class="reference internal" href="#synopsis">SYNOPSIS</a></li>
@@ -145,12 +139,14 @@ call of <a class="reference internal" href="#c.wslay_event_recv" title="wslay_ev
    </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -169,13 +165,13 @@ call of <a class="reference internal" href="#c.wslay_event_recv" title="wslay_ev
         <li class="right" >
           <a href="wslay_event_queue_msg.html" title="wslay_event_queue_msg, wslay_event_queue_msg_ex"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">wslay 1.1.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">wslay 1.1.1 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../api_reference.html" >API Reference</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2012, 2015, Tatsuhiro Tsujikawa.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
     </div>
   </body>
 </html>

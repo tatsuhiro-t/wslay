@@ -4,30 +4,24 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Tutorial &#8212; wslay 1.1.0 documentation</title>
+    <title>Tutorial &#8212; wslay 1.1.1 documentation</title>
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="_static/default2.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '1.1.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <link rel="stylesheet" type="text/css" href="_static/default2.css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="API Reference" href="api_reference.html" />
     <link rel="prev" title="Wslay - The WebSocket library" href="index.html" /> 
-  </head>
-  <body>
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -40,7 +34,7 @@
         <li class="right" >
           <a href="index.html" title="Wslay - The WebSocket library"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">wslay 1.1.0 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">wslay 1.1.1 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -55,7 +49,7 @@
 <h2>WebSocket Echo Server<a class="headerlink" href="#websocket-echo-server" title="Permalink to this headline">¶</a></h2>
 <p>This section describes briefly how to make WebSocket echo server with
 Wslay library in C.
-The complete source code is located at <code class="file docutils literal"><span class="pre">examples/fork-echoserv.c</span></code>.</p>
+The complete source code is located at <code class="file docutils literal notranslate"><span class="pre">examples/fork-echoserv.c</span></code>.</p>
 <p>This WebSocket echo server listens on port given in the command-line.
 When the incoming connection from the client is accepted,
 it forks another process.
@@ -64,7 +58,7 @@ The child process communicates with
 the client (WebSocket HTTP handshake and then WebSocket data transfer).</p>
 <p>For the purpose of this tutorial, we focus on the use of Wslay library.
 The primary function to communicate with WebSocket client is
-<a class="reference internal" href="#c.communicate" title="communicate"><code class="xref c c-func docutils literal"><span class="pre">communicate()</span></code></a> function.</p>
+<a class="reference internal" href="#c.communicate" title="communicate"><code class="xref c c-func docutils literal notranslate"><span class="pre">communicate()</span></code></a> function.</p>
 <dl class="function">
 <dt id="c.communicate">
 int <code class="descname">communicate</code><span class="sig-paren">(</span>int<em>&nbsp;fd</em><span class="sig-paren">)</span><a class="headerlink" href="#c.communicate" title="Permalink to this definition">¶</a></dt>
@@ -75,13 +69,13 @@ and WebSocket data transfer until close handshake is done or an
 error occurs. <em>fd</em> is the file descriptor of the connection to the
 client. This function returns 0 if it succeeds, or returns 0.</p>
 <p>Let’s look into this function. First we perform HTTP handshake.
-It will be done with <code class="xref c c-func docutils literal"><span class="pre">http_handshake()</span></code> function.
+It will be done with <code class="xref c c-func docutils literal notranslate"><span class="pre">http_handshake()</span></code> function.
 When it succeeds, we make the file descriptor of the connection non-block.
-You may set other socket options like <code class="docutils literal"><span class="pre">TCP_NODELAY</span></code>.
+You may set other socket options like <code class="docutils literal notranslate"><span class="pre">TCP_NODELAY</span></code>.
 At this point, we can start WebSocket data transfer.</p>
 <p>Now establish callbacks for wslay event-based API.
 We use 3 callbacks in this example:</p>
-<div class="highlight-c"><div class="highlight"><pre><span></span><span class="k">struct</span> <span class="n">wslay_event_callbacks</span> <span class="n">callbacks</span> <span class="o">=</span> <span class="p">{</span>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span> <span class="n">wslay_event_callbacks</span> <span class="n">callbacks</span> <span class="o">=</span> <span class="p">{</span>
   <span class="n">recv_callback</span><span class="p">,</span>
   <span class="n">send_callback</span><span class="p">,</span>
   <span class="nb">NULL</span><span class="p">,</span>
@@ -92,10 +86,10 @@ We use 3 callbacks in this example:</p>
 <span class="p">};</span>
 </pre></div>
 </div>
-<p><code class="docutils literal"><span class="pre">recv_callback</span></code> is invoked by <a class="reference internal" href="man/wslay_event_recv.html#c.wslay_event_recv" title="wslay_event_recv"><code class="xref c c-func docutils literal"><span class="pre">wslay_event_recv()</span></code></a>
+<p><code class="docutils literal notranslate"><span class="pre">recv_callback</span></code> is invoked by <a class="reference internal" href="man/wslay_event_recv.html#c.wslay_event_recv" title="wslay_event_recv"><code class="xref c c-func docutils literal notranslate"><span class="pre">wslay_event_recv()</span></code></a>
 when it wants to read more data from the client.
 It looks like this:</p>
-<div class="highlight-c"><div class="highlight"><pre><span></span><span class="kt">ssize_t</span> <span class="nf">recv_callback</span><span class="p">(</span><span class="n">wslay_event_context_ptr</span> <span class="n">ctx</span><span class="p">,</span> <span class="kt">uint8_t</span> <span class="o">*</span><span class="n">buf</span><span class="p">,</span> <span class="kt">size_t</span> <span class="n">len</span><span class="p">,</span>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">ssize_t</span> <span class="nf">recv_callback</span><span class="p">(</span><span class="n">wslay_event_context_ptr</span> <span class="n">ctx</span><span class="p">,</span> <span class="kt">uint8_t</span> <span class="o">*</span><span class="n">buf</span><span class="p">,</span> <span class="kt">size_t</span> <span class="n">len</span><span class="p">,</span>
                       <span class="kt">void</span> <span class="o">*</span><span class="n">user_data</span><span class="p">)</span>
 <span class="p">{</span>
   <span class="k">struct</span> <span class="n">Session</span> <span class="o">*</span><span class="n">session</span> <span class="o">=</span> <span class="p">(</span><span class="k">struct</span> <span class="n">Session</span><span class="o">*</span><span class="p">)</span><span class="n">user_data</span><span class="p">;</span>
@@ -116,18 +110,18 @@ It looks like this:</p>
 <span class="p">}</span>
 </pre></div>
 </div>
-<p>If <code class="xref c c-func docutils literal"><span class="pre">recv()</span></code> failed with <code class="docutils literal"><span class="pre">EAGAIN</span></code> or <code class="docutils literal"><span class="pre">EWOULDBLOCK</span></code>
+<p>If <code class="xref c c-func docutils literal notranslate"><span class="pre">recv()</span></code> failed with <code class="docutils literal notranslate"><span class="pre">EAGAIN</span></code> or <code class="docutils literal notranslate"><span class="pre">EWOULDBLOCK</span></code>
 (notice that we made socket
-non-block), we set <code class="docutils literal"><span class="pre">WSLAY_ERR_WOULDBLOCK</span></code> using
-<a class="reference internal" href="man/wslay_event_set_error.html#c.wslay_event_set_error" title="wslay_event_set_error"><code class="xref c c-func docutils literal"><span class="pre">wslay_event_set_error()</span></code></a>
+non-block), we set <code class="docutils literal notranslate"><span class="pre">WSLAY_ERR_WOULDBLOCK</span></code> using
+<a class="reference internal" href="man/wslay_event_set_error.html#c.wslay_event_set_error" title="wslay_event_set_error"><code class="xref c c-func docutils literal notranslate"><span class="pre">wslay_event_set_error()</span></code></a>
 to tell the wslay library to stop reading from the socket.
-If it failed with other reasons, we set <code class="docutils literal"><span class="pre">WSLAY_ERR_CALLBACK_FAILED</span></code>,
-and it will make <a class="reference internal" href="man/wslay_event_recv.html#c.wslay_event_recv" title="wslay_event_recv"><code class="xref c c-func docutils literal"><span class="pre">wslay_event_recv()</span></code></a> fail.
+If it failed with other reasons, we set <code class="docutils literal notranslate"><span class="pre">WSLAY_ERR_CALLBACK_FAILED</span></code>,
+and it will make <a class="reference internal" href="man/wslay_event_recv.html#c.wslay_event_recv" title="wslay_event_recv"><code class="xref c c-func docutils literal notranslate"><span class="pre">wslay_event_recv()</span></code></a> fail.
 Notice that reading EOF here is unexpected: so it is also treated as an error.</p>
-<p><code class="docutils literal"><span class="pre">send_callback</span></code> is invoked by <a class="reference internal" href="man/wslay_event_send.html#c.wslay_event_send" title="wslay_event_send"><code class="xref c c-func docutils literal"><span class="pre">wslay_event_send()</span></code></a>
+<p><code class="docutils literal notranslate"><span class="pre">send_callback</span></code> is invoked by <a class="reference internal" href="man/wslay_event_send.html#c.wslay_event_send" title="wslay_event_send"><code class="xref c c-func docutils literal notranslate"><span class="pre">wslay_event_send()</span></code></a>
 when it wants to send data to the client.
 It looks like this:</p>
-<div class="highlight-c"><div class="highlight"><pre><span></span><span class="kt">ssize_t</span> <span class="nf">send_callback</span><span class="p">(</span><span class="n">wslay_event_context_ptr</span> <span class="n">ctx</span><span class="p">,</span>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">ssize_t</span> <span class="nf">send_callback</span><span class="p">(</span><span class="n">wslay_event_context_ptr</span> <span class="n">ctx</span><span class="p">,</span>
                       <span class="k">const</span> <span class="kt">uint8_t</span> <span class="o">*</span><span class="n">data</span><span class="p">,</span> <span class="kt">size_t</span> <span class="n">len</span><span class="p">,</span> <span class="kt">void</span> <span class="o">*</span><span class="n">user_data</span><span class="p">)</span>
 <span class="p">{</span>
   <span class="k">struct</span> <span class="n">Session</span> <span class="o">*</span><span class="n">session</span> <span class="o">=</span> <span class="p">(</span><span class="k">struct</span> <span class="n">Session</span><span class="o">*</span><span class="p">)</span><span class="n">user_data</span><span class="p">;</span>
@@ -151,12 +145,12 @@ It looks like this:</p>
 <span class="p">}</span>
 </pre></div>
 </div>
-<p>Similar to <code class="docutils literal"><span class="pre">recv_callback</span></code>, we set error code using
-<a class="reference internal" href="man/wslay_event_set_error.html#c.wslay_event_set_error" title="wslay_event_set_error"><code class="xref c c-func docutils literal"><span class="pre">wslay_event_set_error()</span></code></a> depending on the <code class="docutils literal"><span class="pre">errno</span></code> value.</p>
-<p><code class="docutils literal"><span class="pre">on_msg_recv_callback</span></code> is invoked by <a class="reference internal" href="man/wslay_event_recv.html#c.wslay_event_recv" title="wslay_event_recv"><code class="xref c c-func docutils literal"><span class="pre">wslay_event_recv()</span></code></a>
+<p>Similar to <code class="docutils literal notranslate"><span class="pre">recv_callback</span></code>, we set error code using
+<a class="reference internal" href="man/wslay_event_set_error.html#c.wslay_event_set_error" title="wslay_event_set_error"><code class="xref c c-func docutils literal notranslate"><span class="pre">wslay_event_set_error()</span></code></a> depending on the <code class="docutils literal notranslate"><span class="pre">errno</span></code> value.</p>
+<p><code class="docutils literal notranslate"><span class="pre">on_msg_recv_callback</span></code> is invoked by <a class="reference internal" href="man/wslay_event_recv.html#c.wslay_event_recv" title="wslay_event_recv"><code class="xref c c-func docutils literal notranslate"><span class="pre">wslay_event_recv()</span></code></a>
 when it have received a message completely.
 It looks like this:</p>
-<div class="highlight-c"><div class="highlight"><pre><span></span><span class="kt">void</span> <span class="nf">on_msg_recv_callback</span><span class="p">(</span><span class="n">wslay_event_context_ptr</span> <span class="n">ctx</span><span class="p">,</span>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">void</span> <span class="nf">on_msg_recv_callback</span><span class="p">(</span><span class="n">wslay_event_context_ptr</span> <span class="n">ctx</span><span class="p">,</span>
                           <span class="k">const</span> <span class="k">struct</span> <span class="n">wslay_event_on_msg_recv_arg</span> <span class="o">*</span><span class="n">arg</span><span class="p">,</span>
                           <span class="kt">void</span> <span class="o">*</span><span class="n">user_data</span><span class="p">)</span>
 <span class="p">{</span>
@@ -171,21 +165,21 @@ It looks like this:</p>
 </pre></div>
 </div>
 <p>Here, since we are building echo server, we just echo back non-control
-frames to the client. <code class="docutils literal"><span class="pre">arg-&gt;opcode</span></code> is a opcode of the received
-message.  <code class="docutils literal"><span class="pre">arg-&gt;msg</span></code> contains received message data with length
-<code class="docutils literal"><span class="pre">arg-&gt;msg_length</span></code>.
-<a class="reference internal" href="man/wslay_event_queue_msg.html#c.wslay_event_queue_msg" title="wslay_event_queue_msg"><code class="xref c c-func docutils literal"><span class="pre">wslay_event_queue_msg()</span></code></a> queues message to the client.</p>
+frames to the client. <code class="docutils literal notranslate"><span class="pre">arg-&gt;opcode</span></code> is a opcode of the received
+message.  <code class="docutils literal notranslate"><span class="pre">arg-&gt;msg</span></code> contains received message data with length
+<code class="docutils literal notranslate"><span class="pre">arg-&gt;msg_length</span></code>.
+<a class="reference internal" href="man/wslay_event_queue_msg.html#c.wslay_event_queue_msg" title="wslay_event_queue_msg"><code class="xref c c-func docutils literal notranslate"><span class="pre">wslay_event_queue_msg()</span></code></a> queues message to the client.</p>
 <p>Then initialize wslay event-based API context:</p>
-<div class="highlight-c"><div class="highlight"><pre><span></span><span class="n">wslay_event_context_server_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">ctx</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">callbacks</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">session</span><span class="p">);</span>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">wslay_event_context_server_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">ctx</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">callbacks</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">session</span><span class="p">);</span>
 </pre></div>
 </div>
 <p>At this point, we finished initialization of Wslay library and all we have to
 do is run event-loop and communicate with the client.
 For event-loop we need event notification mechanism, here we use
-standard <code class="xref c c-func docutils literal"><span class="pre">poll()</span></code>. Since we don’t have any message to send client,
+standard <code class="xref c c-func docutils literal notranslate"><span class="pre">poll()</span></code>. Since we don’t have any message to send client,
 first we query read event only.</p>
 <p>The event loop looks like this:</p>
-<div class="highlight-c"><div class="highlight"><pre><span></span><span class="cm">/*</span>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cm">/*</span>
 <span class="cm"> * Event loop: basically loop until both wslay_event_want_read(ctx)</span>
 <span class="cm"> * and wslay_event_want_write(ctx) return 0.</span>
 <span class="cm"> */</span>
@@ -220,15 +214,15 @@ first we query read event only.</p>
 <span class="k">return</span> <span class="n">res</span><span class="p">;</span>
 </pre></div>
 </div>
-<p>Basically, we just loop until both <a class="reference internal" href="man/wslay_event_want_read.html#c.wslay_event_want_read" title="wslay_event_want_read"><code class="xref c c-func docutils literal"><span class="pre">wslay_event_want_read()</span></code></a> and
-<a class="reference internal" href="man/wslay_event_want_write.html#c.wslay_event_want_write" title="wslay_event_want_write"><code class="xref c c-func docutils literal"><span class="pre">wslay_event_want_write()</span></code></a> return 0.
-Also if either <a class="reference internal" href="man/wslay_event_recv.html#c.wslay_event_recv" title="wslay_event_recv"><code class="xref c c-func docutils literal"><span class="pre">wslay_event_recv()</span></code></a> or <a class="reference internal" href="man/wslay_event_send.html#c.wslay_event_send" title="wslay_event_send"><code class="xref c c-func docutils literal"><span class="pre">wslay_event_send()</span></code></a>
+<p>Basically, we just loop until both <a class="reference internal" href="man/wslay_event_want_read.html#c.wslay_event_want_read" title="wslay_event_want_read"><code class="xref c c-func docutils literal notranslate"><span class="pre">wslay_event_want_read()</span></code></a> and
+<a class="reference internal" href="man/wslay_event_want_write.html#c.wslay_event_want_write" title="wslay_event_want_write"><code class="xref c c-func docutils literal notranslate"><span class="pre">wslay_event_want_write()</span></code></a> return 0.
+Also if either <a class="reference internal" href="man/wslay_event_recv.html#c.wslay_event_recv" title="wslay_event_recv"><code class="xref c c-func docutils literal notranslate"><span class="pre">wslay_event_recv()</span></code></a> or <a class="reference internal" href="man/wslay_event_send.html#c.wslay_event_send" title="wslay_event_send"><code class="xref c c-func docutils literal notranslate"><span class="pre">wslay_event_send()</span></code></a>
 return non-zero value, we exit the loop.</p>
-<p>If there is data to read, call <a class="reference internal" href="man/wslay_event_recv.html#c.wslay_event_recv" title="wslay_event_recv"><code class="xref c c-func docutils literal"><span class="pre">wslay_event_recv()</span></code></a>.
+<p>If there is data to read, call <a class="reference internal" href="man/wslay_event_recv.html#c.wslay_event_recv" title="wslay_event_recv"><code class="xref c c-func docutils literal notranslate"><span class="pre">wslay_event_recv()</span></code></a>.
 If there is data to write and writing will not block, call
-<a class="reference internal" href="man/wslay_event_send.html#c.wslay_event_send" title="wslay_event_send"><code class="xref c c-func docutils literal"><span class="pre">wslay_event_send()</span></code></a>.</p>
+<a class="reference internal" href="man/wslay_event_send.html#c.wslay_event_send" title="wslay_event_send"><code class="xref c c-func docutils literal notranslate"><span class="pre">wslay_event_send()</span></code></a>.</p>
 <p>After exiting the event loop, we just close the connection,
-most likely, using <code class="docutils literal"><span class="pre">shutdown(fd,</span> <span class="pre">SHUT_WR)</span></code> and <code class="docutils literal"><span class="pre">close(fd)</span></code>.</p>
+most likely, using <code class="docutils literal notranslate"><span class="pre">shutdown(fd,</span> <span class="pre">SHUT_WR)</span></code> and <code class="docutils literal notranslate"><span class="pre">close(fd)</span></code>.</p>
 </div>
 </div>
 
@@ -238,7 +232,7 @@ most likely, using <code class="docutils literal"><span class="pre">shutdown(fd,
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-  <h3><a href="index.html">Table Of Contents</a></h3>
+  <h3><a href="index.html">Table of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Tutorial</a><ul>
 <li><a class="reference internal" href="#websocket-echo-server">WebSocket Echo Server</a></li>
@@ -261,12 +255,14 @@ most likely, using <code class="docutils literal"><span class="pre">shutdown(fd,
    </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -285,12 +281,12 @@ most likely, using <code class="docutils literal"><span class="pre">shutdown(fd,
         <li class="right" >
           <a href="index.html" title="Wslay - The WebSocket library"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">wslay 1.1.0 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">wslay 1.1.1 documentation</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2012, 2015, Tatsuhiro Tsujikawa.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
     </div>
   </body>
 </html>
