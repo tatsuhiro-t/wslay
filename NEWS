@@ -1,3 +1,21 @@
+wslay 1.1.1
+===========
+
+Release Note
+------------
+
+This release fixes the bug that eof is not evaluated after the
+invocation of read_callback.
+
+Changes
+-------
+
+* Check for eof when read_callback returns 0 (GH-47)
+
+  Patch from Robert Bragg
+
+
+
 wslay 1.1.0
 ===========
 
