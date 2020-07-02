@@ -76,7 +76,7 @@ ssize_t wslay_frame_send(wslay_frame_context_ptr ctx,
       *hdptr |= iocb->payload_length;
       ++hdptr;
     } else if(iocb->payload_length < (1 << 16)) {
-      uint16_t len = htons(iocb->payload_length);
+      uint16_t len = htons((uint16_t) iocb->payload_length);
       *hdptr |= 126;
       ++hdptr;
       memcpy(hdptr, &len, 2);

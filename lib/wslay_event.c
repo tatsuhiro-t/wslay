@@ -209,6 +209,9 @@ static int wslay_event_omsg_non_fragmented_init
 (struct wslay_event_omsg **m, uint8_t opcode, uint8_t rsv,
  const uint8_t *msg, size_t msg_length)
 {
+  if (!msg) {
+    return WSLAY_ERR_INVALID_ARGUMENT;
+  }
   *m = (struct wslay_event_omsg*)malloc(sizeof(struct wslay_event_omsg));
   if(!*m) {
     return WSLAY_ERR_NOMEM;
@@ -629,7 +632,7 @@ int wslay_event_recv(wslay_event_context_ptr ctx)
         if(!wslay_event_config_get_no_buffering(ctx) ||
            wslay_is_ctrl_frame(iocb.opcode)) {
           if((r = wslay_event_imsg_append_chunk(ctx->imsg,
-                                                iocb.payload_length)) != 0) {
+                                                (size_t) iocb.payload_length)) != 0) {
             ctx->read_enabled = 0;
             return r;
           }
@@ -666,7 +669,7 @@ int wslay_event_recv(wslay_event_context_ptr ctx)
            wslay_is_ctrl_frame(iocb.opcode)) {
           struct wslay_event_byte_chunk *chunk;
           chunk = wslay_queue_tail(ctx->imsg->chunks);
-          wslay_event_byte_chunk_copy(chunk, ctx->ipayloadoff,
+          wslay_event_byte_chunk_copy(chunk, (size_t) ctx->ipayloadoff,
                                       iocb.data, iocb.data_length);
         }
         ctx->ipayloadoff += iocb.data_length;
@@ -705,6 +708,9 @@ int wslay_event_recv(wslay_event_context_ptr ctx)
               const uint8_t *reason;
               size_t reason_length;
               if(ctx->imsg->msg_length >= 2) {
+                if (!msg) {
+                  return WSLAY_ERR_INVALID_ARGUMENT;
+                }
                 memcpy(&status_code, msg, 2);
                 status_code = ntohs(status_code);
                 if(!wslay_event_is_valid_status_code(status_code)) {
@@ -847,7 +853,7 @@ int wslay_event_send(wslay_event_context_ptr ctx)
       iocb.rsv = ctx->omsg->rsv;
       iocb.mask = ctx->server^1;
       iocb.data = ctx->omsg->data+ctx->opayloadoff;
-      iocb.data_length = ctx->opayloadlen-ctx->opayloadoff;
+      iocb.data_length = (size_t) (ctx->opayloadlen-ctx->opayloadoff);
       iocb.payload_length = ctx->opayloadlen;
       r = wslay_frame_send(ctx->frame_ctx, &iocb);
       if(r >= 0) {
