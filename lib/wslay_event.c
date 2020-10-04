@@ -567,7 +567,8 @@ int wslay_event_recv(wslay_event_context_ptr ctx)
 {
   struct wslay_frame_iocb iocb;
   ssize_t r;
-  while(ctx->read_enabled) {
+  int stop = 0;
+  while(ctx->read_enabled && !stop) {
     memset(&iocb, 0, sizeof(iocb));
     r = wslay_frame_recv(ctx->frame_ctx, &iocb);
     if(r >= 0) {
@@ -748,7 +749,7 @@ int wslay_event_recv(wslay_event_context_ptr ctx)
               arg.msg_length = msg_length;
               arg.status_code = status_code;
               ctx->error = 0;
-              ctx->callbacks.on_msg_recv_callback(ctx, &arg, ctx->user_data);
+              stop = ctx->callbacks.on_msg_recv_callback(ctx, &arg, ctx->user_data);
             }
             free(msg);
           }

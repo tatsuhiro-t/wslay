@@ -269,8 +269,12 @@ struct wslay_event_on_msg_recv_arg {
 /*
  * Callback function invoked by wslay_event_recv() when a message is
  * completely received.
+ *
+ * Return 0 if you want to continue to receive messages. Non-zero
+ * value will stop message processing and will cause
+ * wslay_event_recv() to return.
  */
-typedef void (*wslay_event_on_msg_recv_callback)
+typedef int (*wslay_event_on_msg_recv_callback)
 (wslay_event_context_ptr ctx,
  const struct wslay_event_on_msg_recv_arg *arg, void *user_data);
 
