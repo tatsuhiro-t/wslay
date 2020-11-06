@@ -90,7 +90,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;WSLAY_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\lib\includes\;C:\Program Files (x86)\Visual Leak Detector\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\lib\includes\;C:\Program Files (x86)\Visual Leak Detector\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -106,7 +106,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;WSLAY_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\lib\includes\;C:\Program Files (x86)\Visual Leak Detector\include;;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\lib\includes\;C:\Program Files (x86)\Visual Leak Detector\include;;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -124,7 +124,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;WSLAY_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\lib\includes\;C:\Program Files (x86)\Visual Leak Detector\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\lib\includes\;C:\Program Files (x86)\Visual Leak Detector\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -147,7 +147,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;WSLAY_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\lib\includes\;C:\Program Files (x86)\Visual Leak Detector\include;C:\Users\tshel\source\repos\wslay\lib\includes\.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\lib\includes\;C:\Program Files (x86)\Visual Leak Detector\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -162,18 +162,18 @@
     </ProjectReference>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\lib\wslay_event.h" />
-    <ClInclude Include="..\lib\wslay_frame.h" />
-    <ClInclude Include="..\lib\wslay_net.h" />
-    <ClInclude Include="..\lib\wslay_queue.h" />
-    <ClInclude Include="..\lib\wslay_stack.h" />
+    <ClInclude Include="..\..\lib\wslay_event.h" />
+    <ClInclude Include="..\..\lib\wslay_frame.h" />
+    <ClInclude Include="..\..\lib\wslay_net.h" />
+    <ClInclude Include="..\..\lib\wslay_queue.h" />
+    <ClInclude Include="..\..\lib\wslay_stack.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\lib\wslay_event.c" />
-    <ClCompile Include="..\lib\wslay_frame.c" />
-    <ClCompile Include="..\lib\wslay_net.c" />
-    <ClCompile Include="..\lib\wslay_queue.c" />
-    <ClCompile Include="..\lib\wslay_stack.c" />
+    <ClCompile Include="..\..\lib\wslay_event.c" />
+    <ClCompile Include="..\..\lib\wslay_frame.c" />
+    <ClCompile Include="..\..\lib\wslay_net.c" />
+    <ClCompile Include="..\..\lib\wslay_queue.c" />
+    <ClCompile Include="..\..\lib\wslay_stack.c" />
     <ClCompile Include="dllmain.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
