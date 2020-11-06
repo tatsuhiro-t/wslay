@@ -25,6 +25,7 @@
 #ifndef WSLAY_H
 #define WSLAY_H
 
+
 #ifdef  __cplusplus
 extern "C" {
 #endif
@@ -33,6 +34,21 @@ extern "C" {
 #include <stdlib.h>
 #include <sys/types.h>
 
+#ifdef WIN32
+
+#ifndef ssize_t
+#define ssize_t signed long
+#endif
+
+#include <WinSock2.h>
+
+#define DLL_EXPORT	__declspec(dllexport)
+
+#else
+
+#define DLL_EXPORT	
+
+#endif
 
 /*
  * wslay/wslayver.h is generated from wslay/wslayver.h.in by
@@ -40,7 +56,6 @@ extern "C" {
  * WSLAY_VERSION macro from outside to avoid to generating wslayver.h
  */
 #ifndef WSLAY_VERSION
-#  include <wslay/wslayver.h>
 #endif /* WSLAY_VERSION */
 
 enum wslay_error {
@@ -189,6 +204,7 @@ typedef struct wslay_frame_context *wslay_frame_context_ptr;
  * callback functions. When the user code finished using ctx, it must
  * call wslay_frame_context_free to deallocate memory.
  */
+DLL_EXPORT
 int wslay_frame_context_init(wslay_frame_context_ptr *ctx,
                              const struct wslay_frame_callbacks *callbacks,
                              void *user_data);
@@ -196,6 +212,7 @@ int wslay_frame_context_init(wslay_frame_context_ptr *ctx,
 /*
  * Deallocates memory pointed by ctx.
  */
+DLL_EXPORT
 void wslay_frame_context_free(wslay_frame_context_ptr ctx);
 
 /*
@@ -219,6 +236,7 @@ void wslay_frame_context_free(wslay_frame_context_ptr ctx);
  * data and data_length in iocb accordingly and call this function
  * again.
  */
+DLL_EXPORT
 ssize_t wslay_frame_send(wslay_frame_context_ptr ctx,
                          struct wslay_frame_iocb *iocb);
 
@@ -243,6 +261,7 @@ ssize_t wslay_frame_send(wslay_frame_context_ptr ctx,
  * remaining data to be received, call this function again.  This
  * function ensures frame alignment.
  */
+DLL_EXPORT
 ssize_t wslay_frame_recv(wslay_frame_context_ptr ctx,
                          struct wslay_frame_iocb *iocb);
 
@@ -388,6 +407,7 @@ struct wslay_event_callbacks {
  * WSLAY_ERR_NOMEM
  *   Out of memory.
  */
+DLL_EXPORT
 int wslay_event_context_server_init
 (wslay_event_context_ptr *ctx,
  const struct wslay_event_callbacks *callbacks, void *user_data);
@@ -403,6 +423,7 @@ int wslay_event_context_server_init
  * WSLAY_ERR_NOMEM
  *   Out of memory.
  */
+DLL_EXPORT
 int wslay_event_context_client_init
 (wslay_event_context_ptr *ctx,
  const struct wslay_event_callbacks *callbacks, void *user_data);
@@ -410,6 +431,7 @@ int wslay_event_context_client_init
 /*
  * Releases allocated resources for ctx.
  */
+DLL_EXPORT
 void wslay_event_context_free(wslay_event_context_ptr ctx);
 
 /*
@@ -419,6 +441,7 @@ void wslay_event_context_free(wslay_event_context_ptr ctx);
  *
  * Default: WSLAY_RSV_NONE
  */
+DLL_EXPORT
 void wslay_event_config_set_allowed_rsv_bits(wslay_event_context_ptr ctx,
                                              uint8_t rsv);
 
@@ -434,6 +457,7 @@ void wslay_event_config_set_allowed_rsv_bits(wslay_event_context_ptr ctx,
  * This function must not be used after the first invocation of
  * wslay_event_recv() function.
  */
+DLL_EXPORT
 void wslay_event_config_set_no_buffering(wslay_event_context_ptr ctx, int val);
 
 /*
@@ -448,6 +472,7 @@ void wslay_event_config_set_no_buffering(wslay_event_context_ptr ctx, int val);
  *
  * The default value is (1u << 31)-1.
  */
+DLL_EXPORT
 void wslay_event_config_set_max_recv_msg_length(wslay_event_context_ptr ctx,
                                                 uint64_t val);
 
@@ -456,6 +481,7 @@ void wslay_event_config_set_max_recv_msg_length(wslay_event_context_ptr ctx,
  * or wslay_event_context_server_init() or
  * wslay_event_context_client_init() are replaced with callbacks.
  */
+DLL_EXPORT
 void wslay_event_config_set_callbacks
 (wslay_event_context_ptr ctx, const struct wslay_event_callbacks *callbacks);
 
@@ -491,6 +517,7 @@ void wslay_event_config_set_callbacks
  * further call of wslay_event_recv() and must close WebSocket
  * connection.
  */
+DLL_EXPORT
 int wslay_event_recv(wslay_event_context_ptr ctx);
 
 /*
@@ -530,6 +557,7 @@ int wslay_event_recv(wslay_event_context_ptr ctx);
  * further call of wslay_event_send() and must close WebSocket
  * connection.
  */
+DLL_EXPORT
 int wslay_event_send(wslay_event_context_ptr ctx);
 
 struct wslay_event_msg {
@@ -562,12 +590,14 @@ struct wslay_event_msg {
  * WSLAY_ERR_NOMEM
  *   Out of memory.
  */
+DLL_EXPORT
 int wslay_event_queue_msg(wslay_event_context_ptr ctx,
                           const struct wslay_event_msg *arg);
 
 /*
  * Extended version of wslay_event_queue_msg which allows to set reserved bits.
  */
+DLL_EXPORT
 int wslay_event_queue_msg_ex(wslay_event_context_ptr ctx,
                              const struct wslay_event_msg *arg, uint8_t rsv);
 
@@ -625,6 +655,7 @@ struct wslay_event_fragmented_msg {
  * WSLAY_ERR_NOMEM
  *   Out of memory.
  */
+DLL_EXPORT
 int wslay_event_queue_fragmented_msg
 (wslay_event_context_ptr ctx, const struct wslay_event_fragmented_msg *arg);
 
@@ -632,6 +663,7 @@ int wslay_event_queue_fragmented_msg
  * Extended version of wslay_event_queue_fragmented_msg which allows to set
  * reserved bits.
  */
+DLL_EXPORT
 int wslay_event_queue_fragmented_msg_ex(wslay_event_context_ptr ctx,
     const struct wslay_event_fragmented_msg *arg, uint8_t rsv);
 
@@ -663,6 +695,7 @@ int wslay_event_queue_fragmented_msg_ex(wslay_event_context_ptr ctx,
  * WSLAY_ERR_NOMEM
  *   Out of memory.
  */
+DLL_EXPORT
 int wslay_event_queue_close(wslay_event_context_ptr ctx,
                             uint16_t status_code,
                             const uint8_t *reason, size_t reason_length);
@@ -673,6 +706,7 @@ int wslay_event_queue_close(wslay_event_context_ptr ctx,
  * the description of callback function to know which error code
  * should be used.
  */
+DLL_EXPORT
 void wslay_event_set_error(wslay_event_context_ptr ctx, int val);
 
 /*
@@ -681,6 +715,7 @@ void wslay_event_set_error(wslay_event_context_ptr ctx, int val);
  * wslay_event_want_read() returns 1 if the library want to read more
  * data from peer, or returns 0.
  */
+DLL_EXPORT
 int wslay_event_want_read(wslay_event_context_ptr ctx);
 
 /*
@@ -689,6 +724,7 @@ int wslay_event_want_read(wslay_event_context_ptr ctx);
  * wslay_event_want_write() returns 1 if the library want to send more
  * data to peer, or returns 0.
  */
+DLL_EXPORT
 int wslay_event_want_write(wslay_event_context_ptr ctx);
 
 /*
@@ -699,12 +735,14 @@ int wslay_event_want_write(wslay_event_context_ptr ctx);
  * application detects error in the data received and wants to fail
  * WebSocket connection.
  */
+DLL_EXPORT
 void wslay_event_shutdown_read(wslay_event_context_ptr ctx);
 
 /*
  * Prevents the event-based API context from sending any further data
  * to peer.
  */
+DLL_EXPORT
 void wslay_event_shutdown_write(wslay_event_context_ptr ctx);
 
 /*
@@ -714,6 +752,7 @@ void wslay_event_shutdown_write(wslay_event_context_ptr ctx);
  * After wslay_event_shutdown_read() is called,
  * wslay_event_get_read_enabled() returns 0.
  */
+DLL_EXPORT
 int wslay_event_get_read_enabled(wslay_event_context_ptr ctx);
 
 /*
@@ -723,18 +762,21 @@ int wslay_event_get_read_enabled(wslay_event_context_ptr ctx);
  * After wslay_event_shutdown_write() is called,
  * wslay_event_get_write_enabled() returns 0.
  */
+DLL_EXPORT
 int wslay_event_get_write_enabled(wslay_event_context_ptr ctx);
 
 /*
  * Returns 1 if a close control frame has been received from peer, or
  * returns 0.
  */
+DLL_EXPORT
 int wslay_event_get_close_received(wslay_event_context_ptr ctx);
 
 /*
  * Returns 1 if a close control frame has been sent to peer, or
  * returns 0.
  */
+DLL_EXPORT
 int wslay_event_get_close_sent(wslay_event_context_ptr ctx);
 
 /*
@@ -743,6 +785,7 @@ int wslay_event_get_close_sent(wslay_event_context_ptr ctx);
  * WSLAY_CODE_ABNORMAL_CLOSURE. If received close control frame has no
  * status code, returns WSLAY_CODE_NO_STATUS_RCVD.
  */
+DLL_EXPORT
 uint16_t wslay_event_get_status_code_received(wslay_event_context_ptr ctx);
 
 /*
@@ -751,11 +794,13 @@ uint16_t wslay_event_get_status_code_received(wslay_event_context_ptr ctx);
  * WSLAY_CODE_ABNORMAL_CLOSURE. If sent close control frame has no
  * status code, returns WSLAY_CODE_NO_STATUS_RCVD.
  */
+DLL_EXPORT
 uint16_t wslay_event_get_status_code_sent(wslay_event_context_ptr ctx);
 
 /*
  * Returns the number of queued messages.
  */
+DLL_EXPORT
 size_t wslay_event_get_queued_msg_count(wslay_event_context_ptr ctx);
 
 /*
@@ -763,6 +808,7 @@ size_t wslay_event_get_queued_msg_count(wslay_event_context_ptr ctx);
  * message length queued using wslay_event_queue_msg() or
  * wslay_event_queue_close().
  */
+DLL_EXPORT
 size_t wslay_event_get_queued_msg_length(wslay_event_context_ptr ctx);
 
 #ifdef __cplusplus
