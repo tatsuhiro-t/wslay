@@ -40,11 +40,11 @@ struct wslay_stack {
   struct wslay_stack_cell *top;
 };
 
-struct wslay_stack* wslay_stack_new();
+struct wslay_stack *wslay_stack_new();
 void wslay_stack_free(struct wslay_stack *stack);
 int wslay_stack_push(struct wslay_stack *stack, void *data);
 void wslay_stack_pop(struct wslay_stack *stack);
-void* wslay_stack_top(struct wslay_stack *stack);
+void *wslay_stack_top(struct wslay_stack *stack);
 int wslay_stack_empty(struct wslay_stack *stack);
 
 #endif /* WSLAY_STACK_H */

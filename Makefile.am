@@ -23,3 +23,10 @@
 SUBDIRS = lib tests examples doc
 
 ACLOCAL_AMFLAGS = -I m4
+
+# Format source files using clang-format.
+clang-format:
+	CLANGFORMAT=`git config --get clangformat.binary`; \
+	test -z $${CLANGFORMAT} && CLANGFORMAT="clang-format"; \
+	$${CLANGFORMAT} -i lib/*.{c,h} tests/*.{c,h} lib/includes/wslay/*.h \
+	examples/*.{c,cc,h}

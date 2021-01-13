@@ -28,30 +28,29 @@
 
 #include "wslay_queue.h"
 
-void test_wslay_queue(void)
-{
-  int ints[] = { 1, 2, 3, 4, 5 };
+void test_wslay_queue(void) {
+  int ints[] = {1, 2, 3, 4, 5};
   int i;
   struct wslay_queue *queue = wslay_queue_new();
   CU_ASSERT(wslay_queue_empty(queue));
-  for(i = 0; i < 5; ++i) {
+  for (i = 0; i < 5; ++i) {
     wslay_queue_push(queue, &ints[i]);
-    CU_ASSERT_EQUAL(ints[0], *(int*)(wslay_queue_top(queue)));
+    CU_ASSERT_EQUAL(ints[0], *(int *)(wslay_queue_top(queue)));
     CU_ASSERT(!wslay_queue_empty(queue));
   }
-  for(i = 0; i < 5; ++i) {
-    CU_ASSERT_EQUAL(ints[i], *(int*)(wslay_queue_top(queue)));
+  for (i = 0; i < 5; ++i) {
+    CU_ASSERT_EQUAL(ints[i], *(int *)(wslay_queue_top(queue)));
     wslay_queue_pop(queue);
   }
   CU_ASSERT(wslay_queue_empty(queue));
 
-  for(i = 0; i < 5; ++i) {
+  for (i = 0; i < 5; ++i) {
     wslay_queue_push_front(queue, &ints[i]);
-    CU_ASSERT_EQUAL(ints[i], *(int*)(wslay_queue_top(queue)));
+    CU_ASSERT_EQUAL(ints[i], *(int *)(wslay_queue_top(queue)));
     CU_ASSERT(!wslay_queue_empty(queue));
   }
-  for(i = 4; i >= 0; --i) {
-    CU_ASSERT_EQUAL(ints[i], *(int*)(wslay_queue_top(queue)));
+  for (i = 4; i >= 0; --i) {
+    CU_ASSERT_EQUAL(ints[i], *(int *)(wslay_queue_top(queue)));
     wslay_queue_pop(queue);
   }
   CU_ASSERT(wslay_queue_empty(queue));

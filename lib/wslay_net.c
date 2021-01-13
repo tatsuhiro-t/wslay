@@ -26,8 +26,7 @@
 
 #ifndef WORDS_BIGENDIAN
 
-uint64_t wslay_byteswap64(uint64_t x)
-{
+uint64_t wslay_byteswap64(uint64_t x) {
   uint64_t u = ntohl(x & 0xffffffffllu);
   uint64_t l = ntohl(x >> 32);
   return (u << 32) | l;

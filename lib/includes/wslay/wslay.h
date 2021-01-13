@@ -25,14 +25,13 @@
 #ifndef WSLAY_H
 #define WSLAY_H
 
-#ifdef  __cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
 #include <stdint.h>
 #include <stdlib.h>
 #include <sys/types.h>
-
 
 /*
  * wslay/wslayver.h is generated from wslay/wslayver.h.in by
@@ -149,10 +148,10 @@ enum wslay_opcode {
  * These macros assume that rsv is constructed by ((RSV1 << 2) |
  * (RSV2 << 1) | RSV3)
  */
-#define WSLAY_RSV_NONE ((uint8_t) 0)
-#define WSLAY_RSV1_BIT (((uint8_t) 1) << 2)
-#define WSLAY_RSV2_BIT (((uint8_t) 1) << 1)
-#define WSLAY_RSV3_BIT (((uint8_t) 1) << 0)
+#define WSLAY_RSV_NONE ((uint8_t)0)
+#define WSLAY_RSV1_BIT (((uint8_t)1) << 2)
+#define WSLAY_RSV2_BIT (((uint8_t)1) << 1)
+#define WSLAY_RSV3_BIT (((uint8_t)1) << 0)
 
 #define wslay_get_rsv1(rsv) ((rsv >> 2) & 1)
 #define wslay_get_rsv2(rsv) ((rsv >> 1) & 1)
@@ -166,7 +165,7 @@ struct wslay_frame_iocb {
    * RFC6455 requires 0 unless extensions are negotiated.
    */
   uint8_t rsv;
- /* 4 bit opcode */
+  /* 4 bit opcode */
   uint8_t opcode;
   /* payload length [0, 2**63-1] */
   uint64_t payload_length;
@@ -270,9 +269,9 @@ struct wslay_event_on_msg_recv_arg {
  * Callback function invoked by wslay_event_recv() when a message is
  * completely received.
  */
-typedef void (*wslay_event_on_msg_recv_callback)
-(wslay_event_context_ptr ctx,
- const struct wslay_event_on_msg_recv_arg *arg, void *user_data);
+typedef void (*wslay_event_on_msg_recv_callback)(
+    wslay_event_context_ptr ctx, const struct wslay_event_on_msg_recv_arg *arg,
+    void *user_data);
 
 struct wslay_event_on_frame_recv_start_arg {
   /* fin bit; 1 for final frame, or 0. */
@@ -290,9 +289,9 @@ struct wslay_event_on_frame_recv_start_arg {
  * starts to be received. This callback function is only invoked once
  * for each frame.
  */
-typedef void (*wslay_event_on_frame_recv_start_callback)
-(wslay_event_context_ptr ctx,
- const struct wslay_event_on_frame_recv_start_arg *arg, void *user_data);
+typedef void (*wslay_event_on_frame_recv_start_callback)(
+    wslay_event_context_ptr ctx,
+    const struct wslay_event_on_frame_recv_start_arg *arg, void *user_data);
 
 struct wslay_event_on_frame_recv_chunk_arg {
   /* chunk of payload data */
@@ -305,16 +304,16 @@ struct wslay_event_on_frame_recv_chunk_arg {
  * Callback function invoked by wslay_event_recv() when a chunk of
  * frame payload is received.
  */
-typedef void (*wslay_event_on_frame_recv_chunk_callback)
-(wslay_event_context_ptr ctx,
- const struct wslay_event_on_frame_recv_chunk_arg *arg, void *user_data);
+typedef void (*wslay_event_on_frame_recv_chunk_callback)(
+    wslay_event_context_ptr ctx,
+    const struct wslay_event_on_frame_recv_chunk_arg *arg, void *user_data);
 
 /*
  * Callback function invoked by wslay_event_recv() when a frame is
  * completely received.
  */
-typedef void (*wslay_event_on_frame_recv_end_callback)
-(wslay_event_context_ptr ctx, void *user_data);
+typedef void (*wslay_event_on_frame_recv_end_callback)(
+    wslay_event_context_ptr ctx, void *user_data);
 
 /*
  * Callback function invoked by wslay_event_recv() when it wants to
@@ -388,9 +387,9 @@ struct wslay_event_callbacks {
  * WSLAY_ERR_NOMEM
  *   Out of memory.
  */
-int wslay_event_context_server_init
-(wslay_event_context_ptr *ctx,
- const struct wslay_event_callbacks *callbacks, void *user_data);
+int wslay_event_context_server_init(
+    wslay_event_context_ptr *ctx, const struct wslay_event_callbacks *callbacks,
+    void *user_data);
 
 /*
  * Initializes ctx as WebSocket client. user_data is an arbitrary
@@ -403,9 +402,9 @@ int wslay_event_context_server_init
  * WSLAY_ERR_NOMEM
  *   Out of memory.
  */
-int wslay_event_context_client_init
-(wslay_event_context_ptr *ctx,
- const struct wslay_event_callbacks *callbacks, void *user_data);
+int wslay_event_context_client_init(
+    wslay_event_context_ptr *ctx, const struct wslay_event_callbacks *callbacks,
+    void *user_data);
 
 /*
  * Releases allocated resources for ctx.
@@ -456,8 +455,8 @@ void wslay_event_config_set_max_recv_msg_length(wslay_event_context_ptr ctx,
  * or wslay_event_context_server_init() or
  * wslay_event_context_client_init() are replaced with callbacks.
  */
-void wslay_event_config_set_callbacks
-(wslay_event_context_ptr ctx, const struct wslay_event_callbacks *callbacks);
+void wslay_event_config_set_callbacks(
+    wslay_event_context_ptr ctx, const struct wslay_event_callbacks *callbacks);
 
 /*
  * Receives messages from peer. When receiving
@@ -588,10 +587,9 @@ union wslay_event_msg_source {
  * moment, return 0. If there is an error, return -1 and set error
  * code WSLAY_ERR_CALLBACK_FAILURE using wslay_event_set_error().
  */
-typedef ssize_t (*wslay_event_fragmented_msg_callback)
-(wslay_event_context_ptr ctx,
- uint8_t *buf, size_t len, const union wslay_event_msg_source *source,
- int *eof, void *user_data);
+typedef ssize_t (*wslay_event_fragmented_msg_callback)(
+    wslay_event_context_ptr ctx, uint8_t *buf, size_t len,
+    const union wslay_event_msg_source *source, int *eof, void *user_data);
 
 struct wslay_event_fragmented_msg {
   /* opcode */
@@ -625,15 +623,16 @@ struct wslay_event_fragmented_msg {
  * WSLAY_ERR_NOMEM
  *   Out of memory.
  */
-int wslay_event_queue_fragmented_msg
-(wslay_event_context_ptr ctx, const struct wslay_event_fragmented_msg *arg);
+int wslay_event_queue_fragmented_msg(
+    wslay_event_context_ptr ctx, const struct wslay_event_fragmented_msg *arg);
 
 /*
  * Extended version of wslay_event_queue_fragmented_msg which allows to set
  * reserved bits.
  */
-int wslay_event_queue_fragmented_msg_ex(wslay_event_context_ptr ctx,
-    const struct wslay_event_fragmented_msg *arg, uint8_t rsv);
+int wslay_event_queue_fragmented_msg_ex(
+    wslay_event_context_ptr ctx, const struct wslay_event_fragmented_msg *arg,
+    uint8_t rsv);
 
 /*
  * Queues close control frame. This function is provided just for
@@ -663,8 +662,7 @@ int wslay_event_queue_fragmented_msg_ex(wslay_event_context_ptr ctx,
  * WSLAY_ERR_NOMEM
  *   Out of memory.
  */
-int wslay_event_queue_close(wslay_event_context_ptr ctx,
-                            uint16_t status_code,
+int wslay_event_queue_close(wslay_event_context_ptr ctx, uint16_t status_code,
                             const uint8_t *reason, size_t reason_length);
 
 /*

@@ -30,35 +30,27 @@
 #include "wslay_event_test.h"
 #include "wslay_queue_test.h"
 
-static int init_suite1(void)
-{
-  return 0;
-}
+static int init_suite1(void) { return 0; }
 
-static int clean_suite1(void)
-{
-  return 0;
-}
+static int clean_suite1(void) { return 0; }
 
+int main(void) {
+  CU_pSuite pSuite = NULL;
+  unsigned int num_tests_failed;
 
-int main(void)
-{
-   CU_pSuite pSuite = NULL;
-   unsigned int num_tests_failed;
+  /* initialize the CUnit test registry */
+  if (CUE_SUCCESS != CU_initialize_registry())
+    return CU_get_error();
 
-   /* initialize the CUnit test registry */
-   if (CUE_SUCCESS != CU_initialize_registry())
-      return CU_get_error();
+  /* add a suite to the registry */
+  pSuite = CU_add_suite("libwslay_TestSuite", init_suite1, clean_suite1);
+  if (NULL == pSuite) {
+    CU_cleanup_registry();
+    return CU_get_error();
+  }
 
-   /* add a suite to the registry */
-   pSuite = CU_add_suite("libwslay_TestSuite", init_suite1, clean_suite1);
-   if (NULL == pSuite) {
-      CU_cleanup_registry();
-      return CU_get_error();
-   }
-
-   /* add the tests to the suite */
-   if(!CU_add_test(pSuite, "wslay_frame_context_init",
+  /* add the tests to the suite */
+  if (!CU_add_test(pSuite, "wslay_frame_context_init",
                    test_wslay_frame_context_init) ||
       !CU_add_test(pSuite, "wslay_frame_recv", test_wslay_frame_recv) ||
       !CU_add_test(pSuite, "wslay_frame_recv_1byte",
@@ -127,19 +119,19 @@ int main(void)
       !CU_add_test(pSuite, "wslay_event_config_set_allowed_rsv_bits",
                    test_wslay_event_config_set_allowed_rsv_bits) ||
       !CU_add_test(pSuite, "wslay_queue", test_wslay_queue)) {
-     CU_cleanup_registry();
-     return CU_get_error();
-   }
+    CU_cleanup_registry();
+    return CU_get_error();
+  }
 
-   /* Run all tests using the CUnit Basic interface */
-   CU_basic_set_mode(CU_BRM_VERBOSE);
-   CU_basic_run_tests();
-   num_tests_failed = CU_get_number_of_tests_failed();
-   CU_cleanup_registry();
-   if (CU_get_error() == CUE_SUCCESS) {
-     return (int)num_tests_failed;
-   } else {
-     printf("CUnit Error: %s\n", CU_get_error_msg());
-     return CU_get_error();
-   }
+  /* Run all tests using the CUnit Basic interface */
+  CU_basic_set_mode(CU_BRM_VERBOSE);
+  CU_basic_run_tests();
+  num_tests_failed = CU_get_number_of_tests_failed();
+  CU_cleanup_registry();
+  if (CU_get_error() == CUE_SUCCESS) {
+    return (int)num_tests_failed;
+  } else {
+    printf("CUnit Error: %s\n", CU_get_error_msg());
+    return CU_get_error();
+  }
 }
