@@ -813,8 +813,12 @@ int wslay_event_send(wslay_event_context_ptr ctx) {
       iocb.opcode = ctx->omsg->opcode;
       iocb.rsv = ctx->omsg->rsv;
       iocb.mask = ctx->server ^ 1;
-      iocb.data = ctx->omsg->data + ctx->opayloadoff;
-      iocb.data_length = ctx->opayloadlen - ctx->opayloadoff;
+      iocb.data = ctx->omsg->data;
+      iocb.data_length = ctx->opayloadlen;
+      if (ctx->opayloadoff) {
+        iocb.data += ctx->opayloadoff;
+        iocb.data_length -= ctx->opayloadoff;
+      }
       iocb.payload_length = ctx->opayloadlen;
       r = wslay_frame_send(ctx->frame_ctx, &iocb);
       if (r >= 0) {

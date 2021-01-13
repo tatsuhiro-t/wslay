@@ -50,7 +50,9 @@ struct scripted_data_feed {
 static void scripted_data_feed_init(struct scripted_data_feed *df,
                                     uint8_t *data, size_t data_length) {
   memset(df, 0, sizeof(struct scripted_data_feed));
-  memcpy(df->data, data, data_length);
+  if (data_length) {
+    memcpy(df->data, data, data_length);
+  }
   df->datamark = df->data;
   df->datalimit = df->data + data_length;
   df->feedseq[0] = data_length;
