@@ -678,3 +678,164 @@ void test_wslay_event_config_set_allowed_rsv_bits(void) {
 
   wslay_event_context_free(ctx);
 }
+
+void test_wslay_event_write_fragmented_msg(void) {
+  wslay_event_context_ptr ctx;
+  struct wslay_event_callbacks callbacks;
+  const char msg[] = "Hello";
+  struct scripted_data_feed df;
+  struct wslay_event_fragmented_msg arg;
+  const uint8_t ans[] = {0x01, 0x03, 0x48, 0x65, 0x6c, 0x80, 0x02, 0x6c, 0x6f};
+  uint8_t buf[1024];
+  scripted_data_feed_init(&df, (const uint8_t *)msg, sizeof(msg) - 1);
+  df.feedseq[0] = 3;
+  df.feedseq[1] = 2;
+  memset(&callbacks, 0, sizeof(callbacks));
+  wslay_event_context_server_init(&ctx, &callbacks, NULL);
+
+  memset(&arg, 0, sizeof(arg));
+  arg.opcode = WSLAY_TEXT_FRAME;
+  arg.source.data = &df;
+  arg.read_callback = scripted_read_callback;
+  CU_ASSERT(0 == wslay_event_queue_fragmented_msg(ctx, &arg));
+  CU_ASSERT(sizeof(ans) == wslay_event_write(ctx, buf, sizeof(buf)));
+  CU_ASSERT(0 == memcmp(ans, buf, sizeof(ans)));
+  wslay_event_context_free(ctx);
+}
+
+void test_wslay_event_write_fragmented_msg_empty_data(void) {
+  wslay_event_context_ptr ctx;
+  struct wslay_event_callbacks callbacks;
+  struct scripted_data_feed df;
+  struct wslay_event_fragmented_msg arg;
+  const uint8_t ans[] = {0x81, 0x00};
+  uint8_t buf[1024];
+  scripted_data_feed_init(&df, NULL, 0);
+  memset(&callbacks, 0, sizeof(callbacks));
+  callbacks.send_callback = accumulator_send_callback;
+  wslay_event_context_server_init(&ctx, &callbacks, NULL);
+
+  memset(&arg, 0, sizeof(arg));
+  arg.opcode = WSLAY_TEXT_FRAME;
+  arg.source.data = &df;
+  arg.read_callback = scripted_read_callback;
+  CU_ASSERT(0 == wslay_event_queue_fragmented_msg(ctx, &arg));
+  CU_ASSERT(sizeof(ans) == wslay_event_write(ctx, buf, sizeof(buf)));
+  CU_ASSERT(0 == memcmp(ans, buf, sizeof(ans)));
+  wslay_event_context_free(ctx);
+}
+
+void test_wslay_event_write_fragmented_msg_with_ctrl(void) {
+  wslay_event_context_ptr ctx;
+  struct wslay_event_callbacks callbacks;
+  const char msg[] = "Hello";
+  struct scripted_data_feed df;
+  struct wslay_event_fragmented_msg arg;
+  struct wslay_event_msg ctrl_arg;
+  const uint8_t ans[] = {
+      0x01, 0x03, 0x48, 0x65, 0x6c, /* "Hel" */
+      0x89, 0x00,                   /* unmasked ping */
+      0x80, 0x02, 0x6c, 0x6f        /* "lo" */
+  };
+  uint8_t buf[1024];
+  scripted_data_feed_init(&df, (const uint8_t *)msg, sizeof(msg) - 1);
+  df.feedseq[0] = 3;
+  df.feedseq[1] = 2;
+  memset(&callbacks, 0, sizeof(callbacks));
+  wslay_event_context_server_init(&ctx, &callbacks, NULL);
+
+  memset(&arg, 0, sizeof(arg));
+  arg.opcode = WSLAY_TEXT_FRAME;
+  arg.source.data = &df;
+  arg.read_callback = scripted_read_callback;
+  CU_ASSERT(0 == wslay_event_queue_fragmented_msg(ctx, &arg));
+  CU_ASSERT(1 == wslay_event_get_queued_msg_count(ctx));
+  CU_ASSERT(0 == wslay_event_get_queued_msg_length(ctx));
+  CU_ASSERT(4 == wslay_event_write(ctx, buf, 4));
+
+  memset(&ctrl_arg, 0, sizeof(ctrl_arg));
+  ctrl_arg.opcode = WSLAY_PING;
+  ctrl_arg.msg_length = 0;
+  CU_ASSERT(0 == wslay_event_queue_msg(ctx, &ctrl_arg));
+  CU_ASSERT(2 == wslay_event_get_queued_msg_count(ctx));
+  CU_ASSERT(7 == wslay_event_write(ctx, buf + 4, sizeof(buf) - 4));
+  CU_ASSERT(0 == wslay_event_get_queued_msg_count(ctx));
+  CU_ASSERT(0 == memcmp(ans, buf, sizeof(ans)));
+  wslay_event_context_free(ctx);
+}
+
+void test_wslay_event_write_fragmented_msg_with_rsv1(void) {
+  wslay_event_context_ptr ctx;
+  struct wslay_event_callbacks callbacks;
+  const char msg[] = "Hello";
+  struct scripted_data_feed df;
+  struct wslay_event_fragmented_msg arg;
+  const uint8_t ans[] = {0x41, 0x03, 0x48, 0x65, 0x6c, 0x80, 0x02, 0x6c, 0x6f};
+  uint8_t buf[1024];
+  scripted_data_feed_init(&df, (const uint8_t *)msg, sizeof(msg) - 1);
+  df.feedseq[0] = 3;
+  df.feedseq[1] = 2;
+  memset(&callbacks, 0, sizeof(callbacks));
+  callbacks.send_callback = accumulator_send_callback;
+  wslay_event_context_server_init(&ctx, &callbacks, NULL);
+  wslay_event_config_set_allowed_rsv_bits(ctx, WSLAY_RSV1_BIT);
+
+  memset(&arg, 0, sizeof(arg));
+  arg.opcode = WSLAY_TEXT_FRAME;
+  arg.source.data = &df;
+  arg.read_callback = scripted_read_callback;
+  CU_ASSERT(0 ==
+            wslay_event_queue_fragmented_msg_ex(ctx, &arg, WSLAY_RSV1_BIT));
+  CU_ASSERT(sizeof(ans) == wslay_event_write(ctx, buf, sizeof(buf)));
+  CU_ASSERT(0 == memcmp(ans, buf, sizeof(ans)));
+  wslay_event_context_free(ctx);
+}
+
+void test_wslay_event_write_msg_with_rsv1(void) {
+  wslay_event_context_ptr ctx;
+  struct wslay_event_callbacks callbacks;
+  const char msg[] = "Hello";
+  struct wslay_event_msg arg;
+  const uint8_t ans[] = {
+      0xc1, 0x05, 0x48, 0x65, 0x6c, 0x6c, 0x6f /* "Hello" */
+  };
+  uint8_t buf[1024];
+  memset(&callbacks, 0, sizeof(callbacks));
+  wslay_event_context_server_init(&ctx, &callbacks, NULL);
+  wslay_event_config_set_allowed_rsv_bits(ctx, WSLAY_RSV1_BIT);
+
+  memset(&arg, 0, sizeof(arg));
+  arg.opcode = WSLAY_TEXT_FRAME;
+  arg.msg = (const uint8_t *)msg;
+  arg.msg_length = 5;
+  CU_ASSERT(0 == wslay_event_queue_msg_ex(ctx, &arg, WSLAY_RSV1_BIT));
+  CU_ASSERT(sizeof(ans) == wslay_event_write(ctx, buf, sizeof(buf)));
+  CU_ASSERT(0 == memcmp(ans, buf, sizeof(ans)));
+  wslay_event_context_free(ctx);
+}
+
+void test_wslay_event_write_ctrl_msg_first(void) {
+  wslay_event_context_ptr ctx;
+  struct wslay_event_callbacks callbacks;
+  const char msg[] = "Hello";
+  struct wslay_event_msg arg;
+  const uint8_t ans[] = {
+      0x89, 0x00,                              /* unmasked ping */
+      0x81, 0x05, 0x48, 0x65, 0x6c, 0x6c, 0x6f /* "Hello" */
+  };
+  uint8_t buf[1024];
+  memset(&callbacks, 0, sizeof(callbacks));
+  wslay_event_context_server_init(&ctx, &callbacks, NULL);
+
+  memset(&arg, 0, sizeof(arg));
+  arg.opcode = WSLAY_PING;
+  arg.msg_length = 0;
+  CU_ASSERT(0 == wslay_event_queue_msg(ctx, &arg));
+  arg.opcode = WSLAY_TEXT_FRAME;
+  arg.msg = (const uint8_t *)msg;
+  arg.msg_length = 5;
+  CU_ASSERT(0 == wslay_event_queue_msg(ctx, &arg));
+  CU_ASSERT(sizeof(ans) == wslay_event_write(ctx, buf, sizeof(buf)));
+  CU_ASSERT(0 == memcmp(ans, buf, sizeof(ans)));
+  wslay_event_context_free(ctx);
+}

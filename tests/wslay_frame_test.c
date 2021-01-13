@@ -511,3 +511,209 @@ void test_wslay_frame_send_ctrl_frame_too_large_payload(void) {
 
   wslay_frame_context_free(ctx);
 }
+
+void test_wslay_frame_write(void) {
+  wslay_frame_context_ptr ctx;
+  struct wslay_frame_callbacks callbacks = {NULL, NULL,
+                                            static_genmask_callback};
+  struct wslay_frame_iocb iocb;
+  /* Masked text frame containing "Hello" */
+  uint8_t msg[] = {0x81u, 0x85u, 0x37u, 0xfau, 0x21u, 0x3du,
+                   0x7fu, 0x9fu, 0x4du, 0x51u, 0x58u};
+  uint8_t buf[1024];
+  size_t wpayloadlen;
+  wslay_frame_context_init(&ctx, &callbacks, NULL);
+  memset(&iocb, 0, sizeof(iocb));
+  iocb.fin = 1;
+  iocb.opcode = WSLAY_TEXT_FRAME;
+  iocb.mask = 1;
+  iocb.payload_length = 5;
+  iocb.data = (const uint8_t *)"Hello";
+  iocb.data_length = 5;
+  CU_ASSERT(11 ==
+            wslay_frame_write(ctx, &iocb, buf, sizeof(buf), &wpayloadlen));
+  CU_ASSERT(iocb.data_length == wpayloadlen);
+  CU_ASSERT(memcmp(msg, buf, sizeof(msg)) == 0);
+
+  wslay_frame_context_free(ctx);
+}
+
+void test_wslay_frame_write_fragmented(void) {
+  wslay_frame_context_ptr ctx;
+  struct wslay_frame_callbacks callbacks = {NULL, NULL,
+                                            static_genmask_callback};
+  struct wslay_frame_iocb iocb;
+  /* Unmasked message */
+  uint8_t msg1[] = {0x01, 0x03, 0x48, 0x65, 0x6c}; /* "Hel" */
+  uint8_t msg2[] = {0x80, 0x02, 0x6c, 0x6f};       /* "lo" */
+  uint8_t buf[1024];
+  size_t wpayloadlen;
+  wslay_frame_context_init(&ctx, &callbacks, NULL);
+  memset(&iocb, 0, sizeof(iocb));
+  iocb.fin = 0;
+  iocb.opcode = WSLAY_TEXT_FRAME;
+  iocb.mask = 0;
+  iocb.payload_length = 3;
+  iocb.data = (const uint8_t *)"Hel";
+  iocb.data_length = 3;
+  CU_ASSERT(5 == wslay_frame_write(ctx, &iocb, buf, sizeof(buf), &wpayloadlen));
+  CU_ASSERT(3 == wpayloadlen);
+  CU_ASSERT(memcmp(msg1, buf, sizeof(msg1)) == 0);
+
+  iocb.fin = 1;
+  iocb.opcode = WSLAY_CONTINUATION_FRAME;
+  iocb.payload_length = 2;
+  iocb.data = (const uint8_t *)"lo";
+  iocb.data_length = 2;
+  CU_ASSERT(4 == wslay_frame_write(ctx, &iocb, buf, sizeof(buf), &wpayloadlen));
+  CU_ASSERT(2 == wpayloadlen);
+  CU_ASSERT(memcmp(msg2, buf, sizeof(msg2)) == 0);
+
+  wslay_frame_context_free(ctx);
+}
+
+void test_wslay_frame_write_interleaved_ctrl_frame(void) {
+  wslay_frame_context_ptr ctx;
+  struct wslay_frame_callbacks callbacks = {NULL, NULL,
+                                            static_genmask_callback};
+  struct wslay_frame_iocb iocb;
+  /* Unmasked message */
+  /* text with "Hel", with fin = 0 */
+  uint8_t msg1[] = {0x01, 0x03, 0x48, 0x65, 0x6c};
+  /* ping with "Hello" */
+  uint8_t msg2[] = {0x89, 0x05, 0x48, 0x65, 0x6c, 0x6c, 0x6f};
+  /* text with "lo", continuation frame for msg1, with fin = 1 */
+  uint8_t msg3[] = {0x80, 0x02, 0x6c, 0x6f};
+  uint8_t buf[1024];
+  size_t wpayloadlen;
+  wslay_frame_context_init(&ctx, &callbacks, NULL);
+  memset(&iocb, 0, sizeof(iocb));
+  iocb.fin = 0;
+  iocb.opcode = WSLAY_TEXT_FRAME;
+  iocb.mask = 0;
+  iocb.payload_length = 3;
+  iocb.data = (const uint8_t *)"Hel";
+  iocb.data_length = 3;
+  CU_ASSERT(5 == wslay_frame_write(ctx, &iocb, buf, sizeof(buf), &wpayloadlen));
+  CU_ASSERT(3 == wpayloadlen);
+  CU_ASSERT(memcmp(msg1, buf, sizeof(msg1)) == 0);
+
+  iocb.fin = 1;
+  iocb.opcode = WSLAY_PING;
+  iocb.payload_length = 5;
+  iocb.data = (const uint8_t *)"Hello";
+  iocb.data_length = 5;
+  CU_ASSERT(7 == wslay_frame_write(ctx, &iocb, buf, sizeof(buf), &wpayloadlen));
+  CU_ASSERT(5 == wpayloadlen);
+  CU_ASSERT(memcmp(msg2, buf, sizeof(msg2)) == 0);
+
+  iocb.fin = 1;
+  iocb.opcode = WSLAY_CONTINUATION_FRAME;
+  iocb.payload_length = 2;
+  iocb.data = (const uint8_t *)"lo";
+  iocb.data_length = 2;
+  CU_ASSERT(4 == wslay_frame_write(ctx, &iocb, buf, sizeof(buf), &wpayloadlen));
+  CU_ASSERT(2 == wpayloadlen);
+  CU_ASSERT(memcmp(msg3, buf, sizeof(msg3)) == 0);
+
+  wslay_frame_context_free(ctx);
+}
+
+void test_wslay_frame_write_1byte_masked(void) {
+  wslay_frame_context_ptr ctx;
+  struct wslay_frame_callbacks callbacks = {NULL, NULL,
+                                            static_genmask_callback};
+  struct wslay_frame_iocb iocb;
+  /* Masked text frame containing "Hello" */
+  uint8_t msg[] = {0x81u, 0x85u, 0x37u, 0xfau, 0x21u, 0x3du,
+                   0x7fu, 0x9fu, 0x4du, 0x51u, 0x58u};
+  uint8_t hello[] = "Hello";
+  size_t i;
+  uint8_t buf[1024];
+  size_t wpayloadlen;
+  wslay_frame_context_init(&ctx, &callbacks, NULL);
+  memset(&iocb, 0, sizeof(iocb));
+  iocb.fin = 1;
+  iocb.opcode = WSLAY_TEXT_FRAME;
+  iocb.mask = 1;
+  iocb.payload_length = 5;
+  iocb.data = hello;
+  iocb.data_length = sizeof(hello) - 1;
+
+  CU_ASSERT_EQUAL(6, wslay_frame_write(ctx, &iocb, buf, 6, &wpayloadlen));
+  CU_ASSERT(0 == wpayloadlen);
+
+  for (i = 0; i < 5; ++i) {
+    CU_ASSERT_EQUAL(
+        1, wslay_frame_write(ctx, &iocb, buf + 6 + i, 1, &wpayloadlen));
+    CU_ASSERT(1 == wpayloadlen);
+
+    ++iocb.data;
+    --iocb.data_length;
+  }
+
+  CU_ASSERT(memcmp(msg, buf, sizeof(msg)) == 0);
+
+  wslay_frame_context_free(ctx);
+}
+
+void test_wslay_frame_write_zero_payloadlen(void) {
+  wslay_frame_context_ptr ctx;
+  struct wslay_frame_callbacks callbacks = {NULL, NULL,
+                                            static_genmask_callback};
+  struct wslay_frame_iocb iocb;
+  /* Unmasked message */
+  uint8_t msg[] = {0x81, 0x00}; /* "" */
+  uint8_t buf[1024];
+  size_t wpayloadlen;
+  wslay_frame_context_init(&ctx, &callbacks, NULL);
+  memset(&iocb, 0, sizeof(iocb));
+  iocb.fin = 1;
+  iocb.opcode = WSLAY_TEXT_FRAME;
+  iocb.mask = 0;
+  iocb.payload_length = 0;
+  iocb.data_length = 0;
+  CU_ASSERT(2 == wslay_frame_write(ctx, &iocb, buf, sizeof(buf), &wpayloadlen));
+  CU_ASSERT(0 == wpayloadlen);
+  CU_ASSERT(memcmp(msg, buf, sizeof(msg)) == 0);
+
+  wslay_frame_context_free(ctx);
+}
+
+void test_wslay_frame_write_too_large_payload(void) {
+  wslay_frame_context_ptr ctx;
+  struct wslay_frame_callbacks callbacks;
+  struct wslay_frame_iocb iocb;
+  uint8_t buf[1024];
+  size_t wpayloadlen;
+  wslay_frame_context_init(&ctx, &callbacks, NULL);
+  memset(&iocb, 0, sizeof(iocb));
+  iocb.fin = 1;
+  iocb.opcode = WSLAY_TEXT_FRAME;
+  iocb.mask = 0;
+  iocb.payload_length = UINT64_MAX;
+  CU_ASSERT_EQUAL(
+      WSLAY_ERR_INVALID_ARGUMENT,
+      wslay_frame_write(ctx, &iocb, buf, sizeof(buf), &wpayloadlen));
+
+  wslay_frame_context_free(ctx);
+}
+
+void test_wslay_frame_write_ctrl_frame_too_large_payload(void) {
+  wslay_frame_context_ptr ctx;
+  struct wslay_frame_callbacks callbacks;
+  struct wslay_frame_iocb iocb;
+  uint8_t buf[1024];
+  size_t wpayloadlen;
+  wslay_frame_context_init(&ctx, &callbacks, NULL);
+  memset(&iocb, 0, sizeof(iocb));
+  iocb.fin = 1;
+  iocb.opcode = WSLAY_PING;
+  iocb.mask = 0;
+  iocb.payload_length = 1024;
+  CU_ASSERT_EQUAL(
+      WSLAY_ERR_INVALID_ARGUMENT,
+      wslay_frame_write(ctx, &iocb, buf, sizeof(buf), &wpayloadlen));
+
+  wslay_frame_context_free(ctx);
+}

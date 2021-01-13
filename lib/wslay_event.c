@@ -906,6 +906,147 @@ int wslay_event_send(wslay_event_context_ptr ctx) {
   return 0;
 }
 
+ssize_t wslay_event_write(wslay_event_context_ptr ctx, uint8_t *buf,
+                          size_t buflen) {
+  struct wslay_frame_iocb iocb;
+  ssize_t r;
+  uint8_t *buf_last = buf;
+  size_t wpayloadlen;
+  while (ctx->write_enabled &&
+         (!wslay_queue_empty(ctx->send_queue) ||
+          !wslay_queue_empty(ctx->send_ctrl_queue) || ctx->omsg)) {
+    if (!ctx->omsg) {
+      if (wslay_queue_empty(ctx->send_ctrl_queue)) {
+        ctx->omsg = wslay_queue_top(ctx->send_queue);
+        wslay_queue_pop(ctx->send_queue);
+      } else {
+        ctx->omsg = wslay_event_send_ctrl_queue_pop(ctx);
+        if (ctx->omsg == NULL) {
+          break;
+        }
+      }
+      if (ctx->omsg->type == WSLAY_NON_FRAGMENTED) {
+        wslay_event_on_non_fragmented_msg_popped(ctx);
+      }
+    } else if (!wslay_is_ctrl_frame(ctx->omsg->opcode) &&
+               ctx->frame_ctx->ostate == PREP_HEADER &&
+               !wslay_queue_empty(ctx->send_ctrl_queue)) {
+      if ((r = wslay_queue_push_front(ctx->send_queue, ctx->omsg)) != 0) {
+        ctx->write_enabled = 0;
+        return r;
+      }
+      ctx->omsg = wslay_event_send_ctrl_queue_pop(ctx);
+      if (ctx->omsg == NULL) {
+        break;
+      }
+      /* ctrl message has WSLAY_NON_FRAGMENTED */
+      wslay_event_on_non_fragmented_msg_popped(ctx);
+    }
+    if (ctx->omsg->type == WSLAY_NON_FRAGMENTED) {
+      memset(&iocb, 0, sizeof(iocb));
+      iocb.fin = 1;
+      iocb.opcode = ctx->omsg->opcode;
+      iocb.rsv = ctx->omsg->rsv;
+      iocb.mask = ctx->server ^ 1;
+      iocb.data = ctx->omsg->data;
+      iocb.data_length = ctx->opayloadlen;
+      if (ctx->opayloadoff) {
+        iocb.data += ctx->opayloadoff;
+        iocb.data_length -= ctx->opayloadoff;
+      }
+      iocb.payload_length = ctx->opayloadlen;
+      r = wslay_frame_write(ctx->frame_ctx, &iocb, buf_last, buflen,
+                            &wpayloadlen);
+      if (r > 0) {
+        assert(r <= buflen);
+
+        buf_last += r;
+        buflen -= r;
+
+        ctx->opayloadoff += wpayloadlen;
+        if (ctx->opayloadoff == ctx->opayloadlen) {
+          --ctx->queued_msg_count;
+          ctx->queued_msg_length -= ctx->omsg->data_length;
+          if (ctx->omsg->opcode == WSLAY_CONNECTION_CLOSE) {
+            uint16_t status_code = 0;
+            ctx->write_enabled = 0;
+            ctx->close_status |= WSLAY_CLOSE_SENT;
+            if (ctx->omsg->data_length >= 2) {
+              memcpy(&status_code, ctx->omsg->data, 2);
+              status_code = ntohs(status_code);
+            }
+            ctx->status_code_sent =
+                status_code == 0 ? WSLAY_CODE_NO_STATUS_RCVD : status_code;
+          }
+          wslay_event_omsg_free(ctx->omsg);
+          ctx->omsg = NULL;
+        } else {
+          break;
+        }
+      } else if (r == 0) {
+        return buf_last - buf;
+      } else {
+        return WSLAY_ERR_CALLBACK_FAILURE;
+      }
+    } else {
+      if (ctx->omsg->fin == 0 && ctx->obuflimit == ctx->obufmark) {
+        int eof = 0;
+        r = ctx->omsg->read_callback(ctx, ctx->obuf, sizeof(ctx->obuf),
+                                     &ctx->omsg->source, &eof, ctx->user_data);
+        if (r == 0 && eof == 0) {
+          break;
+        } else if (r < 0) {
+          ctx->write_enabled = 0;
+          return WSLAY_ERR_CALLBACK_FAILURE;
+        }
+        ctx->obuflimit = ctx->obuf + r;
+        if (eof) {
+          ctx->omsg->fin = 1;
+        }
+        ctx->opayloadlen = r;
+        ctx->opayloadoff = 0;
+      }
+      memset(&iocb, 0, sizeof(iocb));
+      iocb.fin = ctx->omsg->fin;
+      iocb.opcode = ctx->omsg->opcode;
+      iocb.rsv = ctx->omsg->rsv;
+      iocb.mask = ctx->server ? 0 : 1;
+      iocb.data = ctx->obufmark;
+      iocb.data_length = ctx->obuflimit - ctx->obufmark;
+      iocb.payload_length = ctx->opayloadlen;
+      r = wslay_frame_write(ctx->frame_ctx, &iocb, buf_last, buflen,
+                            &wpayloadlen);
+      if (r > 0) {
+        assert(r <= buflen);
+
+        buf_last += r;
+        buflen -= r;
+
+        ctx->obufmark += wpayloadlen;
+        if (ctx->obufmark == ctx->obuflimit) {
+          ctx->obufmark = ctx->obuflimit = ctx->obuf;
+          if (ctx->omsg->fin) {
+            --ctx->queued_msg_count;
+            wslay_event_omsg_free(ctx->omsg);
+            ctx->omsg = NULL;
+          } else {
+            ctx->omsg->opcode = WSLAY_CONTINUATION_FRAME;
+            /* RSV1 is not set on continuation frames */
+            ctx->omsg->rsv = ctx->omsg->rsv & ~WSLAY_RSV1_BIT;
+          }
+        } else {
+          break;
+        }
+      } else if (r == 0) {
+        return buf_last - buf;
+      } else {
+        return WSLAY_ERR_CALLBACK_FAILURE;
+      }
+    }
+  }
+  return buf_last - buf;
+}
+
 void wslay_event_set_error(wslay_event_context_ptr ctx, int val) {
   ctx->error = val;
 }

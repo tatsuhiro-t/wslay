@@ -82,6 +82,19 @@ int main(void) {
                    test_wslay_frame_send_too_large_payload) ||
       !CU_add_test(pSuite, "wslay_frame_send_ctrl_frame_too_large_payload",
                    test_wslay_frame_send_ctrl_frame_too_large_payload) ||
+      !CU_add_test(pSuite, "wslay_frame_write", test_wslay_frame_write) ||
+      !CU_add_test(pSuite, "wslay_frame_write_fragmented",
+                   test_wslay_frame_write_fragmented) ||
+      !CU_add_test(pSuite, "wslay_frame_write_interleaved_ctrl_frame",
+                   test_wslay_frame_write_interleaved_ctrl_frame) ||
+      !CU_add_test(pSuite, "wslay_frame_write_1byte_masked",
+                   test_wslay_frame_write_1byte_masked) ||
+      !CU_add_test(pSuite, "wslay_frame_write_zero_payloadlen",
+                   test_wslay_frame_write_zero_payloadlen) ||
+      !CU_add_test(pSuite, "wslay_frame_write_too_large_payload",
+                   test_wslay_frame_write_too_large_payload) ||
+      !CU_add_test(pSuite, "wslay_frame_write_ctrl_frame_too_large_payload",
+                   test_wslay_frame_write_ctrl_frame_too_large_payload) ||
       !CU_add_test(pSuite, "wslay_event_send_fragmented_msg",
                    test_wslay_event_send_fragmented_msg) ||
       !CU_add_test(pSuite, "wslay_event_send_fragmented_msg_empty_data",
@@ -118,6 +131,18 @@ int main(void) {
                    test_wslay_event_message_too_big) ||
       !CU_add_test(pSuite, "wslay_event_config_set_allowed_rsv_bits",
                    test_wslay_event_config_set_allowed_rsv_bits) ||
+      !CU_add_test(pSuite, "wslay_event_write_fragmented_msg",
+                   test_wslay_event_write_fragmented_msg) ||
+      !CU_add_test(pSuite, "wslay_event_write_fragmented_msg_empty_data",
+                   test_wslay_event_write_fragmented_msg_empty_data) ||
+      !CU_add_test(pSuite, "wslay_event_write_fragmented_msg_with_ctrl",
+                   test_wslay_event_write_fragmented_msg_with_ctrl) ||
+      !CU_add_test(pSuite, "wslay_event_write_fragmented_msg_with_rsv1",
+                   test_wslay_event_write_fragmented_msg_with_rsv1) ||
+      !CU_add_test(pSuite, "wslay_event_write_msg_with_rsv1",
+                   test_wslay_event_write_msg_with_rsv1) ||
+      !CU_add_test(pSuite, "wslay_event_write_ctrl_msg_first",
+                   test_wslay_event_write_ctrl_msg_first) ||
       !CU_add_test(pSuite, "wslay_queue", test_wslay_queue)) {
     CU_cleanup_registry();
     return CU_get_error();

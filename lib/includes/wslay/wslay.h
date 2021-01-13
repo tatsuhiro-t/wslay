@@ -222,6 +222,33 @@ ssize_t wslay_frame_send(wslay_frame_context_ptr ctx,
                          struct wslay_frame_iocb *iocb);
 
 /*
+ * Write WebSocket frame specified in iocb to buf of length
+ * buflen. ctx must be initialized using wslay_frame_context_init()
+ * function.  iocb->fin must be 1 if this is a fin frame, otherwise 0.
+ * iocb->rsv is reserved bits.  iocb->opcode must be the opcode of
+ * this frame.  iocb->mask must be 1 if this is masked frame,
+ * otherwise 0.  iocb->payload_length is the payload_length of this
+ * frame.  iocb->data must point to the payload data to be
+ * sent. iocb->data_length must be the length of the data.  Unlike
+ * wslay_frame_send, this function does not call send_callback
+ * function.  This function calls gen_mask_callback function if it
+ * needs new mask key.  This function returns the number of bytes
+ * written to a buffer.  Unlike wslay_frame_send, it includes the
+ * number of header bytes.  Instead, the number of payload bytes
+ * written is assigned to *pwpayloadlen if this function succeeds.  If
+ * there is not enough space left in a buffer, it returns 0.  If the
+ * library detects error in iocb, this function returns
+ * WSLAY_ERR_INVALID_ARGUMENT.  If callback functions report a
+ * failure, this function returns WSLAY_ERR_INVALID_CALLBACK.  This
+ * function does not always send all given data in iocb.  If there are
+ * remaining data to be sent, adjust data and data_length in iocb
+ * accordingly and call this function again.
+ */
+ssize_t wslay_frame_write(wslay_frame_context_ptr ctx,
+                          struct wslay_frame_iocb *iocb, uint8_t *buf,
+                          size_t buflen, size_t *pwpayloadlen);
+
+/*
  * Receives WebSocket frame and stores it in iocb.  This function
  * returns the number of payload bytes received.  This does not
  * include header bytes. In this case, iocb will be populated as
@@ -530,6 +557,50 @@ int wslay_event_recv(wslay_event_context_ptr ctx);
  * connection.
  */
 int wslay_event_send(wslay_event_context_ptr ctx);
+
+/*
+ * Writes queued messages to a buffer. Unlike wslay_event_send(), this
+ * function writes messages into the given buffer.  It does not use
+ * wslay_event_send_callback function. Single call of
+ * wslay_event_write() writes multiple messages until there is not
+ * enough space left in a buffer.
+ *
+ * If ctx is initialized for WebSocket client use, wslay_event_write()
+ * uses wslay_event_genmask_callback to get new mask key.
+ *
+ * buf is a pointer to buffer and its capacity is given in buflen.  It
+ * should have at least 14 bytes.
+ *
+ * When a message queued using wslay_event_queue_fragmented_msg() is
+ * sent, wslay_event_write() invokes
+ * wslay_event_fragmented_msg_callback for that message.
+ *
+ * After close control frame is sent, this function calls
+ * wslay_event_set_write_enabled() with second argument 0 to disable
+ * further transmission to peer.
+ *
+ * If there are any pending messages, wslay_event_want_write() returns
+ * 1, otherwise returns 0.
+ *
+ * In case of a fatal errror which leads to negative return code, this
+ * function calls wslay_event_set_write_enabled() with second argument
+ * 0 to disable further transmission to peer.
+ *
+ * wslay_event_write() returns the number of bytes written to a buffer
+ * if it succeeds, or one of the following negative error codes:
+ *
+ * WSLAY_ERR_CALLBACK_FAILURE
+ *   User defined callback function is failed.
+ *
+ * WSLAY_ERR_NOMEM
+ *   Out of memory.
+ *
+ * When negative error code is returned, application must not make any
+ * further call of wslay_event_write() and must close WebSocket
+ * connection.
+ */
+ssize_t wslay_event_write(wslay_event_context_ptr ctx, uint8_t *buf,
+                          size_t buflen);
 
 struct wslay_event_msg {
   uint8_t opcode;

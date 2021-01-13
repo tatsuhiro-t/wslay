@@ -31,6 +31,7 @@ MANPAGES_WITH_SRC = \
 	man/wslay_event_queue_msg.3 \
 	man/wslay_event_recv.3 \
 	man/wslay_event_send.3 \
+	man/wslay_event_write.3 \
 	man/wslay_event_set_error.3 \
 	man/wslay_event_want_read.3 \
 	man/wslay_event_want_write.3 \

@@ -16,6 +16,7 @@ Contents:
    man/wslay_event_queue_msg
    man/wslay_event_recv
    man/wslay_event_send
+   man/wslay_event_write
    man/wslay_event_set_error
    man/wslay_event_want_read
    man/wslay_event_want_write

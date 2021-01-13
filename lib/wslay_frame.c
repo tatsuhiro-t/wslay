@@ -184,6 +184,111 @@ ssize_t wslay_frame_send(wslay_frame_context_ptr ctx,
   return WSLAY_ERR_INVALID_ARGUMENT;
 }
 
+ssize_t wslay_frame_write(wslay_frame_context_ptr ctx,
+                          struct wslay_frame_iocb *iocb, uint8_t *buf,
+                          size_t buflen, size_t *pwpayloadlen) {
+  uint8_t *buf_last = buf;
+  size_t i;
+  size_t hdlen;
+
+  *pwpayloadlen = 0;
+
+  if (iocb->data_length > iocb->payload_length) {
+    return WSLAY_ERR_INVALID_ARGUMENT;
+  }
+
+  switch (ctx->ostate) {
+  case PREP_HEADER:
+  case PREP_HEADER_NOBUF:
+    hdlen = 2;
+    if (iocb->payload_length < 126) {
+      /* nothing to do */
+    } else if (iocb->payload_length < (1 << 16)) {
+      hdlen += 2;
+    } else if (iocb->payload_length < (1ull << 63)) {
+      hdlen += 8;
+    }
+    if (iocb->mask) {
+      hdlen += 4;
+    }
+
+    if (buflen < hdlen) {
+      ctx->ostate = PREP_HEADER_NOBUF;
+      return 0;
+    }
+
+    memset(buf_last, 0, hdlen);
+    *buf_last |= (iocb->fin << 7) & 0x80u;
+    *buf_last |= (iocb->rsv << 4) & 0x70u;
+    *buf_last |= iocb->opcode & 0xfu;
+    ++buf_last;
+    *buf_last |= (iocb->mask << 7) & 0x80u;
+    if (wslay_is_ctrl_frame(iocb->opcode) && iocb->payload_length > 125) {
+      return WSLAY_ERR_INVALID_ARGUMENT;
+    }
+    if (iocb->payload_length < 126) {
+      *buf_last |= iocb->payload_length;
+      ++buf_last;
+    } else if (iocb->payload_length < (1 << 16)) {
+      uint16_t len = htons(iocb->payload_length);
+      *buf_last |= 126;
+      ++buf_last;
+      memcpy(buf_last, &len, 2);
+      buf_last += 2;
+    } else if (iocb->payload_length < (1ull << 63)) {
+      uint64_t len = hton64(iocb->payload_length);
+      *buf_last |= 127;
+      ++buf_last;
+      memcpy(buf_last, &len, 8);
+      buf_last += 8;
+    } else {
+      /* Too large payload length */
+      return WSLAY_ERR_INVALID_ARGUMENT;
+    }
+    if (iocb->mask) {
+      if (ctx->callbacks.genmask_callback(ctx->omaskkey, 4, ctx->user_data) !=
+          0) {
+        return WSLAY_ERR_INVALID_CALLBACK;
+      } else {
+        ctx->omask = 1;
+        memcpy(buf_last, ctx->omaskkey, 4);
+        buf_last += 4;
+      }
+    }
+    ctx->ostate = SEND_PAYLOAD;
+    ctx->opayloadlen = iocb->payload_length;
+    ctx->opayloadoff = 0;
+
+    buflen -= buf_last - buf;
+    /* fall through */
+  case SEND_PAYLOAD:
+    if (iocb->data_length > 0) {
+      size_t writelen = wslay_min(buflen, iocb->data_length);
+
+      if (ctx->omask) {
+        for (i = 0; i < writelen; ++i) {
+          *buf_last++ =
+              iocb->data[i] ^ ctx->omaskkey[(ctx->opayloadoff + i) % 4];
+        }
+      } else {
+        memcpy(buf_last, iocb->data, writelen);
+        buf_last += writelen;
+      }
+
+      ctx->opayloadoff += writelen;
+      *pwpayloadlen = writelen;
+    }
+
+    if (ctx->opayloadoff == ctx->opayloadlen) {
+      ctx->ostate = PREP_HEADER;
+    }
+
+    return buf_last - buf;
+  default:
+    return WSLAY_ERR_INVALID_ARGUMENT;
+  }
+}
+
 static void wslay_shift_ibuf(wslay_frame_context_ptr ctx) {
   ptrdiff_t len = ctx->ibuflimit - ctx->ibufmark;
   memmove(ctx->ibuf, ctx->ibufmark, len);

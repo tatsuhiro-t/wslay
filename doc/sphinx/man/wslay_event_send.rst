@@ -60,3 +60,4 @@ SEE ALSO
 :c:func:`wslay_event_queue_fragmented_msg`,
 :c:func:`wslay_event_set_write_enabled`,
 :c:func:`wslay_event_want_write`
+:c:func:`wslay_event_write`

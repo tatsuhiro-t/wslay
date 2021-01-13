@@ -254,6 +254,8 @@ man_pages = [
      u'Receive messages', [u'Tatsuhiro Tsujikawa'], 3),
     ('man/wslay_event_send', 'wslay_event_send',
      u'Send any pending messages', [u'Tatsuhiro Tsujikawa'], 3),
+    ('man/wslay_event_write', 'wslay_event_write',
+     u'Write any pending messages to a buffer', [u'Tatsuhiro Tsujikawa'], 3),
 
     ('man/wslay_event_set_error', 'wslay_event_set_error',
      u'Set error code', [u'Tatsuhiro Tsujikawa'], 3),
