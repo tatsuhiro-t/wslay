@@ -33,8 +33,6 @@
 
 #include "wslay_queue.h"
 
-struct wslay_stack;
-
 struct wslay_event_byte_chunk {
   struct wslay_queue_entry qe;
   uint8_t *data;
