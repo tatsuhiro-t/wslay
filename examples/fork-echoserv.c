@@ -437,7 +437,7 @@ static int communicate(int fd) {
  * process communicates with client. The parent process goes back to
  * the loop and can accept another client.
  */
-static void serve(int sfd) {
+static void __attribute__((noreturn)) serve(int sfd) {
   while (1) {
     int fd;
     while ((fd = accept(sfd, NULL, NULL)) == -1 && errno == EINTR)
