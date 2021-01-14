@@ -433,7 +433,7 @@ void wslay_event_context_free(wslay_event_context_ptr ctx) {
   }
   for (i = 0; i < 2; ++i) {
     wslay_event_imsg_chunks_free(&ctx->imsgs[i]);
-    wslay_queue_free(&ctx->imsgs[i].chunks);
+    wslay_queue_deinit(&ctx->imsgs[i].chunks);
   }
 
   while (!wslay_queue_empty(&ctx->send_queue)) {
@@ -442,7 +442,7 @@ void wslay_event_context_free(wslay_event_context_ptr ctx) {
     wslay_queue_pop(&ctx->send_queue);
     wslay_event_omsg_free(omsg);
   }
-  wslay_queue_free(&ctx->send_queue);
+  wslay_queue_deinit(&ctx->send_queue);
 
   while (!wslay_queue_empty(&ctx->send_ctrl_queue)) {
     struct wslay_event_omsg *omsg = wslay_struct_of(
@@ -450,7 +450,7 @@ void wslay_event_context_free(wslay_event_context_ptr ctx) {
     wslay_queue_pop(&ctx->send_ctrl_queue);
     wslay_event_omsg_free(omsg);
   }
-  wslay_queue_free(&ctx->send_ctrl_queue);
+  wslay_queue_deinit(&ctx->send_ctrl_queue);
 
   wslay_frame_context_free(ctx->frame_ctx);
   wslay_event_omsg_free(ctx->omsg);

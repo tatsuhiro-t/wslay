@@ -41,7 +41,7 @@ struct wslay_queue {
 };
 
 void wslay_queue_init(struct wslay_queue *queue);
-void wslay_queue_free(struct wslay_queue *queue);
+void wslay_queue_deinit(struct wslay_queue *queue);
 void wslay_queue_push(struct wslay_queue *queue, struct wslay_queue_entry *ent);
 void wslay_queue_push_front(struct wslay_queue *queue,
                             struct wslay_queue_entry *ent);
