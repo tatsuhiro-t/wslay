@@ -29,17 +29,12 @@
 
 #include "wslay_macro.h"
 
-struct wslay_queue *wslay_queue_new(void) {
-  struct wslay_queue *queue = malloc(sizeof(struct wslay_queue));
-  if (!queue) {
-    return NULL;
-  }
+void wslay_queue_init(struct wslay_queue *queue) {
   queue->top = NULL;
   queue->tail = &queue->top;
-  return queue;
 }
 
-void wslay_queue_free(struct wslay_queue *queue) { free(queue); }
+void wslay_queue_free(struct wslay_queue *queue) { (void)queue; }
 
 void wslay_queue_push(struct wslay_queue *queue,
                       struct wslay_queue_entry *ent) {

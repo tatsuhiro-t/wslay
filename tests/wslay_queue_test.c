@@ -39,36 +39,37 @@ void test_wslay_queue(void) {
       {{0}, 1}, {{0}, 2}, {{0}, 3}, {{0}, 4}, {{0}, 5},
   };
   int i;
-  struct wslay_queue *queue = wslay_queue_new();
-  CU_ASSERT(wslay_queue_empty(queue));
+  struct wslay_queue queue;
+  wslay_queue_init(&queue);
+  CU_ASSERT(wslay_queue_empty(&queue));
   for (i = 0; i < 5; ++i) {
-    wslay_queue_push(queue, &ents[i].qe);
-    CU_ASSERT_EQUAL(
-        ents[0].value,
-        wslay_struct_of(wslay_queue_top(queue), struct queue_entry, qe)->value);
-    CU_ASSERT(!wslay_queue_empty(queue));
+    wslay_queue_push(&queue, &ents[i].qe);
+    CU_ASSERT_EQUAL(ents[0].value, wslay_struct_of(wslay_queue_top(&queue),
+                                                   struct queue_entry, qe)
+                                       ->value);
+    CU_ASSERT(!wslay_queue_empty(&queue));
   }
   for (i = 0; i < 5; ++i) {
-    CU_ASSERT_EQUAL(
-        ents[i].value,
-        wslay_struct_of(wslay_queue_top(queue), struct queue_entry, qe)->value);
-    wslay_queue_pop(queue);
+    CU_ASSERT_EQUAL(ents[i].value, wslay_struct_of(wslay_queue_top(&queue),
+                                                   struct queue_entry, qe)
+                                       ->value);
+    wslay_queue_pop(&queue);
   }
-  CU_ASSERT(wslay_queue_empty(queue));
+  CU_ASSERT(wslay_queue_empty(&queue));
 
   for (i = 0; i < 5; ++i) {
-    wslay_queue_push_front(queue, &ents[i].qe);
-    CU_ASSERT_EQUAL(
-        ents[i].value,
-        wslay_struct_of(wslay_queue_top(queue), struct queue_entry, qe)->value);
-    CU_ASSERT(!wslay_queue_empty(queue));
+    wslay_queue_push_front(&queue, &ents[i].qe);
+    CU_ASSERT_EQUAL(ents[i].value, wslay_struct_of(wslay_queue_top(&queue),
+                                                   struct queue_entry, qe)
+                                       ->value);
+    CU_ASSERT(!wslay_queue_empty(&queue));
   }
   for (i = 4; i >= 0; --i) {
-    CU_ASSERT_EQUAL(
-        ents[i].value,
-        wslay_struct_of(wslay_queue_top(queue), struct queue_entry, qe)->value);
-    wslay_queue_pop(queue);
+    CU_ASSERT_EQUAL(ents[i].value, wslay_struct_of(wslay_queue_top(&queue),
+                                                   struct queue_entry, qe)
+                                       ->value);
+    wslay_queue_pop(&queue);
   }
-  CU_ASSERT(wslay_queue_empty(queue));
-  wslay_queue_free(queue);
+  CU_ASSERT(wslay_queue_empty(&queue));
+  wslay_queue_free(&queue);
 }
