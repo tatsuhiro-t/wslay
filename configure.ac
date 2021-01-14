@@ -40,6 +40,8 @@ AC_CONFIG_MACRO_DIR([m4])
 AM_INIT_AUTOMAKE()
 AC_CONFIG_HEADERS([config.h])
 
+m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
+
 # Checks for command-line options
 AC_ARG_ENABLE([werror],
     [AS_HELP_STRING([--enable-werror],
