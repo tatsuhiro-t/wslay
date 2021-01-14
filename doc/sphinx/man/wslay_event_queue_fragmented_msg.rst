@@ -30,7 +30,7 @@ is defined as::
       wslay_event_fragmented_msg_callback read_callback;
   };
 
-.. c:type:: typedef ssize_t (*wslay_event_fragmented_msg_callback)(wslay_event_context_ptr ctx, uint8_t *buf, size_t len, const union wslay_event_msg_source *source, int *eof, void *user_data)
+.. c:type:: ssize_t (*wslay_event_fragmented_msg_callback)(wslay_event_context_ptr ctx, uint8_t *buf, size_t len, const union wslay_event_msg_source *source, int *eof, void *user_data)
 
 The *opcode* member is the opcode of the message.
 The *source* member is an union and normally it contains a "source" to
