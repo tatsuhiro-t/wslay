@@ -22,7 +22,7 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 SUBDIRS = includes
 
-AM_CFLAGS = -Wall
+AM_CFLAGS = $(WARNCFLAGS)
 AM_CPPFLAGS = @DEFS@ -I$(srcdir)/includes -I$(builddir)/includes
 
 pkgconfigdir = $(libdir)/pkgconfig

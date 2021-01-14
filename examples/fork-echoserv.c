@@ -60,7 +60,7 @@
  * Create server socket, listen on *service*.  This function returns
  * file descriptor of server socket if it succeeds, or returns -1.
  */
-int create_listen_socket(const char *service) {
+static int create_listen_socket(const char *service) {
   struct addrinfo hints, *res, *rp;
   int sfd = -1;
   int r;
@@ -101,7 +101,7 @@ int create_listen_socket(const char *service) {
  * Makes file descriptor *fd* non-blocking mode.
  * This function returns 0, or returns -1.
  */
-int make_non_block(int fd) {
+static int make_non_block(int fd) {
   int flags, r;
   while ((flags = fcntl(fd, F_GETFL, 0)) == -1 && errno == EINTR)
     ;
@@ -122,7 +122,7 @@ int make_non_block(int fd) {
  * Calculates SHA-1 hash of *src*. The size of *src* is *src_length* bytes.
  * *dst* must be at least SHA1_DIGEST_SIZE.
  */
-void sha1(uint8_t *dst, const uint8_t *src, size_t src_length) {
+static void sha1(uint8_t *dst, const uint8_t *src, size_t src_length) {
   struct sha1_ctx ctx;
   sha1_init(&ctx);
   sha1_update(&ctx, src_length, src);
@@ -134,7 +134,7 @@ void sha1(uint8_t *dst, const uint8_t *src, size_t src_length) {
  * The size of *src* is *src_length*.
  * *dst* must be at least BASE64_ENCODE_RAW_LENGTH(src_length).
  */
-void base64(uint8_t *dst, const uint8_t *src, size_t src_length) {
+static void base64(uint8_t *dst, const uint8_t *src, size_t src_length) {
   struct base64_encode_ctx ctx;
   base64_encode_init(&ctx);
   base64_encode_raw((char *)dst, src_length, src);
@@ -148,7 +148,7 @@ void base64(uint8_t *dst, const uint8_t *src, size_t src_length) {
  * client's handshake and it must be length of 24.
  * *dst* must be at least BASE64_ENCODE_RAW_LENGTH(20)+1.
  */
-void create_accept_key(char *dst, const char *client_key) {
+static void create_accept_key(char *dst, const char *client_key) {
   uint8_t sha1buf[20], key_src[60];
   memcpy(key_src, client_key, 24);
   memcpy(key_src + 24, WS_GUID, 36);
@@ -163,15 +163,16 @@ void create_accept_key(char *dst, const char *client_key) {
  * If the caller is looking for a specific value, we return a pointer to the
  * start of that value, else we simply return the start of values list.
  */
-static char *http_header_find_field_value(char *header, char *field_name,
-                                          char *value) {
-  char *header_end, *field_start, *field_end, *next_crlf, *value_start;
+static const char *http_header_find_field_value(const char *header,
+                                                const char *field_name,
+                                                const char *value) {
+  const char *header_end, *field_start, *field_end, *next_crlf, *value_start;
   int field_name_len;
 
   /* Pointer to the last character in the header */
   header_end = header + strlen(header) - 1;
 
-  field_name_len = strlen(field_name);
+  field_name_len = (int)strlen(field_name);
 
   field_start = header;
 
@@ -225,14 +226,15 @@ static char *http_header_find_field_value(char *header, char *field_name,
  * connection to the client. This function returns 0 if it succeeds,
  * or returns -1.
  */
-int http_handshake(int fd) {
+static int http_handshake(int fd) {
   /*
    * Note: The implementation of HTTP handshake in this function is
    * written for just a example of how to use of wslay library and is
    * not meant to be used in production code.  In practice, you need
    * to do more strict verification of the client's handshake.
    */
-  char header[16384], accept_key[29], *keyhdstart, *keyhdend, res_header[256];
+  char header[16384], accept_key[29], res_header[256];
+  const char *keyhdstart, *keyhdend;
   size_t header_length = 0, res_header_sent = 0, res_header_length;
   ssize_t r;
   while (1) {
@@ -247,7 +249,7 @@ int http_handshake(int fd) {
       fprintf(stderr, "HTTP Handshake: Got EOF");
       return -1;
     } else {
-      header_length += r;
+      header_length += (size_t)r;
       if (header_length >= 4 &&
           memcmp(header + header_length - 4, "\r\n\r\n", 4) == 0) {
         break;
@@ -293,7 +295,7 @@ int http_handshake(int fd) {
       perror("write");
       return -1;
     } else {
-      res_header_sent += r;
+      res_header_sent += (size_t)r;
     }
   }
   return 0;
@@ -307,8 +309,8 @@ struct Session {
   int fd;
 };
 
-ssize_t send_callback(wslay_event_context_ptr ctx, const uint8_t *data,
-                      size_t len, int flags, void *user_data) {
+static ssize_t send_callback(wslay_event_context_ptr ctx, const uint8_t *data,
+                             size_t len, int flags, void *user_data) {
   struct Session *session = (struct Session *)user_data;
   ssize_t r;
   int sflags = 0;
@@ -329,10 +331,11 @@ ssize_t send_callback(wslay_event_context_ptr ctx, const uint8_t *data,
   return r;
 }
 
-ssize_t recv_callback(wslay_event_context_ptr ctx, uint8_t *buf, size_t len,
-                      int flags, void *user_data) {
+static ssize_t recv_callback(wslay_event_context_ptr ctx, uint8_t *buf,
+                             size_t len, int flags, void *user_data) {
   struct Session *session = (struct Session *)user_data;
   ssize_t r;
+  (void)flags;
   while ((r = recv(session->fd, buf, len, 0)) == -1 && errno == EINTR)
     ;
   if (r == -1) {
@@ -349,9 +352,10 @@ ssize_t recv_callback(wslay_event_context_ptr ctx, uint8_t *buf, size_t len,
   return r;
 }
 
-void on_msg_recv_callback(wslay_event_context_ptr ctx,
-                          const struct wslay_event_on_msg_recv_arg *arg,
-                          void *user_data) {
+static void on_msg_recv_callback(wslay_event_context_ptr ctx,
+                                 const struct wslay_event_on_msg_recv_arg *arg,
+                                 void *user_data) {
+  (void)user_data;
   /* Echo back non-control message */
   if (!wslay_is_ctrl_frame(arg->opcode)) {
     struct wslay_event_msg msgarg = {arg->opcode, arg->msg, arg->msg_length};
@@ -365,7 +369,7 @@ void on_msg_recv_callback(wslay_event_context_ptr ctx,
  * error occurs. *fd* is the file descriptor of the connection to the
  * client. This function returns 0 if it succeeds, or returns 0.
  */
-int communicate(int fd) {
+static int communicate(int fd) {
   wslay_event_context_ptr ctx;
   struct wslay_event_callbacks callbacks = {
       recv_callback, send_callback,       NULL, NULL, NULL,
@@ -433,7 +437,7 @@ int communicate(int fd) {
  * process communicates with client. The parent process goes back to
  * the loop and can accept another client.
  */
-void serve(int sfd) {
+static void serve(int sfd) {
   while (1) {
     int fd;
     while ((fd = accept(sfd, NULL, NULL)) == -1 && errno == EINTR)
@@ -446,7 +450,7 @@ void serve(int sfd) {
         perror("fork");
         close(fd);
       } else if (r == 0) {
-        int r = communicate(fd);
+        r = communicate(fd);
         shutdown(fd, SHUT_WR);
         close(fd);
         if (r == 0) {

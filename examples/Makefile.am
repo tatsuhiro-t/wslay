@@ -23,7 +23,9 @@
 
 if ENABLE_EXAMPLES
 
-AM_CPPFLAGS = -Wall -I$(top_srcdir)/lib/includes \
+AM_CFLAGS = $(WARNCFLAGS)
+AM_CXXFLAGS = $(WARNCXXFLAGS)
+AM_CPPFLAGS = -I$(top_srcdir)/lib/includes \
 	-I$(top_builddir)/lib/includes @NETTLE_CFLAGS@ @DEFS@
 AM_LDFLAGS = @NETTLE_LIBS@
 LDADD = $(top_builddir)/lib/libwslay.la

@@ -529,7 +529,7 @@ int wslay_event_recv(wslay_event_context_ptr ctx) {
           (ctx->server && !iocb.mask) || (!ctx->server && iocb.mask)) {
         if ((r = wslay_event_queue_close_wrapper(ctx, WSLAY_CODE_PROTOCOL_ERROR,
                                                  NULL, 0)) != 0) {
-          return r;
+          return (int)r;
         }
         break;
       }
@@ -543,7 +543,7 @@ int wslay_event_recv(wslay_event_context_ptr ctx) {
         } else {
           if ((r = wslay_event_queue_close_wrapper(
                    ctx, WSLAY_CODE_PROTOCOL_ERROR, NULL, 0)) != 0) {
-            return r;
+            return (int)r;
           }
           break;
         }
@@ -557,7 +557,7 @@ int wslay_event_recv(wslay_event_context_ptr ctx) {
         } else {
           if ((r = wslay_event_queue_close_wrapper(
                    ctx, WSLAY_CODE_PROTOCOL_ERROR, NULL, 0)) != 0) {
-            return r;
+            return (int)r;
           }
           break;
         }
@@ -568,7 +568,7 @@ int wslay_event_recv(wslay_event_context_ptr ctx) {
             ctx->max_recv_msg_length) {
           if ((r = wslay_event_queue_close_wrapper(
                    ctx, WSLAY_CODE_MESSAGE_TOO_BIG, NULL, 0)) != 0) {
-            return r;
+            return (int)r;
           }
           break;
         }
@@ -579,7 +579,7 @@ int wslay_event_recv(wslay_event_context_ptr ctx) {
           if ((r = wslay_event_imsg_append_chunk(ctx->imsg,
                                                  iocb.payload_length)) != 0) {
             ctx->read_enabled = 0;
-            return r;
+            return (int)r;
           }
         }
       }
@@ -600,7 +600,7 @@ int wslay_event_recv(wslay_event_context_ptr ctx) {
             if ((r = wslay_event_queue_close_wrapper(
                      ctx, WSLAY_CODE_INVALID_FRAME_PAYLOAD_DATA, NULL, 0)) !=
                 0) {
-              return r;
+              return (int)r;
             }
             break;
           }
@@ -628,7 +628,7 @@ int wslay_event_recv(wslay_event_context_ptr ctx) {
             ctx->imsg->utf8state != UTF8_ACCEPT) {
           if ((r = wslay_event_queue_close_wrapper(
                    ctx, WSLAY_CODE_INVALID_FRAME_PAYLOAD_DATA, NULL, 0)) != 0) {
-            return r;
+            return (int)r;
           }
           break;
         }
@@ -661,7 +661,7 @@ int wslay_event_recv(wslay_event_context_ptr ctx) {
                   free(msg);
                   if ((r = wslay_event_queue_close_wrapper(
                            ctx, WSLAY_CODE_PROTOCOL_ERROR, NULL, 0)) != 0) {
-                    return r;
+                    return (int)r;
                   }
                   break;
                 }
@@ -677,7 +677,7 @@ int wslay_event_recv(wslay_event_context_ptr ctx) {
               if ((r = wslay_event_queue_close_wrapper(ctx, status_code, reason,
                                                        reason_length)) != 0) {
                 free(msg);
-                return r;
+                return (int)r;
               }
             } else if (ctx->imsg->opcode == WSLAY_PING) {
               struct wslay_event_msg pong_arg;
@@ -688,7 +688,7 @@ int wslay_event_recv(wslay_event_context_ptr ctx) {
                   r != WSLAY_ERR_NO_MORE_MSG) {
                 ctx->read_enabled = 0;
                 free(msg);
-                return r;
+                return (int)r;
               }
             }
             if (ctx->callbacks.on_msg_recv_callback) {
@@ -713,7 +713,7 @@ int wslay_event_recv(wslay_event_context_ptr ctx) {
       if (r != WSLAY_ERR_WANT_READ ||
           (ctx->error != WSLAY_ERR_WOULDBLOCK && ctx->error != 0)) {
         if ((r = wslay_event_queue_close_wrapper(ctx, 0, NULL, 0)) != 0) {
-          return r;
+          return (int)r;
         }
         return WSLAY_ERR_CALLBACK_FAILURE;
       }
@@ -802,7 +802,7 @@ int wslay_event_send(wslay_event_context_ptr ctx) {
       iocb.payload_length = ctx->opayloadlen;
       r = wslay_frame_send(ctx->frame_ctx, &iocb);
       if (r >= 0) {
-        ctx->opayloadoff += r;
+        ctx->opayloadoff += (uint64_t)r;
         if (ctx->opayloadoff == ctx->opayloadlen) {
           --ctx->queued_msg_count;
           ctx->queued_msg_length -= ctx->omsg->data_length;
@@ -845,7 +845,7 @@ int wslay_event_send(wslay_event_context_ptr ctx) {
         if (eof) {
           ctx->omsg->fin = 1;
         }
-        ctx->opayloadlen = r;
+        ctx->opayloadlen = (uint64_t)r;
         ctx->opayloadoff = 0;
       }
       memset(&iocb, 0, sizeof(iocb));
@@ -854,7 +854,7 @@ int wslay_event_send(wslay_event_context_ptr ctx) {
       iocb.rsv = ctx->omsg->rsv;
       iocb.mask = ctx->server ? 0 : 1;
       iocb.data = ctx->obufmark;
-      iocb.data_length = ctx->obuflimit - ctx->obufmark;
+      iocb.data_length = (size_t)(ctx->obuflimit - ctx->obufmark);
       iocb.payload_length = ctx->opayloadlen;
       r = wslay_frame_send(ctx->frame_ctx, &iocb);
       if (r >= 0) {
@@ -868,7 +868,7 @@ int wslay_event_send(wslay_event_context_ptr ctx) {
           } else {
             ctx->omsg->opcode = WSLAY_CONTINUATION_FRAME;
             /* RSV1 is not set on continuation frames */
-            ctx->omsg->rsv = ctx->omsg->rsv & ~WSLAY_RSV1_BIT;
+            ctx->omsg->rsv = (uint8_t)(ctx->omsg->rsv & ~WSLAY_RSV1_BIT);
           }
         } else {
           break;
@@ -936,10 +936,10 @@ ssize_t wslay_event_write(wslay_event_context_ptr ctx, uint8_t *buf,
       r = wslay_frame_write(ctx->frame_ctx, &iocb, buf_last, buflen,
                             &wpayloadlen);
       if (r > 0) {
-        assert(r <= buflen);
+        assert((size_t)r <= buflen);
 
         buf_last += r;
-        buflen -= r;
+        buflen -= (size_t)r;
 
         ctx->opayloadoff += wpayloadlen;
         if (ctx->opayloadoff == ctx->opayloadlen) {
@@ -981,7 +981,7 @@ ssize_t wslay_event_write(wslay_event_context_ptr ctx, uint8_t *buf,
         if (eof) {
           ctx->omsg->fin = 1;
         }
-        ctx->opayloadlen = r;
+        ctx->opayloadlen = (uint64_t)r;
         ctx->opayloadoff = 0;
       }
       memset(&iocb, 0, sizeof(iocb));
@@ -990,15 +990,15 @@ ssize_t wslay_event_write(wslay_event_context_ptr ctx, uint8_t *buf,
       iocb.rsv = ctx->omsg->rsv;
       iocb.mask = ctx->server ? 0 : 1;
       iocb.data = ctx->obufmark;
-      iocb.data_length = ctx->obuflimit - ctx->obufmark;
+      iocb.data_length = (size_t)(ctx->obuflimit - ctx->obufmark);
       iocb.payload_length = ctx->opayloadlen;
       r = wslay_frame_write(ctx->frame_ctx, &iocb, buf_last, buflen,
                             &wpayloadlen);
       if (r > 0) {
-        assert(r <= buflen);
+        assert((size_t)r <= buflen);
 
         buf_last += r;
-        buflen -= r;
+        buflen -= (size_t)r;
 
         ctx->obufmark += wpayloadlen;
         if (ctx->obufmark == ctx->obuflimit) {
@@ -1010,7 +1010,7 @@ ssize_t wslay_event_write(wslay_event_context_ptr ctx, uint8_t *buf,
           } else {
             ctx->omsg->opcode = WSLAY_CONTINUATION_FRAME;
             /* RSV1 is not set on continuation frames */
-            ctx->omsg->rsv = ctx->omsg->rsv & ~WSLAY_RSV1_BIT;
+            ctx->omsg->rsv = (uint8_t)(ctx->omsg->rsv & ~WSLAY_RSV1_BIT);
           }
         } else {
           break;
@@ -1073,7 +1073,7 @@ void wslay_event_config_set_no_buffering(wslay_event_context_ptr ctx, int val) {
   if (val) {
     ctx->config |= WSLAY_CONFIG_NO_BUFFERING;
   } else {
-    ctx->config &= ~WSLAY_CONFIG_NO_BUFFERING;
+    ctx->config &= (uint32_t)~WSLAY_CONFIG_NO_BUFFERING;
   }
 }
 
