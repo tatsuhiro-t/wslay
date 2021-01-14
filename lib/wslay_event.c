@@ -123,28 +123,19 @@ static int wslay_event_frame_genmask_callback(uint8_t *buf, size_t len,
 
 static int wslay_event_byte_chunk_init(struct wslay_event_byte_chunk **chunk,
                                        size_t len) {
-  *chunk = (struct wslay_event_byte_chunk *)malloc(
-      sizeof(struct wslay_event_byte_chunk));
+  *chunk = malloc(sizeof(struct wslay_event_byte_chunk) + len);
   if (*chunk == NULL) {
     return WSLAY_ERR_NOMEM;
   }
   memset(*chunk, 0, sizeof(struct wslay_event_byte_chunk));
   if (len) {
-    (*chunk)->data = (uint8_t *)malloc(len);
-    if ((*chunk)->data == NULL) {
-      free(*chunk);
-      return WSLAY_ERR_NOMEM;
-    }
+    (*chunk)->data = (uint8_t *)(*chunk) + sizeof(**chunk);
     (*chunk)->data_length = len;
   }
   return 0;
 }
 
 static void wslay_event_byte_chunk_free(struct wslay_event_byte_chunk *c) {
-  if (!c) {
-    return;
-  }
-  free(c->data);
   free(c);
 }
 
@@ -200,7 +191,7 @@ static int wslay_event_omsg_non_fragmented_init(struct wslay_event_omsg **m,
                                                 uint8_t opcode, uint8_t rsv,
                                                 const uint8_t *msg,
                                                 size_t msg_length) {
-  *m = (struct wslay_event_omsg *)malloc(sizeof(struct wslay_event_omsg));
+  *m = malloc(sizeof(struct wslay_event_omsg) + msg_length);
   if (!*m) {
     return WSLAY_ERR_NOMEM;
   }
@@ -210,11 +201,7 @@ static int wslay_event_omsg_non_fragmented_init(struct wslay_event_omsg **m,
   (*m)->rsv = rsv;
   (*m)->type = WSLAY_NON_FRAGMENTED;
   if (msg_length) {
-    (*m)->data = (uint8_t *)malloc(msg_length);
-    if (!(*m)->data) {
-      free(*m);
-      return WSLAY_ERR_NOMEM;
-    }
+    (*m)->data = (uint8_t *)(*m) + sizeof(**m);
     memcpy((*m)->data, msg, msg_length);
     (*m)->data_length = msg_length;
   }
@@ -225,11 +212,10 @@ static int wslay_event_omsg_fragmented_init(
     struct wslay_event_omsg **m, uint8_t opcode, uint8_t rsv,
     const union wslay_event_msg_source source,
     wslay_event_fragmented_msg_callback read_callback) {
-  *m = (struct wslay_event_omsg *)malloc(sizeof(struct wslay_event_omsg));
+  *m = calloc(1, sizeof(struct wslay_event_omsg));
   if (!*m) {
     return WSLAY_ERR_NOMEM;
   }
-  memset(*m, 0, sizeof(struct wslay_event_omsg));
   (*m)->opcode = opcode;
   (*m)->rsv = rsv;
   (*m)->type = WSLAY_FRAGMENTED;
@@ -238,13 +224,7 @@ static int wslay_event_omsg_fragmented_init(
   return 0;
 }
 
-static void wslay_event_omsg_free(struct wslay_event_omsg *m) {
-  if (!m) {
-    return;
-  }
-  free(m->data);
-  free(m);
-}
+static void wslay_event_omsg_free(struct wslay_event_omsg *m) { free(m); }
 
 static uint8_t *wslay_event_flatten_queue(struct wslay_queue *queue,
                                           size_t len) {
