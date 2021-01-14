@@ -232,7 +232,7 @@ static uint8_t *wslay_event_flatten_queue(struct wslay_queue *queue,
     return NULL;
   } else {
     size_t off = 0;
-    uint8_t *buf = (uint8_t *)malloc(len);
+    uint8_t *buf = malloc(len);
     if (!buf) {
       return NULL;
     }
@@ -382,7 +382,7 @@ wslay_event_context_init(wslay_event_context_ptr *ctx,
   struct wslay_frame_callbacks frame_callbacks = {
       wslay_event_frame_send_callback, wslay_event_frame_recv_callback,
       wslay_event_frame_genmask_callback};
-  *ctx = (wslay_event_context_ptr)malloc(sizeof(struct wslay_event_context));
+  *ctx = malloc(sizeof(struct wslay_event_context));
   if (!*ctx) {
     return WSLAY_ERR_NOMEM;
   }

@@ -35,7 +35,7 @@
 int wslay_frame_context_init(wslay_frame_context_ptr *ctx,
                              const struct wslay_frame_callbacks *callbacks,
                              void *user_data) {
-  *ctx = (wslay_frame_context_ptr)malloc(sizeof(struct wslay_frame_context));
+  *ctx = malloc(sizeof(struct wslay_frame_context));
   if (*ctx == NULL) {
     return -1;
   }

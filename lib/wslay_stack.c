@@ -28,8 +28,7 @@
 #include <assert.h>
 
 struct wslay_stack *wslay_stack_new() {
-  struct wslay_stack *stack =
-      (struct wslay_stack *)malloc(sizeof(struct wslay_stack));
+  struct wslay_stack *stack = malloc(sizeof(struct wslay_stack));
   if (!stack) {
     return NULL;
   }
@@ -52,8 +51,7 @@ void wslay_stack_free(struct wslay_stack *stack) {
 }
 
 int wslay_stack_push(struct wslay_stack *stack, void *data) {
-  struct wslay_stack_cell *new_cell =
-      (struct wslay_stack_cell *)malloc(sizeof(struct wslay_stack_cell));
+  struct wslay_stack_cell *new_cell = malloc(sizeof(struct wslay_stack_cell));
   if (!new_cell) {
     return WSLAY_ERR_NOMEM;
   }

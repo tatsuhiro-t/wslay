@@ -28,8 +28,7 @@
 #include <assert.h>
 
 struct wslay_queue *wslay_queue_new(void) {
-  struct wslay_queue *queue =
-      (struct wslay_queue *)malloc(sizeof(struct wslay_queue));
+  struct wslay_queue *queue = malloc(sizeof(struct wslay_queue));
   if (!queue) {
     return NULL;
   }
@@ -52,8 +51,7 @@ void wslay_queue_free(struct wslay_queue *queue) {
 }
 
 int wslay_queue_push(struct wslay_queue *queue, void *data) {
-  struct wslay_queue_cell *new_cell =
-      (struct wslay_queue_cell *)malloc(sizeof(struct wslay_queue_cell));
+  struct wslay_queue_cell *new_cell = malloc(sizeof(struct wslay_queue_cell));
   if (!new_cell) {
     return WSLAY_ERR_NOMEM;
   }
@@ -70,8 +68,7 @@ int wslay_queue_push(struct wslay_queue *queue, void *data) {
 }
 
 int wslay_queue_push_front(struct wslay_queue *queue, void *data) {
-  struct wslay_queue_cell *new_cell =
-      (struct wslay_queue_cell *)malloc(sizeof(struct wslay_queue_cell));
+  struct wslay_queue_cell *new_cell = malloc(sizeof(struct wslay_queue_cell));
   if (!new_cell) {
     return WSLAY_ERR_NOMEM;
   }
