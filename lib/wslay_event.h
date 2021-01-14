@@ -31,10 +31,12 @@
 
 #include <wslay/wslay.h>
 
+#include "wslay_queue.h"
+
 struct wslay_stack;
-struct wslay_queue;
 
 struct wslay_event_byte_chunk {
+  struct wslay_queue_entry qe;
   uint8_t *data;
   size_t data_length;
 };
@@ -51,6 +53,7 @@ struct wslay_event_imsg {
 enum wslay_event_msg_type { WSLAY_NON_FRAGMENTED, WSLAY_FRAGMENTED };
 
 struct wslay_event_omsg {
+  struct wslay_queue_entry qe;
   uint8_t fin;
   uint8_t opcode;
   uint8_t rsv;

@@ -1,7 +1,7 @@
 /*
  * Wslay - The WebSocket Library
  *
- * Copyright (c) 2011, 2012 Tatsuhiro Tsujikawa
+ * Copyright (c) 2020 Tatsuhiro Tsujikawa
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
@@ -22,8 +22,8 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-#ifndef WSLAY_QUEUE_H
-#define WSLAY_QUEUE_H
+#ifndef WSLAY_MACRO_H
+#define WSLAY_MACRO_H
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -31,23 +31,9 @@
 
 #include <wslay/wslay.h>
 
-struct wslay_queue_entry {
-  struct wslay_queue_entry *next;
-};
+#include <stddef.h>
 
-struct wslay_queue {
-  struct wslay_queue_entry *top;
-  struct wslay_queue_entry **tail;
-};
+#define wslay_struct_of(ptr, type, member)                                     \
+  ((type *)(void *)((char *)(ptr)-offsetof(type, member)))
 
-struct wslay_queue *wslay_queue_new(void);
-void wslay_queue_free(struct wslay_queue *queue);
-void wslay_queue_push(struct wslay_queue *queue, struct wslay_queue_entry *ent);
-void wslay_queue_push_front(struct wslay_queue *queue,
-                            struct wslay_queue_entry *ent);
-void wslay_queue_pop(struct wslay_queue *queue);
-struct wslay_queue_entry *wslay_queue_top(struct wslay_queue *queue);
-struct wslay_queue_entry *wslay_queue_tail(struct wslay_queue *queue);
-int wslay_queue_empty(struct wslay_queue *queue);
-
-#endif /* WSLAY_QUEUE_H */
+#endif /* WSLAY_MACRO_H */
