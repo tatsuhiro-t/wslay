@@ -234,4 +234,5 @@ AC_MSG_NOTICE([summary of build options:
     CUnit:          ${have_cunit}
     Nettle:         ${have_nettle}
     Build examples: ${build_examples}
+    Sphinx-build:   ${SPHINX_BUILD}
 ])
