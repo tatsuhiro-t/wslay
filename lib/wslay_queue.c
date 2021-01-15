@@ -54,9 +54,8 @@ void wslay_queue_push_front(struct wslay_queue *queue,
 }
 
 void wslay_queue_pop(struct wslay_queue *queue) {
-  struct wslay_queue_entry *top = queue->top;
-  assert(top);
-  queue->top = top->next;
+  assert(queue->top);
+  queue->top = queue->top->next;
   if (queue->top == NULL) {
     queue->tail = &queue->top;
   }
