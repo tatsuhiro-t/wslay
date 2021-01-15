@@ -19,27 +19,23 @@ set(WSLAY_HEADERS
 	${WSLAY_DIR}/wslay_event.h
 	${WSLAY_DIR}/wslay_frame.h
 	${WSLAY_DIR}/wslay_net.h
-	${WSLAY_DIR}/wslay_queue.h
-	${WSLAY_DIR}/wslay_stack.h)
+	${WSLAY_DIR}/wslay_queue.h)
 set(WSLAY_SOURCES
 	${WSLAY_DIR}/wslay_event.c
 	${WSLAY_DIR}/wslay_frame.c
 	${WSLAY_DIR}/wslay_net.c
-	${WSLAY_DIR}/wslay_queue.c
-	${WSLAY_DIR}/wslay_stack.c)
+	${WSLAY_DIR}/wslay_queue.c)
 
 set(HEADERS
 	wslay_event_test.h
 	wslay_frame_test.h
 	wslay_queue_test.h
-	wslay_session_test.h
-	wslay_stack_test.h)
+	wslay_session_test.h)
 set(SOURCES
 	wslay_event_test.c
 	wslay_frame_test.c
 	wslay_queue_test.c
 	wslay_session_test.c
-	wslay_stack_test.c
 	main.c)
 add_executable(wslay_tests ${SOURCES} ${HEADERS}
 	${WSLAY_SOURCES} ${WSLAY_HEADERS})

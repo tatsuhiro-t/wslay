@@ -26,15 +26,13 @@ set(HEADERS
 	wslay_frame.h
 	wslay_net.h
 	wslay_queue.h
-	wslay_stack.h
 	${INCLUDE_DIR}/wslay/wslay.h
 	${GEN_INCLUDE_DIR}/wslay/wslayver.h)
 set(SOURCES
 	wslay_event.c
 	wslay_frame.c
 	wslay_net.c
-	wslay_queue.c
-	wslay_stack.c)
+	wslay_queue.c)
 
 set(WSLAY_TARGETS)
 if(WSLAY_STATIC)
