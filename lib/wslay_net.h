@@ -33,6 +33,16 @@
 
 #ifdef HAVE_ARPA_INET_H
 #  include <arpa/inet.h>
+#elif defined(WORDS_BIGENDIAN)
+#  define htonl(x) (x)
+#  define htons(x) (x)
+#  define ntohl(x) (x)
+#  define ntohs(x) (x)
+#else
+#  define htonl(x) __builtin_bswap32(x)
+#  define htons(x) __builtin_bswap16(x)
+#  define ntohl(x) __builtin_bswap32(x)
+#  define ntohs(x) __builtin_bswap16(x)
 #endif /* HAVE_ARPA_INET_H */
 #ifdef HAVE_NETINET_IN_H
 #  include <netinet/in.h>
