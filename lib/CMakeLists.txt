@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 2.8)
 # - include by master ../CMakeLists.txt
 # - embedding wslay library into other projects
 
-set(PACKAGE_VERSION "1.0.1-DEV")
+set(PACKAGE_VERSION "1.0.1-DEV" PARENT_SCOPE)
 set(INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/includes)
 set(GEN_INCLUDE_DIR ${CMAKE_CURRENT_BINARY_DIR}/includes)
 
@@ -14,7 +14,9 @@ include(CheckIncludeFile)
 include(TestBigEndian)
 check_include_file("arpa/inet.h" HAVE_ARPA_INET_H)
 check_include_file("netinet/in.h" HAVE_NETINET_IN_H)
+IF (NOT CYGWIN)
 check_include_file("winsock2.h" HAVE_WINSOCK2_H)
+ENDIF ()
 test_big_endian(WORDS_BIGENDIAN)
 
 configure_file(${INCLUDE_DIR}/wslay/wslayver.h.in
